@@ -1609,7 +1609,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_cli"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#4b89c2f766f257e7e2f4ee5bbfc8db438e9321d0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#5597a3f4ede2f662eda95ce789bc04bae9456c77"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1630,7 +1630,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_client"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#4b89c2f766f257e7e2f4ee5bbfc8db438e9321d0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#5597a3f4ede2f662eda95ce789bc04bae9456c77"
 dependencies = [
  "cloudproof_findex 6.0.2 (git+https://www.github.com/Cosmian/cloudproof_rust?branch=feat%2Fadd_basic_findex_rest_client)",
  "cosmian_config_utils",
@@ -1647,7 +1647,7 @@ dependencies = [
 [[package]]
 name = "cosmian_findex_structs"
 version = "0.1.0"
-source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#4b89c2f766f257e7e2f4ee5bbfc8db438e9321d0"
+source = "git+https://www.github.com/Cosmian/findex-server?branch=develop#5597a3f4ede2f662eda95ce789bc04bae9456c77"
 dependencies = [
  "base64 0.22.1",
  "cloudproof_findex 6.0.2 (git+https://www.github.com/Cosmian/cloudproof_rust?branch=feat%2Fadd_basic_findex_rest_client)",
@@ -1702,8 +1702,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kmip"
-version = "4.20.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#d72119e774d97e33e8acc86e8c1a019fd9716a11"
+version = "4.20.1"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#7db6e8d71aeafad2e69d0ec0212dc7e4027c1ffc"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -1731,8 +1731,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_access"
-version = "4.20.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#d72119e774d97e33e8acc86e8c1a019fd9716a11"
+version = "4.20.1"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#7db6e8d71aeafad2e69d0ec0212dc7e4027c1ffc"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1740,8 +1740,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_cli"
-version = "4.20.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#d72119e774d97e33e8acc86e8c1a019fd9716a11"
+version = "4.20.1"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#7db6e8d71aeafad2e69d0ec0212dc7e4027c1ffc"
 dependencies = [
  "base64 0.21.7",
  "clap",
@@ -1771,8 +1771,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client"
-version = "4.20.0"
-source = "git+https://www.github.com/Cosmian/kms?branch=develop#d72119e774d97e33e8acc86e8c1a019fd9716a11"
+version = "4.20.1"
+source = "git+https://www.github.com/Cosmian/kms?branch=develop#7db6e8d71aeafad2e69d0ec0212dc7e4027c1ffc"
 dependencies = [
  "cloudproof",
  "cosmian_config_utils",
