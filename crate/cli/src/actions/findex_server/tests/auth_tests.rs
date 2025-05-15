@@ -1,7 +1,5 @@
 use cosmian_logger::log_init;
-use test_findex_server::{
-    AuthenticationOptions, DBConfig, DatabaseType, get_redis_url, start_test_server_with_options,
-};
+use test_findex_server::{AuthenticationOptions, get_db_config, start_test_server_with_options};
 use tracing::{info, trace};
 
 use crate::error::result::CosmianResult;
@@ -14,15 +12,11 @@ const PORT: u16 = 6667;
 #[tokio::test]
 pub(crate) async fn test_all_authentications() -> CosmianResult<()> {
     log_init(None);
-    let url = get_redis_url("REDIS_URL");
-    trace!("TESTS: using redis on {url}");
-
-    let default_db_config = DBConfig {
-        database_type: DatabaseType::Redis,
-        clear_database: false,
-        database_url: url.clone(),
-    };
-
+    let default_db_config = get_db_config();
+    trace!(
+        "TESTS: using db {:?} on {:?}",
+        default_db_config.database_type, default_db_config.database_url
+    );
     // SCENARIO 1: plaintext no auth
     info!("Testing server with no auth");
     let options = AuthenticationOptions {
