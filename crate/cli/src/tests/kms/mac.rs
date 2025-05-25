@@ -1,21 +1,26 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm;
-use cosmian_logger::log_init;
-use test_kms_server::start_default_test_kms_server;
-
-use super::{KMS_SUBCOMMAND, utils::extract_uids::extract_uid};
-use crate::{
+use cosmian_kms_cli::{
     actions::kms::{
         mac::{CHashingAlgorithm, MacAction},
         symmetric::keys::create_key::CreateKeyAction,
     },
+    reexport::{
+        cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
+        test_kms_server::start_default_test_kms_server,
+    },
+};
+use cosmian_logger::log_init;
+
+use super::{KMS_SUBCOMMAND, utils::extract_uids::extract_uid};
+use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
         PROG_NAME,
         kms::{symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs},
+        save_kms_cli_config,
     },
 };
 
@@ -64,9 +69,10 @@ pub(crate) fn create_mac(cli_conf_path: &str, action: MacAction) -> CosmianResul
 pub(crate) async fn test_mac() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     let mac_key_id = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Sha3,
             number_of_bits: Some(256),
@@ -77,7 +83,7 @@ pub(crate) async fn test_mac() -> CosmianResult<()> {
     let large_data = "00".repeat(1024);
 
     create_mac(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         MacAction {
             mac_key_id,
             hashing_algorithm: CHashingAlgorithm::SHA3_256,

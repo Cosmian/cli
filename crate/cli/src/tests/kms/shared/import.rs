@@ -3,17 +3,17 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::{
-    ImportKeyFormat, KeyUsage,
-};
 #[cfg(not(feature = "fips"))]
-use cosmian_kms_client::{
+use cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_2_1::kmip_types::CryptographicAlgorithm, read_object_from_json_ttlv_file,
+};
+use cosmian_kms_cli::reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::{
+    ImportKeyFormat, KeyUsage,
 };
 #[cfg(not(feature = "fips"))]
 use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
-use test_kms_server::start_default_test_kms_server;
+use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server;
 
 #[cfg(not(feature = "fips"))]
 use crate::tests::kms::{
@@ -117,11 +117,14 @@ pub(crate) fn import_key(params: ImportKeyParams) -> CosmianResult<String> {
 pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
     use tempfile::TempDir;
 
+    use crate::tests::save_kms_cli_config;
+
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a new master key pair
     let (_master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
@@ -134,7 +137,7 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
     let public_key_path = format!("{}", tmp_path.join("public_key.json").display());
 
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "cc".to_owned(),
         key_id: master_public_key_id.clone(),
         key_file: public_key_path.clone(),
@@ -144,7 +147,7 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
     // reimporting the same key  with the same id should fail
     assert!(
         import_key(ImportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path.to_string(),
             sub_command: "cc".to_string(),
             key_file: public_key_path.clone(),
             key_id: Some(master_public_key_id.clone()),
@@ -155,7 +158,7 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
 
     //...unless we force it with replace_existing
     let master_public_key_id_: String = import_key(ImportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path,
         sub_command: "cc".to_string(),
         key_file: public_key_path,
         key_id: Some(master_public_key_id.clone()),
@@ -170,25 +173,29 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
 #[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
-    use cosmian_kms_client::kmip_2_1::kmip_types::CryptographicAlgorithm;
+    use cosmian_kms_cli::{
+        actions::kms::symmetric::keys::create_key::CreateKeyAction,
+        reexport::cosmian_kms_client::kmip_2_1::kmip_types::CryptographicAlgorithm,
+    };
 
-    use crate::actions::kms::symmetric::keys::create_key::CreateKeyAction;
+    use crate::tests::save_kms_cli_config;
 
     log_init(option_env!("RUST_LOG"));
     // log_init(Some("info,cosmian_kms_server=debug"));
 
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Covercrypt import/export test
     let (private_key_id, _public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
     export_import_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "cc",
         &private_key_id,
         CryptographicAlgorithm::CoverCrypt,
@@ -196,18 +203,18 @@ pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
 
     // Test import/export of an EC Key Pair
     let (private_key_id, _public_key_id) =
-        create_ec_key_pair(&ctx.owner_client_conf_path, "nist-p256", &[], false)?;
+        create_ec_key_pair(&owner_client_conf_path, "nist-p256", &[], false)?;
     export_import_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "ec",
         &private_key_id,
         CryptographicAlgorithm::ECDH,
     )?;
 
     // generate a symmetric key
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+    let key_id = create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
     export_import_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "sym",
         &key_id,
         CryptographicAlgorithm::AES,

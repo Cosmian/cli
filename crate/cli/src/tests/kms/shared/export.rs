@@ -4,7 +4,7 @@ use std::process::Command;
 
 use assert_cmd::prelude::*;
 #[cfg(not(feature = "fips"))]
-use cosmian_kms_client::{
+use cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_0::kmip_types::BlockCipherMode,
     kmip_2_1::{
         kmip_data_structures::KeyMaterial,
@@ -12,26 +12,30 @@ use cosmian_kms_client::{
     },
     pad_be_bytes,
 };
-use cosmian_kms_client::{
-    kmip_2_1::kmip_types::KeyFormatType,
-    read_bytes_from_file, read_object_from_json_ttlv_file,
-    reexport::cosmian_kms_client_utils::export_utils::{ExportKeyFormat, WrappingAlgorithm},
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kms_client::{
+            kmip_2_1::kmip_types::KeyFormatType,
+            read_bytes_from_file, read_object_from_json_ttlv_file,
+            reexport::cosmian_kms_client_utils::export_utils::{
+                ExportKeyFormat, WrappingAlgorithm,
+            },
+        },
+        test_kms_server::start_default_test_kms_server,
+    },
 };
 #[cfg(not(feature = "fips"))]
 use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
 use openssl::pkey::{Id, PKey};
 use tempfile::TempDir;
-#[cfg(not(feature = "fips"))]
-use test_kms_server::TestsContext;
-use test_kms_server::start_default_test_kms_server;
 
 #[cfg(not(feature = "fips"))]
 use crate::tests::kms::cover_crypt::{
     master_key_pair::create_cc_master_key_pair, user_decryption_keys::create_user_decryption_key,
 };
 use crate::{
-    actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
@@ -39,6 +43,7 @@ use crate::{
         kms::{
             KMS_SUBCOMMAND, symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs,
         },
+        save_kms_cli_config,
     },
 };
 #[cfg(not(feature = "fips"))]
@@ -124,13 +129,14 @@ pub(crate) async fn test_export_sym() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a symmetric key
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+    let key_id = create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
 
     // Export as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -145,7 +151,7 @@ pub(crate) async fn test_export_sym() -> CosmianResult<()> {
 
     // Export the bytes only
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
         key_file: tmp_path
@@ -162,7 +168,7 @@ pub(crate) async fn test_export_sym() -> CosmianResult<()> {
     // wrong export format
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path,
             sub_command: "sym".to_owned(),
             key_id,
             key_file: tmp_path
@@ -186,12 +192,13 @@ pub(crate) async fn test_export_sym_allow_revoked() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a symmetric key
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+    let key_id = create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
     // Export
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path,
         sub_command: "sym".to_owned(),
         key_id,
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -212,17 +219,18 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a symmetric key
     let (private_key_id, _public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
+        create_rsa_key_pair(&owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // generate a symmetric key
-    let sym_key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+    let sym_key_id = create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
 
     // Export wrapped key with a symmetric key as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "rsa".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -247,7 +255,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
 
     // Wrapping with symmetric key should be by default with rfc5649
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "rsa".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path
@@ -277,7 +285,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     assert_eq!(key_bytes, key_bytes_2);
 
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "rsa".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -288,7 +296,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
 
     // Export wrapped key with a symmetric key using AESGCM as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "rsa".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -314,7 +322,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     // Block-cipher-mode option raises an error when not using symmetric key for wrapping
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path,
             sub_command: "rsa".to_owned(),
             key_id: sym_key_id,
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -335,11 +343,11 @@ pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
         key_format_type: KeyFormatType,
         key_id: &str,
         tmp_path: &Path,
-        ctx: &TestsContext,
+        owner_client_conf_path: &str,
     ) -> CosmianResult<()> {
         // Export the key
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path.to_string(),
             sub_command: "cc".to_owned(),
             key_id: key_id.to_owned(),
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -354,7 +362,7 @@ pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
 
         // Export the key bytes only
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path.to_string(),
             sub_command: "cc".to_owned(),
             key_id: key_id.to_owned(),
             key_file: tmp_path
@@ -375,10 +383,11 @@ pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a new master key pair
     let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
@@ -389,17 +398,17 @@ pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
         KeyFormatType::CoverCryptSecretKey,
         &master_private_key_id,
         tmp_path,
-        ctx,
+        &owner_client_conf_path,
     )?;
     export_cc_test(
         KeyFormatType::CoverCryptPublicKey,
         &master_public_key_id,
         tmp_path,
-        ctx,
+        &owner_client_conf_path,
     )?;
 
     let user_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_private_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
@@ -409,7 +418,7 @@ pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
         KeyFormatType::CoverCryptSecretKey,
         &user_key_id,
         tmp_path,
-        ctx,
+        &owner_client_conf_path,
     )?;
 
     Ok(())
@@ -423,10 +432,11 @@ pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // key does not exist
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "cc".to_owned(),
         key_id: "does_not_exist".to_owned(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -437,7 +447,7 @@ pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
 
     // generate a new master key pair
     let (master_private_key_id, _master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
@@ -446,7 +456,7 @@ pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
 
     // Export to non existing dir
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path,
         sub_command: "cc".to_owned(),
         key_id: master_private_key_id,
         key_file: "/does_not_exist/output.export".to_owned(),
@@ -463,22 +473,23 @@ pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
 pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
     // create a temp dir
 
-    use cosmian_kms_client::kmip_2_1::kmip_data_structures::KeyValue;
+    use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_2_1::kmip_data_structures::KeyValue;
     use tracing::trace;
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a new key pair
     let (private_key_id, public_key_id) =
-        create_ec_key_pair(&ctx.owner_client_conf_path, "x25519", &[], false)?;
+        create_ec_key_pair(&owner_client_conf_path, "x25519", &[], false)?;
 
     //
     // Private Key
     //
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "ec".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -515,7 +526,7 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
 
     // Export the bytes only
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "ec".to_owned(),
         key_id: private_key_id,
         key_file: tmp_path
@@ -538,7 +549,7 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
     // Public Key
     //
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "ec".to_owned(),
         key_id: public_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -571,7 +582,7 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
 
     // Export the bytes only
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path,
         sub_command: "ec".to_owned(),
         key_id: public_key_id,
         key_file: tmp_path
@@ -600,10 +611,11 @@ pub(crate) async fn test_sensitive_sym() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a symmetric key
     let key_id = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             sensitive: true,
             ..Default::default()
@@ -613,7 +625,7 @@ pub(crate) async fn test_sensitive_sym() -> CosmianResult<()> {
     // the key should not be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path,
             sub_command: "sym".to_owned(),
             key_id,
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -633,15 +645,16 @@ pub(crate) async fn test_sensitive_ec_key() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate an ec key pair
     let (private_key_id, public_key_id) =
-        create_ec_key_pair(&ctx.owner_client_conf_path, "nist-p256", &[], true)?;
+        create_ec_key_pair(&owner_client_conf_path, "nist-p256", &[], true)?;
 
     // the private key should not be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path.to_string(),
             sub_command: "ec".to_owned(),
             key_id: private_key_id,
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -653,7 +666,7 @@ pub(crate) async fn test_sensitive_ec_key() -> CosmianResult<()> {
     // the public key should be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path,
             sub_command: "ec".to_owned(),
             key_id: public_key_id,
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -673,10 +686,11 @@ pub(crate) async fn test_sensitive_rsa_key() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate an ec key pair
     let (private_key_id, public_key_id) = create_rsa_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &RsaKeyPairOptions {
             sensitive: true,
             ..Default::default()
@@ -686,7 +700,7 @@ pub(crate) async fn test_sensitive_rsa_key() -> CosmianResult<()> {
     // the private key should not be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path.to_string(),
             sub_command: "rsa".to_owned(),
             key_id: private_key_id,
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -698,7 +712,7 @@ pub(crate) async fn test_sensitive_rsa_key() -> CosmianResult<()> {
     // the public key should be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path,
             sub_command: "rsa".to_owned(),
             key_id: public_key_id,
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -718,10 +732,11 @@ pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a new master key pair
     let (master_private_key_id, master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
@@ -731,7 +746,7 @@ pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
     // master secret key should not be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path.to_string(),
             sub_command: "cc".to_owned(),
             key_id: master_private_key_id.clone(),
             key_file: tmp_path
@@ -747,7 +762,7 @@ pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
     // Master public key should be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path.to_string(),
             sub_command: "cc".to_owned(),
             key_id: master_public_key_id,
             key_file: tmp_path
@@ -761,7 +776,7 @@ pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
     );
 
     let user_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_private_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
@@ -770,7 +785,7 @@ pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
 
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: ctx.owner_client_conf_path.clone(),
+            cli_conf_path: owner_client_conf_path,
             sub_command: "cc".to_owned(),
             key_id: user_key_id,
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),

@@ -97,7 +97,8 @@ Retrieve OpenSSL v3.2.0 (already build) with the following commands:
 export OPENSSL_DIR=/usr/local/openssl
 sudo mkdir -p ${OPENSSL_DIR}
 sudo chown -R $USER ${OPENSSL_DIR}
-bash .github/scripts/get_openssl_binaries.sh
+git submodule update --init --recursive
+bash .github/reusable_scripts/get_openssl_binaries.sh
 ```
 
 ### Windows
