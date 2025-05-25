@@ -5,13 +5,15 @@ use cosmian_cover_crypt::{
     AccessPolicy, EncryptedHeader, MasterSecretKey, UserSecretKey, api::Covercrypt,
 };
 use cosmian_crypto_core::bytes_ser_de::{Deserializer, Serializable, test_serialization};
-use cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::KeyUsage;
-use cosmian_kms_crypto::crypto::cover_crypt::access_structure::access_structure_from_json_file;
+use cosmian_findex_cli::reexport::{
+    cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::KeyUsage,
+    cosmian_kms_crypto::crypto::cover_crypt::access_structure::access_structure_from_json_file,
+};
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
 
 use crate::{
-    actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
@@ -28,6 +30,7 @@ use crate::{
             symmetric::create_key::create_symmetric_key,
             utils::recover_cmd_logs,
         },
+        save_kms_cli_config,
     },
 };
 
@@ -84,17 +87,18 @@ pub(crate) fn prune(
 #[tokio::test]
 async fn test_rekey_error() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a new master key pair
     let (master_secret_key_id, _master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
     let _user_decryption_key = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
@@ -104,7 +108,7 @@ async fn test_rekey_error() -> CosmianResult<()> {
     // bad attributes
     assert!(
         rekey(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &master_secret_key_id,
             "bad_access_policy"
         )
@@ -114,7 +118,7 @@ async fn test_rekey_error() -> CosmianResult<()> {
     // bad keys
     assert!(
         rekey(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             "bad_key",
             "Department::MKG || Department::FIN"
         )
@@ -128,11 +132,11 @@ async fn test_rekey_error() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // create a symmetric key
     let symmetric_key_id =
-        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+        create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
     // export a wrapped key
     let exported_wrapped_key_file = tmp_path.join("exported_wrapped_master_private.key");
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: SUB_COMMAND.to_owned(),
         key_id: master_secret_key_id,
         key_file: exported_wrapped_key_file.to_str().unwrap().to_string(),
@@ -142,7 +146,7 @@ async fn test_rekey_error() -> CosmianResult<()> {
 
     // import it wrapped
     let wrapped_key_id = import_key(ImportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: SUB_COMMAND.to_string(),
         key_file: exported_wrapped_key_file.to_string_lossy().to_string(),
         replace_existing: true,
@@ -152,7 +156,7 @@ async fn test_rekey_error() -> CosmianResult<()> {
     // Rekeying wrapped keys is not allowed
     assert!(
         rekey(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &wrapped_key_id,
             "Department::MKG || Department::FIN"
         )
@@ -209,6 +213,8 @@ fn test_cc() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_enc_dec_rekey() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -219,14 +225,14 @@ async fn test_enc_dec_rekey() -> CosmianResult<()> {
 
     // generate a new master key pair
     let (master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure.json",
         &[],
         false,
     )?;
     let user_decryption_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::MKG || Department::FIN",
         &[],
@@ -234,7 +240,7 @@ async fn test_enc_dec_rekey() -> CosmianResult<()> {
     )?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &master_public_key_id,
         "Department::MKG",
@@ -244,7 +250,7 @@ async fn test_enc_dec_rekey() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file_before.to_str().unwrap()],
         &user_decryption_key_id,
         Some(recovered_file.to_str().unwrap()),
@@ -254,7 +260,7 @@ async fn test_enc_dec_rekey() -> CosmianResult<()> {
     // export the user_decryption_key
     let exported_user_decryption_key_file = tmp_path.join("exported_user_decryption.key");
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: SUB_COMMAND.to_owned(),
         key_id: user_decryption_key_id,
         key_file: exported_user_decryption_key_file
@@ -266,7 +272,7 @@ async fn test_enc_dec_rekey() -> CosmianResult<()> {
 
     // rekey the attributes
     rekey(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::MKG || Department::FIN",
     )?;
@@ -276,6 +282,8 @@ async fn test_enc_dec_rekey() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_rekey_prune() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -287,14 +295,14 @@ async fn test_rekey_prune() -> CosmianResult<()> {
 
     // generate a new master key pair
     let (master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
     let user_decryption_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
@@ -302,7 +310,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
     )?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &master_public_key_id,
         "Department::MKG && Security Level::Confidential",
@@ -312,7 +320,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file_before.to_str().unwrap()],
         &user_decryption_key_id,
         Some(recovered_file.to_str().unwrap()),
@@ -322,7 +330,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
     // export the user_decryption_key
     let exported_user_decryption_key_file = tmp_path.join("exported_user_decryption.key");
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: SUB_COMMAND.to_owned(),
         key_id: user_decryption_key_id.to_string(),
         key_file: exported_user_decryption_key_file
@@ -334,14 +342,14 @@ async fn test_rekey_prune() -> CosmianResult<()> {
 
     // rekey the attributes
     rekey(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::MKG || Department::FIN",
     )?;
 
     // encrypt again after rekeying
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &master_public_key_id,
         "Department::MKG && Security Level::Confidential",
@@ -351,7 +359,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the new file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file_after.to_str().unwrap()],
         &user_decryption_key_id,
         Some(recovered_file.to_str().unwrap()),
@@ -359,7 +367,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
     )?;
     // ... and the old file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file_before.to_str().unwrap()],
         &user_decryption_key_id,
         Some(recovered_file.to_str().unwrap()),
@@ -368,7 +376,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
 
     // import the non rotated user_decryption_key
     let old_user_decryption_key_id = import_key(ImportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: SUB_COMMAND.to_owned(),
         key_file: exported_user_decryption_key_file
             .to_string_lossy()
@@ -380,7 +388,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
     // the imported user key should not be able to decrypt the new file
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &[output_file_after.to_str().unwrap()],
             &old_user_decryption_key_id,
             Some(recovered_file.to_str().unwrap()),
@@ -390,7 +398,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
     );
     // ... but should decrypt the old file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file_before.to_str().unwrap()],
         &old_user_decryption_key_id,
         Some(recovered_file.to_str().unwrap()),
@@ -399,14 +407,14 @@ async fn test_rekey_prune() -> CosmianResult<()> {
 
     // prune the attributes
     prune(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::MKG || Department::FIN",
     )?;
 
     // the user key should be able to decrypt the new file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file_after.to_str().unwrap()],
         &user_decryption_key_id,
         Some(recovered_file.to_str().unwrap()),
@@ -416,7 +424,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
     // but no longer the old file
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &[output_file_before.to_str().unwrap()],
             &user_decryption_key_id,
             Some(recovered_file.to_str().unwrap()),

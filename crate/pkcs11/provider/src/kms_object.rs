@@ -2,7 +2,7 @@ use std::vec;
 
 use cosmian_cli::{
     config::ClientConfig,
-    reexport::cosmian_kms_client::{
+    reexport::cosmian_findex_cli::reexport::cosmian_kms_client::{
         ExportObjectParams, KmsClient, batch_export_objects, export_object,
     },
 };

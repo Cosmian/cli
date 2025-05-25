@@ -1,4 +1,4 @@
-use cosmian_kms_client::{
+use cosmian_findex_cli::reexport::cosmian_kms_client::{
     kmip_2_1::kmip_types::{LinkType, Tag},
     reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat,
 };
@@ -7,9 +7,12 @@ use tracing::debug;
 
 use crate::{
     error::result::CosmianResult,
-    tests::kms::{
-        attributes::get_attributes,
-        certificates::import::{ImportCertificateInput, import_certificate},
+    tests::{
+        kms::{
+            attributes::get_attributes,
+            certificates::import::{ImportCertificateInput, import_certificate},
+        },
+        save_kms_cli_config,
     },
 };
 
@@ -17,10 +20,11 @@ use crate::{
 async fn test_get_attributes_p12() -> CosmianResult<()> {
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     //import the certificate
     let imported_p12_sk_uid = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/csr/intermediate.p12",
         format: &CertificateInputFormat::Pkcs12,
@@ -33,7 +37,7 @@ async fn test_get_attributes_p12() -> CosmianResult<()> {
 
     //get the attributes of the private key and check that they are correct
     let pkcs12_attributes = get_attributes(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &imported_p12_sk_uid,
         &[Tag::KeyFormatType, Tag::LinkType],
         &[],
@@ -56,7 +60,7 @@ async fn test_get_attributes_p12() -> CosmianResult<()> {
 
     //get the attributes of the certificate and check that they are correct
     let intermediate_attributes = get_attributes(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &intermediate_certificate_id,
         &[Tag::KeyFormatType, Tag::LinkType],
         &[],

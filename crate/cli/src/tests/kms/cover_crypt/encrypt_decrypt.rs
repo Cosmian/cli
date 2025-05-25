@@ -1,7 +1,7 @@
 use std::{fs, path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::read_bytes_from_file;
+use cosmian_findex_cli::reexport::cosmian_kms_client::read_bytes_from_file;
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
 
@@ -18,6 +18,7 @@ use crate::{
             },
             utils::recover_cmd_logs,
         },
+        save_kms_cli_config,
     },
 };
 
@@ -90,6 +91,8 @@ pub(crate) fn decrypt(
 #[tokio::test]
 async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -102,7 +105,7 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
@@ -110,7 +113,7 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
     )?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &master_public_key_id,
         "Department::MKG && Security Level::Confidential",
@@ -120,7 +123,7 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
 
     // create a user decryption key
     let user_ok_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
@@ -129,7 +132,7 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file.to_str().unwrap()],
         &user_ok_key_id,
         Some(recovered_file.to_str().unwrap()),
@@ -143,7 +146,7 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
 
     // this user key should not be able to decrypt the file
     let user_ko_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::FIN && Security Level::Top Secret",
         &[],
@@ -151,7 +154,7 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
     )?;
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &[output_file.to_str().unwrap()],
             &user_ko_key_id,
             Some(recovered_file.to_str().unwrap()),
@@ -166,6 +169,8 @@ async fn test_encrypt_decrypt_using_object_ids() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -192,7 +197,7 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
     assert!(!output_file3.exists());
 
     let (master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
@@ -200,7 +205,7 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
     )?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[
             input_file1.to_str().unwrap(),
             input_file2.to_str().unwrap(),
@@ -218,7 +223,7 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
 
     // create a user decryption key
     let user_ok_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
@@ -227,7 +232,7 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[
             output_file1.to_str().unwrap(),
             output_file2.to_str().unwrap(),
@@ -257,7 +262,7 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
 
     // this user key should not be able to decrypt the file
     let user_ko_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::FIN && Security Level::Top Secret",
         &[],
@@ -265,7 +270,7 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
     )?;
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &[output_file1.to_str().unwrap()],
             &user_ko_key_id,
             Some(recovered_file1.to_str().unwrap()),
@@ -280,7 +285,7 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
     assert!(!recovered_file2.exists());
 
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file2.to_str().unwrap()],
         &user_ok_key_id,
         // output file names will be based on input file name with '.rec' extension
@@ -300,6 +305,8 @@ async fn test_encrypt_decrypt_bulk_using_object_ids() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -312,7 +319,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (master_secret_key_id, _master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &["tag"],
@@ -320,7 +327,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     )?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         "[\"tag\"]",
         "Department::MKG && Security Level::Confidential",
@@ -330,7 +337,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
 
     // create a user decryption key
     let user_ok_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &["tag"],
@@ -339,7 +346,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file.to_str().unwrap()],
         "[\"tag\"]",
         Some(recovered_file.to_str().unwrap()),
@@ -356,14 +363,14 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
 
     // // decrypt fails because two keys with same tag exist
     // let _user_ko_key_id = create_user_decryption_key(
-    //     &ctx.owner_client_conf_path,
+    //     &owner_client_conf_path,
     //     "[\"tag\"]",
     //     "Department::FIN && Security Level::Top Secret",
     //     &["tag"], false
     // )?;
     // assert!(
     //     decrypt(
-    //         &ctx.owner_client_conf_path,
+    //         &owner_client_conf_path,
     //         &[output_file.to_str().unwrap()],
     //         "[\"tag\"]",
     //         Some(recovered_file.to_str().unwrap()),
@@ -374,7 +381,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
 
     // this user key should not be able to decrypt the file
     let _user_ko_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::FIN && Security Level::Top Secret",
         &["tag_ko"],
@@ -382,7 +389,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     )?;
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &[output_file.to_str().unwrap()],
             "[\"tag_ko\"]",
             Some(recovered_file.to_str().unwrap()),
@@ -395,7 +402,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     assert!(!recovered_file.exists());
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file.to_str().unwrap()],
         &user_ok_key_id,
         Some(recovered_file.to_str().unwrap()),
@@ -409,6 +416,8 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_encrypt_decrypt_bulk_using_tags() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -435,7 +444,7 @@ async fn test_encrypt_decrypt_bulk_using_tags() -> CosmianResult<()> {
     assert!(!output_file3.exists());
 
     let (master_secret_key_id, _master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &["tag_bulk"],
@@ -443,7 +452,7 @@ async fn test_encrypt_decrypt_bulk_using_tags() -> CosmianResult<()> {
     )?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[
             input_file1.to_str().unwrap(),
             input_file2.to_str().unwrap(),
@@ -461,7 +470,7 @@ async fn test_encrypt_decrypt_bulk_using_tags() -> CosmianResult<()> {
 
     // create a user decryption key
     let user_ok_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &["tag_bulk"],
@@ -470,7 +479,7 @@ async fn test_encrypt_decrypt_bulk_using_tags() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[
             output_file1.to_str().unwrap(),
             output_file2.to_str().unwrap(),
@@ -503,14 +512,14 @@ async fn test_encrypt_decrypt_bulk_using_tags() -> CosmianResult<()> {
 
     // // decrypt fails because two keys with same tag exist
     // let _user_ko_key_id = create_user_decryption_key(
-    //     &ctx.owner_client_conf_path,
+    //     &owner_client_conf_path,
     //     "[\"tag_bulk\"]",
     //     "Department::FIN && Security Level::Top Secret",
     //     &["tag_bulk"],
     // )?;
     // assert!(
     //     decrypt(
-    //         &ctx.owner_client_conf_path,
+    //         &owner_client_conf_path,
     //         &[output_file1.to_str().unwrap()],
     //         "[\"tag_bulk\"]",
     //         Some(recovered_file1.to_str().unwrap()),
@@ -525,7 +534,7 @@ async fn test_encrypt_decrypt_bulk_using_tags() -> CosmianResult<()> {
     assert!(!recovered_file2.exists());
 
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[output_file2.to_str().unwrap()],
         &user_ok_key_id,
         // output file names will be based on input file name with '.rec' extension

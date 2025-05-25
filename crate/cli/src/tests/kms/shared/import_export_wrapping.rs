@@ -2,35 +2,40 @@ use cosmian_crypto_core::{
     CsRng,
     reexport::rand_core::{RngCore, SeedableRng},
 };
-use cosmian_kms_client::{
-    cosmian_kmip::kmip_2_1::{
-        kmip_objects::Object,
-        kmip_types::{CryptographicAlgorithm, LinkType, UniqueIdentifier, WrappingMethod},
-    },
-    kmip_2_1::{
-        kmip_attributes::Attributes, kmip_data_structures::KeyValue,
-        requests::create_symmetric_key_kmip_object,
-    },
-    read_object_from_json_ttlv_file,
-    reexport::cosmian_kms_client_utils::import_utils::KeyUsage,
-    write_kmip_object_to_file,
-};
 #[cfg(not(feature = "fips"))]
-use cosmian_kms_crypto::crypto::elliptic_curves::operation::create_x25519_key_pair;
-use cosmian_kms_crypto::crypto::wrap::unwrap_key_block;
+use cosmian_findex_cli::reexport::cosmian_kms_crypto::crypto::elliptic_curves::operation::create_x25519_key_pair;
+use cosmian_findex_cli::reexport::{
+    cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    cosmian_kms_client::{
+        cosmian_kmip::kmip_2_1::{
+            kmip_objects::Object,
+            kmip_types::{CryptographicAlgorithm, LinkType, UniqueIdentifier, WrappingMethod},
+        },
+        kmip_2_1::{
+            kmip_attributes::Attributes, kmip_data_structures::KeyValue,
+            requests::create_symmetric_key_kmip_object,
+        },
+        read_object_from_json_ttlv_file,
+        reexport::cosmian_kms_client_utils::import_utils::KeyUsage,
+        write_kmip_object_to_file,
+    },
+    cosmian_kms_crypto::crypto::wrap::unwrap_key_block,
+};
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
 use tracing::{debug, trace};
 
 use super::ExportKeyParams;
 use crate::{
-    actions::kms::symmetric::keys::create_key::CreateKeyAction,
     error::result::CosmianResult,
-    tests::kms::{
-        cover_crypt::master_key_pair::create_cc_master_key_pair,
-        elliptic_curve,
-        shared::{ImportKeyParams, export::export_key, import::import_key},
-        symmetric::create_key::create_symmetric_key,
+    tests::{
+        kms::{
+            cover_crypt::master_key_pair::create_cc_master_key_pair,
+            elliptic_curve,
+            shared::{ImportKeyParams, export::export_key, import::import_key},
+            symmetric::create_key::create_symmetric_key,
+        },
+        save_kms_cli_config,
     },
 };
 
@@ -41,6 +46,8 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // Generate a symmetric wrapping key
     let wrap_key_path = tmp_path.join("wrap.key");
     let mut rng = CsRng::from_entropy();
@@ -59,7 +66,7 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
     // import the wrapping key
     trace!("importing wrapping key");
     let wrap_key_uid = import_key(ImportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "sym".to_string(),
         key_file: wrap_key_path.to_str().unwrap().to_string(),
         ..Default::default()
@@ -67,14 +74,14 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
 
     // test CC
     let (private_key_id, _public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
     test_import_export_wrap_private_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "cc",
         &private_key_id,
         &wrap_key_uid,
@@ -83,13 +90,13 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
 
     // test ec
     let (private_key_id, _public_key_id) = elliptic_curve::create_key_pair::create_ec_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "nist-p256",
         &[],
         false,
     )?;
     test_import_export_wrap_private_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "ec",
         &private_key_id,
         &wrap_key_uid,
@@ -97,9 +104,9 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
     )?;
 
     // test sym
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+    let key_id = create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
     test_import_export_wrap_private_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "sym",
         &key_id,
         &wrap_key_uid,
@@ -112,7 +119,7 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
 #[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
-    use cosmian_kms_client::kmip_0::kmip_types::CryptographicUsageMask;
+    use cosmian_findex_cli::reexport::cosmian_kms_client::kmip_0::kmip_types::CryptographicUsageMask;
 
     cosmian_logger::log_init(None);
     // create a temp dir
@@ -120,6 +127,8 @@ pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
     // init the test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // Generate a symmetric wrapping key
     let wrap_private_key_uid = "wrap_private_key_uid";
     let wrap_public_key_uid = "wrap_public_key_uid";
@@ -148,7 +157,7 @@ pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
     let wrap_private_key_path = tmp_path.join("wrap.private.key");
     write_kmip_object_to_file(wrap_key_pair.private_key(), &wrap_private_key_path)?;
     import_key(ImportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "ec".to_string(),
         key_file: wrap_private_key_path.to_str().unwrap().to_string(),
         key_id: Some(wrap_private_key_uid.to_string()),
@@ -159,7 +168,7 @@ pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
     let wrap_public_key_path = tmp_path.join("wrap.public.key");
     write_kmip_object_to_file(wrap_key_pair.public_key(), &wrap_public_key_path)?;
     import_key(ImportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "ec".to_string(),
         key_file: wrap_public_key_path.to_str().unwrap().to_string(),
         key_id: Some(wrap_public_key_uid.to_string()),
@@ -169,14 +178,14 @@ pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
 
     // test CC
     let (private_key_id, _public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
     test_import_export_wrap_private_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "cc",
         &private_key_id,
         wrap_public_key_uid,
@@ -185,13 +194,13 @@ pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
 
     debug!("testing EC keys");
     let (private_key_id, _public_key_id) = elliptic_curve::create_key_pair::create_ec_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "nist-p256",
         &[],
         false,
     )?;
     test_import_export_wrap_private_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "ec",
         &private_key_id,
         wrap_public_key_uid,
@@ -199,9 +208,9 @@ pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
     )?;
 
     debug!("testing symmetric keys");
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+    let key_id = create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
     test_import_export_wrap_private_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "sym",
         &key_id,
         wrap_public_key_uid,

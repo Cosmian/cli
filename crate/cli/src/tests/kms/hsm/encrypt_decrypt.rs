@@ -1,13 +1,18 @@
 #[cfg(not(feature = "fips"))]
 use std::{fs, path::PathBuf};
 
-use cosmian_kms_client::reexport::cosmian_kms_client_utils::{
-    create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
-};
 #[cfg(not(feature = "fips"))]
-use cosmian_kms_client::{
+use cosmian_findex_cli::reexport::cosmian_kms_client::{
     read_bytes_from_file,
     reexport::cosmian_kms_client_utils::rsa_utils::{HashFn, RsaEncryptionAlgorithm},
+};
+use cosmian_findex_cli::reexport::{
+    cosmian_kms_cli::actions::kms::symmetric::{
+        KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction,
+    },
+    cosmian_kms_client::reexport::cosmian_kms_client_utils::{
+        create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
+    },
 };
 use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
@@ -23,10 +28,12 @@ use crate::tests::kms::rsa::{
     encrypt_decrypt::{decrypt, encrypt},
 };
 use crate::{
-    actions::kms::symmetric::{KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction},
     error::result::CosmianResult,
-    tests::kms::symmetric::{
-        create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test,
+    tests::{
+        kms::symmetric::{
+            create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test,
+        },
+        save_kms_cli_config,
     },
 };
 
@@ -34,9 +41,10 @@ use crate::{
 pub(crate) async fn test_aes_gcm() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     let dek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             number_of_bits: Some(256),
@@ -45,7 +53,7 @@ pub(crate) async fn test_aes_gcm() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &dek,
         DataEncryptionAlgorithm::AesGcm,
         Some(KeyEncryptionAlgorithm::AesGcm),
@@ -60,6 +68,7 @@ pub(crate) async fn test_aes_gcm() -> CosmianResult<()> {
 pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // create a temp dir
     let tmp_dir = TempDir::new()?;
@@ -73,7 +82,7 @@ pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (private_key_id, public_key_id) = create_rsa_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &RsaKeyPairOptions {
             key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             ..Default::default()
@@ -83,7 +92,7 @@ pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
     trace!("private_key_id: {private_key_id}");
     trace!("public_key_id: {public_key_id}");
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &public_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcsOaep,
@@ -94,7 +103,7 @@ pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         output_file.to_str().unwrap(),
         &private_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcsOaep,
@@ -111,7 +120,7 @@ pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
     // the user key should NOT be able to decrypt with another algorithm
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             output_file.to_str().unwrap(),
             &private_key_id,
             RsaEncryptionAlgorithm::CkmRsaAesKeyWrap,
@@ -149,6 +158,7 @@ pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
 pub(crate) async fn test_rsa_pkcs_v15() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // create a temp dir
     let tmp_dir = TempDir::new()?;
@@ -162,7 +172,7 @@ pub(crate) async fn test_rsa_pkcs_v15() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (private_key_id, public_key_id) = create_rsa_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &RsaKeyPairOptions {
             key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             ..Default::default()
@@ -172,7 +182,7 @@ pub(crate) async fn test_rsa_pkcs_v15() -> CosmianResult<()> {
     trace!("private_key_id: {private_key_id}");
     trace!("public_key_id: {public_key_id}");
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &public_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcs,
@@ -183,7 +193,7 @@ pub(crate) async fn test_rsa_pkcs_v15() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         output_file.to_str().unwrap(),
         &private_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcs,

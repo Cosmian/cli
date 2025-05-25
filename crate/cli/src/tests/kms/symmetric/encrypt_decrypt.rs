@@ -1,10 +1,15 @@
 use std::{fs, path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::{
-    KmsClient, read_bytes_from_file,
-    reexport::cosmian_kms_client_utils::{
-        create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
+use cosmian_findex_cli::reexport::{
+    cosmian_kms_cli::actions::kms::symmetric::{
+        DecryptAction, EncryptAction, KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction,
+    },
+    cosmian_kms_client::{
+        read_bytes_from_file,
+        reexport::cosmian_kms_client_utils::{
+            create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
+        },
     },
 };
 use cosmian_logger::log_init;
@@ -14,9 +19,6 @@ use test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
 use crate::{
-    actions::kms::symmetric::{
-        DecryptAction, EncryptAction, KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction,
-    },
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
@@ -24,6 +26,7 @@ use crate::{
         kms::{
             KMS_SUBCOMMAND, symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs,
         },
+        save_kms_cli_config,
     },
 };
 
@@ -186,8 +189,9 @@ pub(crate) fn run_encrypt_decrypt_test(
 #[tokio::test]
 async fn test_aes_gcm_server_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
     let dek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Aes,
             number_of_bits: Some(256),
@@ -195,7 +199,7 @@ async fn test_aes_gcm_server_side() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &dek,
         DataEncryptionAlgorithm::AesGcm,
         None,
@@ -206,8 +210,10 @@ async fn test_aes_gcm_server_side() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_aes_cbc_server_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let dek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Aes,
             number_of_bits: Some(256),
@@ -215,7 +221,7 @@ async fn test_aes_cbc_server_side() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &dek,
         DataEncryptionAlgorithm::AesCbc,
         None,
@@ -226,8 +232,10 @@ async fn test_aes_cbc_server_side() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_aes_xts_server_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let dek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Aes,
             number_of_bits: Some(512),
@@ -235,7 +243,7 @@ async fn test_aes_xts_server_side() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &dek,
         DataEncryptionAlgorithm::AesXts,
         None,
@@ -247,8 +255,10 @@ async fn test_aes_xts_server_side() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_aes_gcm_siv_server_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let dek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Aes,
             number_of_bits: Some(256),
@@ -256,7 +266,7 @@ async fn test_aes_gcm_siv_server_side() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &dek,
         DataEncryptionAlgorithm::AesGcmSiv,
         None,
@@ -268,8 +278,10 @@ async fn test_aes_gcm_siv_server_side() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_chacha20_poly1305_server_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let dek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Chacha20,
             number_of_bits: Some(256),
@@ -277,7 +289,7 @@ async fn test_chacha20_poly1305_server_side() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &dek,
         DataEncryptionAlgorithm::Chacha20Poly1305,
         None,
@@ -293,8 +305,10 @@ async fn test_encrypt_decrypt_with_tags() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
 
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let key_id = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             tags: vec!["tag_sym".to_owned()],
             ..Default::default()
@@ -314,7 +328,7 @@ async fn test_encrypt_decrypt_with_tags() -> CosmianResult<()> {
     }
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         input_file.to_str().unwrap(),
         &key_id,
         DataEncryptionAlgorithm::Chacha20Poly1305,
@@ -325,7 +339,7 @@ async fn test_encrypt_decrypt_with_tags() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         output_file.to_str().unwrap(),
         &key_id,
         DataEncryptionAlgorithm::Chacha20Poly1305,
@@ -356,8 +370,10 @@ async fn test_encrypt_decrypt_with_tags() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_aes_gcm_aes_gcm_client_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let kek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Aes,
             number_of_bits: Some(256),
@@ -365,7 +381,7 @@ async fn test_aes_gcm_aes_gcm_client_side() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &kek,
         DataEncryptionAlgorithm::AesGcm,
         Some(KeyEncryptionAlgorithm::AesGcm),
@@ -378,8 +394,10 @@ async fn test_aes_gcm_aes_gcm_client_side() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_aes_gcm_aes_xts_client_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let kek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Aes,
             number_of_bits: Some(256),
@@ -387,7 +405,7 @@ async fn test_aes_gcm_aes_xts_client_side() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &kek,
         DataEncryptionAlgorithm::AesXts,
         Some(KeyEncryptionAlgorithm::AesGcm),
@@ -401,8 +419,10 @@ async fn test_aes_gcm_aes_xts_client_side() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_aes_gcm_chacha20_client_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let kek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Aes,
             number_of_bits: Some(256),
@@ -410,7 +430,7 @@ async fn test_aes_gcm_chacha20_client_side() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &kek,
         DataEncryptionAlgorithm::Chacha20Poly1305,
         Some(KeyEncryptionAlgorithm::AesGcm),
@@ -423,8 +443,10 @@ async fn test_aes_gcm_chacha20_client_side() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_rfc5649_aes_gcm_client_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let kek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Aes,
             number_of_bits: Some(256),
@@ -432,7 +454,7 @@ async fn test_rfc5649_aes_gcm_client_side() -> CosmianResult<()> {
         },
     )?;
     run_encrypt_decrypt_test(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &kek,
         DataEncryptionAlgorithm::AesGcm,
         Some(KeyEncryptionAlgorithm::RFC5649),
@@ -446,8 +468,10 @@ async fn test_rfc5649_aes_gcm_client_side() -> CosmianResult<()> {
 async fn test_client_side_encryption_with_buffer() -> CosmianResult<()> {
     log_init(option_env!("RUST_LOG"));
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let kek = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             algorithm: SymmetricAlgorithm::Aes,
             number_of_bits: Some(256),
@@ -455,7 +479,7 @@ async fn test_client_side_encryption_with_buffer() -> CosmianResult<()> {
         },
     )?;
 
-    let kms_rest_client = KmsClient::new_with_config(ctx.owner_client_conf.kms_config.clone())?;
+    let kms_rest_client = ctx.get_owner_client();
     // Generate an ephemeral key (DEK) and wrap it with the KEK.
     let (dek, encapsulation) = EncryptAction::default()
         .server_side_kem_encapsulation(

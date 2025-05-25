@@ -1,20 +1,18 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::{
+use cosmian_findex_cli::reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::{
     CertificateInputFormat, KeyUsage,
 };
 use test_kms_server::start_default_test_kms_server;
 
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
-    error::{CosmianError, result::CosmianResult},
+    error::{result::CosmianResult, CosmianError},
     tests::{
-        PROG_NAME,
         kms::{
-            KMS_SUBCOMMAND,
-            utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
-        },
+            utils::{extract_uids::extract_unique_identifier, recover_cmd_logs}, KMS_SUBCOMMAND
+        }, save_kms_cli_config, PROG_NAME
     },
 };
 
@@ -137,10 +135,11 @@ pub(crate) fn import_certificate(
 async fn test_certificate_import_different_format() -> CosmianResult<()> {
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // import as TTLV JSON
     import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/exported_certificate_ttlv.json",
         format: &CertificateInputFormat::JsonTtlv,
@@ -156,7 +155,7 @@ async fn test_certificate_import_different_format() -> CosmianResult<()> {
 
     // import as PEM
     import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/ca.crt",
         format: &CertificateInputFormat::Pem,
@@ -172,7 +171,7 @@ async fn test_certificate_import_different_format() -> CosmianResult<()> {
 
     // import a chain
     import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/mozilla_IncludedRootsPEM.txt",
         format: &CertificateInputFormat::Chain,
@@ -188,7 +187,7 @@ async fn test_certificate_import_different_format() -> CosmianResult<()> {
 
     // import a PKCS12
     import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/p12/output.p12",
         format: &CertificateInputFormat::Pkcs12,

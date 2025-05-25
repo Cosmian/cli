@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use cosmian_cli::reexport::cosmian_kms_client::KmsClient;
+use cosmian_cli::reexport::cosmian_findex_cli::reexport::cosmian_kms_client::KmsClient;
 use cosmian_kmip::kmip_2_1::{
     kmip_attributes::Attributes,
     kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
@@ -14,7 +14,7 @@ use cosmian_pkcs11_module::{
     test_decrypt, test_encrypt, test_generate_key,
     traits::Backend,
 };
-use cosmian_pkcs11_sys::{CK_FUNCTION_LIST, CK_INVALID_HANDLE, CKF_SERIAL_SESSION, CKR_OK};
+use pkcs11_sys::{CK_FUNCTION_LIST, CK_INVALID_HANDLE, CKF_SERIAL_SESSION, CKR_OK};
 use serial_test::serial;
 use test_kms_server::start_default_test_kms_server;
 use tracing::debug;
@@ -32,19 +32,18 @@ fn initialize_backend() -> Result<CliBackend, Pkcs11Error> {
     let owner_client_conf = rt.block_on(async {
         let ctx = start_default_test_kms_server().await;
 
-        let kms_rest_client = KmsClient::new_with_config(ctx.owner_client_conf.kms_config.clone())
-            .expect("failed to initialize kms client");
+        let kms_rest_client = ctx.get_owner_client();
         create_keys(&kms_rest_client, COSMIAN_PKCS11_DISK_ENCRYPTION_TAG)
             .await
             .expect("failed to create keys");
         load_p12(COSMIAN_PKCS11_DISK_ENCRYPTION_TAG)
             .await
             .expect("failed to load p12");
-        ctx.owner_client_conf.clone()
+        ctx.owner_client_config.clone()
     });
 
     Ok(CliBackend::instantiate(KmsClient::new_with_config(
-        owner_client_conf.kms_config,
+        owner_client_conf,
     )?))
 }
 
@@ -99,7 +98,6 @@ async fn create_keys(
 async fn load_p12(disk_encryption_tag: &str) -> Result<String, Pkcs11Error> {
     let ctx = start_default_test_kms_server().await;
 
-    let kms_rest_client = KmsClient::new_with_config(ctx.owner_client_conf.kms_config.clone())?;
     let p12_bytes = include_bytes!("../../../../test_data/pkcs11/certificate.p12");
 
     let p12_sk = Object::PrivateKey(PrivateKey {
@@ -128,7 +126,8 @@ async fn load_p12(disk_encryption_tag: &str) -> Result<String, Pkcs11Error> {
         true,
         [disk_encryption_tag, "luks_volume"],
     );
-    let p12_id = kms_rest_client
+    let p12_id = ctx
+        .get_owner_client()
         .import(import_object_request)
         .await?
         .unique_identifier;
@@ -139,7 +138,7 @@ async fn load_p12(disk_encryption_tag: &str) -> Result<String, Pkcs11Error> {
 async fn test_kms_client() -> Result<(), Pkcs11Error> {
     let ctx = start_default_test_kms_server().await;
 
-    let kms_rest_client = KmsClient::new_with_config(ctx.owner_client_conf.kms_config.clone())?;
+    let kms_rest_client = ctx.get_owner_client();
     create_keys(&kms_rest_client, COSMIAN_PKCS11_DISK_ENCRYPTION_TAG).await?;
 
     let keys = get_kms_objects_async(

@@ -9,17 +9,19 @@ use cosmian_crypto_core::{
     CsRng,
     reexport::rand_core::{RngCore, SeedableRng},
 };
-use cosmian_kms_client::{
-    cosmian_kmip::kmip_2_1::kmip_types::{EncodingOption, WrappingMethod},
-    read_object_from_json_ttlv_file,
+use cosmian_findex_cli::reexport::{
+    cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    cosmian_kms_client::{
+        cosmian_kmip::kmip_2_1::kmip_types::{EncodingOption, WrappingMethod},
+        read_object_from_json_ttlv_file,
+    },
 };
 use cosmian_logger::log_init;
 use tempfile::TempDir;
-use test_kms_server::{TestsContext, start_default_test_kms_server};
+use test_kms_server::start_default_test_kms_server;
 
 use super::ExportKeyParams;
 use crate::{
-    actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
@@ -32,6 +34,7 @@ use crate::{
             symmetric::create_key::create_symmetric_key,
             utils::{extract_uids::extract_wrapping_key, recover_cmd_logs},
         },
+        save_kms_cli_config,
     },
 };
 
@@ -138,31 +141,32 @@ pub(crate) fn unwrap(
 pub(crate) async fn test_password_wrap_import() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // CC
     let (private_key_id, _public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
-    password_wrap_import_test(ctx, "cc", &private_key_id)?;
+    password_wrap_import_test(&owner_client_conf_path, "cc", &private_key_id)?;
 
     // EC
     let (private_key_id, _public_key_id) =
-        create_ec_key_pair(&ctx.owner_client_conf_path, "nist-p256", &[], false)?;
-    password_wrap_import_test(ctx, "ec", &private_key_id)?;
+        create_ec_key_pair(&owner_client_conf_path, "nist-p256", &[], false)?;
+    password_wrap_import_test(&owner_client_conf_path, "ec", &private_key_id)?;
 
     // sym
-    let key_id = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
-    password_wrap_import_test(ctx, "sym", &key_id)?;
+    let key_id = create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
+    password_wrap_import_test(&owner_client_conf_path, "sym", &key_id)?;
 
     Ok(())
 }
 
 pub(crate) fn password_wrap_import_test(
-    ctx: &TestsContext,
+    owner_client_conf_path: &str,
     sub_command: &str,
     private_key_id: &str,
 ) -> CosmianResult<()> {
@@ -171,7 +175,7 @@ pub(crate) fn password_wrap_import_test(
     // Export
     let key_file = temp_dir.path().join("master_private.key");
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: sub_command.to_owned(),
         key_id: private_key_id.to_owned(),
         key_file: key_file.to_str().unwrap().to_owned(),
@@ -190,7 +194,7 @@ pub(crate) fn password_wrap_import_test(
     //wrap and unwrap using a password
     {
         let b64_wrapping_key = wrap(
-            &ctx.owner_client_conf_path,
+            owner_client_conf_path,
             sub_command,
             &key_file,
             None,
@@ -211,7 +215,7 @@ pub(crate) fn password_wrap_import_test(
         );
         assert_ne!(wrapped_object.key_block()?.wrapped_key_bytes()?, key_bytes);
         unwrap(
-            &ctx.owner_client_conf_path,
+            owner_client_conf_path,
             sub_command,
             &key_file,
             None,
@@ -241,7 +245,7 @@ pub(crate) fn password_wrap_import_test(
         rng.fill_bytes(&mut key);
         let key_b64 = general_purpose::STANDARD.encode(&key);
         wrap(
-            &ctx.owner_client_conf_path,
+            owner_client_conf_path,
             sub_command,
             &key_file,
             None,
@@ -263,7 +267,7 @@ pub(crate) fn password_wrap_import_test(
         );
         assert_ne!(wrapped_object.key_block()?.wrapped_key_bytes()?, key_bytes);
         unwrap(
-            &ctx.owner_client_conf_path,
+            owner_client_conf_path,
             sub_command,
             &key_file,
             None,

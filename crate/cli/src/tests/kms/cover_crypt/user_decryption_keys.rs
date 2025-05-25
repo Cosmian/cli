@@ -14,6 +14,7 @@ use crate::{
             cover_crypt::master_key_pair::create_cc_master_key_pair,
             utils::{extract_uids::extract_user_key, recover_cmd_logs},
         },
+        save_kms_cli_config,
     },
 };
 
@@ -59,10 +60,11 @@ pub(crate) fn create_user_decryption_key(
 #[tokio::test]
 pub(crate) async fn test_user_decryption_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a new master key pair
     let (master_secret_key_id, _) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
@@ -71,7 +73,7 @@ pub(crate) async fn test_user_decryption_key() -> CosmianResult<()> {
 
     // and a user key
     let user_key_id = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
@@ -85,10 +87,11 @@ pub(crate) async fn test_user_decryption_key() -> CosmianResult<()> {
 #[tokio::test]
 pub(crate) async fn test_user_decryption_key_error() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a new master key pair
     let (master_secret_key_id, _) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
@@ -97,7 +100,7 @@ pub(crate) async fn test_user_decryption_key_error() -> CosmianResult<()> {
 
     // bad attributes
     let err = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top SecretZZZZZZ",
         &[],
@@ -112,7 +115,7 @@ pub(crate) async fn test_user_decryption_key_error() -> CosmianResult<()> {
 
     // bad master secret key
     let err = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "BAD_KEY",
         "(Department::MKG || Department::FIN) && Security Level::Top SecretZZZZZZ",
         &[],

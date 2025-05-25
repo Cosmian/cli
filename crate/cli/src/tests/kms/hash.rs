@@ -1,15 +1,17 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
+use cosmian_findex_cli::reexport::cosmian_kms_cli::actions::kms::{
+    hash::HashAction, mac::CHashingAlgorithm,
+};
 use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server;
 
 use super::{KMS_SUBCOMMAND, utils::extract_uids::extract_uid};
 use crate::{
-    actions::kms::{hash::HashAction, mac::CHashingAlgorithm},
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
-    tests::{PROG_NAME, kms::utils::recover_cmd_logs},
+    tests::{PROG_NAME, kms::utils::recover_cmd_logs, save_kms_cli_config},
 };
 
 const SUB_COMMAND: &str = "hash";
@@ -56,9 +58,10 @@ pub(crate) fn create_hash(cli_conf_path: &str, action: HashAction) -> CosmianRes
 pub(crate) async fn test_hash() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     create_hash(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         HashAction {
             hashing_algorithm: CHashingAlgorithm::SHA3_256,
             data: Some("010203".to_owned()),

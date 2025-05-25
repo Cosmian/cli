@@ -1,7 +1,7 @@
 use std::{collections::HashSet, fs, path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::{
+use cosmian_findex_cli::reexport::cosmian_kms_client::{
     read_bytes_from_file,
     reexport::cosmian_kms_client_utils::rsa_utils::{HashFn, RsaEncryptionAlgorithm},
 };
@@ -21,6 +21,7 @@ use crate::{
             rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
             utils::recover_cmd_logs,
         },
+        save_kms_cli_config,
     },
 };
 
@@ -115,6 +116,7 @@ async fn test_rsa_encrypt_decrypt_using_ckm_rsa_pkcs() -> CosmianResult<()> {
 
     use tracing::trace;
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // create a temp dir
     let tmp_dir = TempDir::new()?;
@@ -128,12 +130,12 @@ async fn test_rsa_encrypt_decrypt_using_ckm_rsa_pkcs() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
+        create_rsa_key_pair(&owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     trace!("private_key_id: {private_key_id}");
     trace!("public_key_id: {public_key_id}");
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &public_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcs,
@@ -144,7 +146,7 @@ async fn test_rsa_encrypt_decrypt_using_ckm_rsa_pkcs() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         output_file.to_str().unwrap(),
         &private_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcs,
@@ -161,7 +163,7 @@ async fn test_rsa_encrypt_decrypt_using_ckm_rsa_pkcs() -> CosmianResult<()> {
     // the user key should NOT be able to decrypt with another algorithm
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             output_file.to_str().unwrap(),
             &private_key_id,
             RsaEncryptionAlgorithm::CkmRsaAesKeyWrap,
@@ -187,6 +189,7 @@ async fn test_rsa_encrypt_decrypt_using_ckm_rsa_pkcs_oaep() -> CosmianResult<()>
     //      cosmian_kms_utils=trace,cosmian_kmip=info",
     // );
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // create a temp dir
     let tmp_dir = TempDir::new()?;
@@ -200,12 +203,12 @@ async fn test_rsa_encrypt_decrypt_using_ckm_rsa_pkcs_oaep() -> CosmianResult<()>
     assert!(!output_file.exists());
 
     let (private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
+        create_rsa_key_pair(&owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     trace!("private_key_id: {private_key_id}");
     trace!("public_key_id: {public_key_id}");
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &public_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcsOaep,
@@ -216,7 +219,7 @@ async fn test_rsa_encrypt_decrypt_using_ckm_rsa_pkcs_oaep() -> CosmianResult<()>
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         output_file.to_str().unwrap(),
         &private_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcsOaep,
@@ -233,7 +236,7 @@ async fn test_rsa_encrypt_decrypt_using_ckm_rsa_pkcs_oaep() -> CosmianResult<()>
     // the user key should NOT be able to decrypt with another algorithm
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             output_file.to_str().unwrap(),
             &private_key_id,
             RsaEncryptionAlgorithm::CkmRsaAesKeyWrap,
@@ -247,7 +250,7 @@ async fn test_rsa_encrypt_decrypt_using_ckm_rsa_pkcs_oaep() -> CosmianResult<()>
     // ... or another hash function
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             output_file.to_str().unwrap(),
             &private_key_id,
             RsaEncryptionAlgorithm::CkmRsaPkcsOaep,
@@ -271,6 +274,7 @@ async fn test_rsa_encrypt_decrypt_using_rsa_aes_key_wrap() -> CosmianResult<()> 
     //     "cosmian_kms_cli=trace,cosmian_kms_server=trace,cosmian_kms_utils=trace,cosmian_kmip=trace",
     // );
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // create a temp dir
     let tmp_dir = TempDir::new()?;
@@ -284,12 +288,12 @@ async fn test_rsa_encrypt_decrypt_using_rsa_aes_key_wrap() -> CosmianResult<()> 
     assert!(!output_file.exists());
 
     let (private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
+        create_rsa_key_pair(&owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     trace!("private_key_id: {private_key_id}");
     trace!("public_key_id: {public_key_id}");
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &public_key_id,
         RsaEncryptionAlgorithm::CkmRsaAesKeyWrap,
@@ -300,7 +304,7 @@ async fn test_rsa_encrypt_decrypt_using_rsa_aes_key_wrap() -> CosmianResult<()> 
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         output_file.to_str().unwrap(),
         &private_key_id,
         RsaEncryptionAlgorithm::CkmRsaAesKeyWrap,
@@ -313,7 +317,7 @@ async fn test_rsa_encrypt_decrypt_using_rsa_aes_key_wrap() -> CosmianResult<()> 
     // the user key should NOT be able to decrypt with another algorithm
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             output_file.to_str().unwrap(),
             &private_key_id,
             RsaEncryptionAlgorithm::CkmRsaPkcsOaep,
@@ -327,7 +331,7 @@ async fn test_rsa_encrypt_decrypt_using_rsa_aes_key_wrap() -> CosmianResult<()> 
     // ... or another hash function
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             output_file.to_str().unwrap(),
             &private_key_id,
             RsaEncryptionAlgorithm::CkmRsaAesKeyWrap,
@@ -348,6 +352,8 @@ async fn test_rsa_encrypt_decrypt_using_rsa_aes_key_wrap() -> CosmianResult<()> 
 #[tokio::test]
 async fn test_rsa_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -360,7 +366,7 @@ async fn test_rsa_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (private_key_id, public_key_id) = create_rsa_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &RsaKeyPairOptions {
             tags: HashSet::from(["tag_rsa".to_string()]),
             ..Default::default()
@@ -368,7 +374,7 @@ async fn test_rsa_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     )?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &public_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcsOaep,
@@ -379,7 +385,7 @@ async fn test_rsa_encrypt_decrypt_using_tags() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         output_file.to_str().unwrap(),
         &private_key_id,
         RsaEncryptionAlgorithm::CkmRsaPkcsOaep,

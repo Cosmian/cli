@@ -16,6 +16,7 @@ use crate::{
                 recover_cmd_logs,
             },
         },
+        save_kms_cli_config,
     },
 };
 
@@ -67,8 +68,10 @@ pub(crate) fn create_cc_master_key_pair(
 #[tokio::test]
 pub(crate) async fn test_create_master_key_pair() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],

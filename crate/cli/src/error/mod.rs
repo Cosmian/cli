@@ -3,6 +3,17 @@ use std::str::Utf8Error;
 #[cfg(test)]
 use assert_cmd::cargo::CargoError;
 use cosmian_config_utils::ConfigUtilsError;
+use cosmian_findex_cli::{
+    error::FindexCliError,
+    reexport::{
+        cosmian_kms_cli::{actions::kms::google::GoogleApiError, error::KmsCliError},
+        cosmian_kms_client::{
+            KmsClientError,
+            cosmian_kmip::{KmipError, ttlv::TtlvError},
+            reexport::cosmian_kms_client_utils::error::UtilsError,
+        },
+    },
+};
 use cosmian_findex_client::{
     ClientError,
     reexport::{
@@ -11,13 +22,7 @@ use cosmian_findex_client::{
         cosmian_http_client::HttpClientError,
     },
 };
-use cosmian_kms_client::{
-    KmsClientError, cosmian_kmip::ttlv::TtlvError,
-    reexport::cosmian_kms_client_utils::error::UtilsError,
-};
 use thiserror::Error;
-
-use crate::actions::kms::google::GoogleApiError;
 
 pub mod result;
 
@@ -39,7 +44,7 @@ pub enum CosmianError {
     #[error(transparent)]
     CovercryptError(#[from] cosmian_cover_crypt::Error),
     #[error(transparent)]
-    CryptoError(#[from] cosmian_kms_crypto::CryptoError),
+    CryptoError(#[from] cosmian_findex_cli::reexport::cosmian_kms_crypto::CryptoError),
     #[error(transparent)]
     CsvError(#[from] csv::Error),
     #[error("{0}")]
@@ -48,6 +53,8 @@ pub enum CosmianError {
     DerError(#[from] der::Error),
     #[error(transparent)]
     Findex(#[from] cosmian_findex::Error<Address<ADDRESS_LENGTH>>),
+    #[error(transparent)]
+    FindexCli(#[from] FindexCliError),
     #[error(transparent)]
     FindexClientConfig(#[from] ClientError),
     #[error(transparent)]
@@ -69,7 +76,9 @@ pub enum CosmianError {
     #[error("Item not found: {0}")]
     ItemNotFound(String),
     #[error(transparent)]
-    KmipError(#[from] cosmian_kms_client::cosmian_kmip::KmipError),
+    KmipError(#[from] KmipError),
+    #[error(transparent)]
+    KmsCliError(#[from] KmsCliError),
     #[error(transparent)]
     KmsClientError(#[from] KmsClientError),
     #[error("Not Supported: {0}")]

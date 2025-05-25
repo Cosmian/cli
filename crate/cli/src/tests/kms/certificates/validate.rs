@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use assert_cmd::cargo::CommandCargoExt;
-use cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat;
+use cosmian_findex_cli::reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat;
 #[cfg(feature = "fips")]
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
@@ -15,20 +15,18 @@ use tracing::info;
 use crate::tests::kms::certificates::encrypt::encrypt;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
-    error::{CosmianError, result::CosmianResult},
+    error::{result::CosmianResult, CosmianError},
     tests::{
-        PROG_NAME,
         kms::{
-            KMS_SUBCOMMAND,
-            certificates::import::{ImportCertificateInput, import_certificate},
-            utils::recover_cmd_logs,
-        },
+            certificates::import::{import_certificate, ImportCertificateInput}, utils::recover_cmd_logs, KMS_SUBCOMMAND
+        }, save_kms_cli_config, PROG_NAME
     },
 };
 
 #[cfg(feature = "fips")]
 async fn import_revoked_certificate_encrypt(curve_name: &str) -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // create a temp dir
     let tmp_dir = TempDir::new()?;
@@ -46,7 +44,7 @@ async fn import_revoked_certificate_encrypt(curve_name: &str) -> CosmianResult<(
 
     debug!("\n\nImport Certificate");
     let root_certificate_id = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: &format!("../../test_data/certificates/openssl/{curve_name}-cert.pem"),
         format: &CertificateInputFormat::Pem,
@@ -57,7 +55,7 @@ async fn import_revoked_certificate_encrypt(curve_name: &str) -> CosmianResult<(
 
     debug!("\n\nImport Certificate");
     let certificate_id = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: &format!("../../test_data/certificates/openssl/{curve_name}-revoked.crt"),
         format: &CertificateInputFormat::Pem,
@@ -70,7 +68,7 @@ async fn import_revoked_certificate_encrypt(curve_name: &str) -> CosmianResult<(
     debug!("\n\nEncrypt with certificate");
     assert!(
         encrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             input_file.to_str().unwrap(),
             &certificate_id,
             Some(output_file.to_str().unwrap()),
@@ -121,10 +119,11 @@ pub(crate) fn validate_certificate(
 #[tokio::test]
 async fn test_validate_cli() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     info!("importing root cert");
     let root_certificate_id = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/chain/ca.cert.pem",
         format: &CertificateInputFormat::Pem,
@@ -134,7 +133,7 @@ async fn test_validate_cli() -> CosmianResult<()> {
 
     info!("importing intermediate cert");
     let intermediate_certificate_id = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/chain/intermediate.cert.pem",
         format: &CertificateInputFormat::Pem,
@@ -144,7 +143,7 @@ async fn test_validate_cli() -> CosmianResult<()> {
     })?;
 
     let leaf1_certificate_id = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/chain/leaf1.cert.pem",
         format: &CertificateInputFormat::Pem,
@@ -155,7 +154,7 @@ async fn test_validate_cli() -> CosmianResult<()> {
     info!("leaf1 cert imported: {leaf1_certificate_id}");
 
     let test1_res = validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![
             intermediate_certificate_id.clone(),
@@ -171,7 +170,7 @@ async fn test_validate_cli() -> CosmianResult<()> {
     assert!(test1_res.is_err());
 
     let test2_res = validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![
             intermediate_certificate_id.clone(),
@@ -186,7 +185,7 @@ async fn test_validate_cli() -> CosmianResult<()> {
     assert!(test2_res.contains("Valid"));
 
     let test3_res = validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![intermediate_certificate_id, root_certificate_id.clone()],
         // Date: 15/04/2048
@@ -199,7 +198,7 @@ async fn test_validate_cli() -> CosmianResult<()> {
     assert!(test3_res.is_err());
 
     let test4_res = validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![root_certificate_id],
         None,

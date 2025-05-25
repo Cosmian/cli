@@ -20,9 +20,9 @@ fips = ["cosmian_cli/fips", "test_kms_server/fips"]
 
 [dependencies]
 cosmian_kmip = { workspace = true }
-cosmian_cli = { workspace = true }
+cosmian_cli = { path = "../../cli" }
 cosmian_crypto_core = { workspace = true }
-cosmian_pkcs11_module = { workspace = true }
+cosmian_pkcs11_module = { path = "../module" }
 etcetera = "0.8.0"
 hex = "0.4"
 p256 = { version = "0.13.2", default-features = false, features = [
@@ -31,7 +31,7 @@ p256 = { version = "0.13.2", default-features = false, features = [
   "std",
 ] }
 pkcs1 = "0.7.5"
-cosmian_pkcs11_sys = { workspace = true }
+pkcs11-sys = { workspace = true }
 serde_json = { workspace = true }
 sha3 = { version = "0.10", default-features = false }
 thiserror = { workspace = true }
