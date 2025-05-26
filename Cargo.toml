@@ -52,16 +52,13 @@ cosmian_cover_crypt = { version = "15.0", default-features = false }
 cosmian_crypto_core = { version = "10.1", default-features = false, features = [
     "ser",
 ] }
-cosmian_findex = { version = "7.1.0", default-features = false }
-cosmian_findex_cli = { path = "/home/manu/Cosmian/github/findex-server-alt/crate/cli" }
-cosmian_findex_client = { path = "/home/manu/Cosmian/github/findex-server-alt/crate/findex_client" }
-cosmian_findex_structs = { path = "/home/manu/Cosmian/github/findex-server-alt/crate/structs" }
-test_findex_server = { path = "/home/manu/Cosmian/github/findex-server-alt/crate/test_findex_server" }
-# cosmian_kms_cli = { path = "/home/manu/Cosmian/core/kms_alt/crate/cli" }
-# cosmian_kms_client = { path = "/home/manu/Cosmian/core/kms_alt/crate/kms_client" }
-# cosmian_kms_crypto = { path = "/home/manu/Cosmian/core/kms_alt/crate/crypto" }
-cosmian_kmip = { path = "/home/manu/Cosmian/core/kms_alt/crate/kmip" }
-test_kms_server = { path = "/home/manu/Cosmian/core/kms_alt/crate/test_kms_server" }
+cosmian_findex = { git = "https://github.com/Cosmian/findex", rev = "08b3989f800b26b9ec3093f6f1b52ee0f739835e", default-features = false }
+cosmian_findex_cli = { git = "https://github.com/Cosmian/findex-server", branch = "move_clap_actions" }
+cosmian_findex_client = { git = "https://github.com/Cosmian/findex-server", branch = "move_clap_actions" }
+cosmian_findex_structs = { git = "https://github.com/Cosmian/findex-server", branch = "move_clap_actions" }
+test_findex_server = { git = "https://github.com/Cosmian/findex-server", branch = "move_clap_actions" }
+cosmian_kmip = { git = "https://github.com/Cosmian/kms", branch = "move_clap_actions" }
+test_kms_server = { git = "https://github.com/Cosmian/kms", branch = "move_clap_actions" }
 cosmian_http_client = "0.2"
 cosmian_logger = "0.2"
 der = { version = "0.7", default-features = false }
