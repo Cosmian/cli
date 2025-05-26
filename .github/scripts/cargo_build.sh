@@ -58,7 +58,7 @@ fi
 rustup target add "$TARGET"
 
 if [ -f /etc/lsb-release ]; then
-  bash .github/scripts/test_utimaco.sh
+  bash .github/reusable_scripts/test_utimaco.sh
 fi
 
 cd "$ROOT_FOLDER"

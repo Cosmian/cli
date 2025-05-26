@@ -1,0 +1,3 @@
+[submodule ".github/reusable_scripts"]
+    path = .github/reusable_scripts
+    url = https://github.com/Cosmian/reusable_scripts.git
