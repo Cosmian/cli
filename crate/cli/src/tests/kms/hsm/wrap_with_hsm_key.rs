@@ -6,7 +6,6 @@ use cosmian_kms_cli::{actions::kms::symmetric::{keys::create_key::CreateKeyActio
 use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
 use tempfile::TempDir;
-use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server_with_utimaco_hsm;
 #[cfg(not(feature = "fips"))]
 use tracing::info;
 use uuid::Uuid;
@@ -22,12 +21,11 @@ use crate::{
         create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test,
     }, save_kms_cli_config},
 };
+use cosmian_kms_cli::reexport::test_kms_server::TestsContext;
 
-#[tokio::test]
-pub(crate) async fn test_wrap_with_aes_gcm() -> CosmianResult<()> {
+pub(crate) fn test_wrap_with_aes_gcm(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(option_env!("RUST_LOG"));
     // log_init(Some("info,cosmian_kms_server=debug"));
-    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     let wrapping_key_id = create_symmetric_key(
@@ -73,11 +71,9 @@ pub(crate) async fn test_wrap_with_aes_gcm() -> CosmianResult<()> {
 }
 
 #[cfg(not(feature = "fips"))]
-#[tokio::test]
-pub(crate) async fn test_wrap_with_rsa_oaep() -> CosmianResult<()> {
+pub(crate) fn test_wrap_with_rsa_oaep(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(None);
     // log_init(Some("debug"));
-    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     let (_private_key_id, public_key_id) = create_rsa_key_pair(
@@ -122,11 +118,9 @@ pub(crate) async fn test_wrap_with_rsa_oaep() -> CosmianResult<()> {
 }
 
 #[cfg(not(feature = "fips"))]
-#[tokio::test]
-pub(crate) async fn test_unwrap_on_export() -> CosmianResult<()> {
+pub(crate) fn test_unwrap_on_export(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(option_env!("RUST_LOG"));
     // log_init(Some("debug"));
-    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     let (_private_key_id, public_key_id) = create_rsa_key_pair(

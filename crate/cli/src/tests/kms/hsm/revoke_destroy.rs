@@ -1,6 +1,6 @@
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
-    reexport::test_kms_server::start_default_test_kms_server_with_utimaco_hsm,
+    reexport::test_kms_server::TestsContext,
 };
 use cosmian_logger::log_init;
 use tracing::debug;
@@ -17,10 +17,8 @@ use crate::{
     },
 };
 
-#[tokio::test]
-async fn test_revoke_symmetric_key() -> CosmianResult<()> {
+pub(crate) fn test_revoke_symmetric_key(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(None);
-    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // sym

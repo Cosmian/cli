@@ -12,7 +12,7 @@ use cosmian_kms_cli::{
         cosmian_kms_client::reexport::cosmian_kms_client_utils::{
             create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
         },
-        test_kms_server::start_default_test_kms_server_with_utimaco_hsm,
+        test_kms_server::TestsContext,
     },
 };
 use cosmian_logger::log_init;
@@ -37,10 +37,8 @@ use crate::{
     },
 };
 
-#[tokio::test]
-pub(crate) async fn test_aes_gcm() -> CosmianResult<()> {
+pub(crate) fn test_aes_gcm(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(None);
-    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     let dek = create_symmetric_key(
@@ -64,10 +62,8 @@ pub(crate) async fn test_aes_gcm() -> CosmianResult<()> {
 }
 
 #[cfg(not(feature = "fips"))]
-#[tokio::test]
-pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
+pub(crate) fn test_rsa_pkcs_oaep(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(None);
-    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // create a temp dir
@@ -154,10 +150,8 @@ pub(crate) async fn test_rsa_pkcs_oaep() -> CosmianResult<()> {
 }
 
 #[cfg(not(feature = "fips"))]
-#[tokio::test]
-pub(crate) async fn test_rsa_pkcs_v15() -> CosmianResult<()> {
+pub(crate) fn test_rsa_pkcs_v15(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(None);
-    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // create a temp dir
