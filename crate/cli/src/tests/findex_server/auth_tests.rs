@@ -1,5 +1,7 @@
+use cosmian_findex_cli::reexport::test_findex_server::{
+    AuthenticationOptions, get_db_config, start_test_server_with_options,
+};
 use cosmian_logger::log_init;
-use test_findex_server::{AuthenticationOptions, get_db_config, start_test_server_with_options};
 use tracing::{info, trace};
 
 use crate::error::result::CosmianResult;

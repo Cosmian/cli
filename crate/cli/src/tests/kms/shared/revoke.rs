@@ -1,11 +1,13 @@
 use std::process::Command;
 
 use assert_cmd::prelude::CommandCargoExt;
-use cosmian_findex_cli::reexport::cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction;
-use tempfile::TempDir;
-use test_kms_server::{
-    start_default_test_kms_server, start_default_test_kms_server_with_non_revocable_key_ids,
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::test_kms_server::{
+        start_default_test_kms_server, start_default_test_kms_server_with_non_revocable_key_ids,
+    },
 };
+use tempfile::TempDir;
 use uuid::Uuid;
 
 #[cfg(not(feature = "fips"))]

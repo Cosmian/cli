@@ -1,7 +1,7 @@
 use std::{collections::HashSet, process::Command};
 
 use assert_cmd::prelude::*;
-use test_kms_server::start_default_test_kms_server;
+use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
 use crate::{

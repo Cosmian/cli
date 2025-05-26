@@ -16,10 +16,9 @@ crate-type = ["rlib", "dylib"]
 doctest = false
 
 [features]
-fips = ["cosmian_cli/fips", "test_kms_server/fips"]
+fips = ["cosmian_cli/fips"]
 
 [dependencies]
-cosmian_kmip = { workspace = true }
 cosmian_cli = { path = "../../cli" }
 cosmian_crypto_core = { workspace = true }
 cosmian_pkcs11_module = { path = "../module" }
@@ -48,4 +47,3 @@ tracing-journald = "0.3.1"
 [dev-dependencies]
 cosmian_logger = { workspace = true }
 serial_test = { version = "3.2.0", default-features = true }
-test_kms_server = { workspace = true }

@@ -7,20 +7,24 @@ use cosmian_findex_cli::{
         search_and_decrypt::SearchAndDecryptAction,
     },
     reexport::{
-        cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction,
-        cosmian_kms_client::{
-            KmsClient, kmip_2_1::kmip_types::UniqueIdentifier,
-            reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm,
+        cosmian_findex_client::RestClient,
+        cosmian_findex_structs::Uuids,
+        test_findex_server::{
+            start_default_test_findex_server, start_default_test_findex_server_with_cert_auth,
         },
     },
 };
-use cosmian_findex_client::RestClient;
-use cosmian_findex_structs::Uuids;
-use cosmian_logger::log_init;
-use test_findex_server::{
-    start_default_test_findex_server, start_default_test_findex_server_with_cert_auth,
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kmip::kmip_2_1::kmip_types::UniqueIdentifier,
+        cosmian_kms_client::{
+            KmsClient, reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm,
+        },
+        test_kms_server::start_default_test_kms_server,
+    },
 };
-use test_kms_server::start_default_test_kms_server;
+use cosmian_logger::log_init;
 use tracing::{info, trace};
 use uuid::Uuid;
 

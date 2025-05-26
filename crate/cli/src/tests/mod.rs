@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use cosmian_config_utils::ConfigUtils;
-use test_kms_server::TestsContext;
+use cosmian_kms_cli::reexport::test_kms_server::TestsContext;
 
 use crate::config::ClientConfig;
 

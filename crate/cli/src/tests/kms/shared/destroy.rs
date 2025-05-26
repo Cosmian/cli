@@ -1,15 +1,17 @@
 use std::process::Command;
 
 use assert_cmd::prelude::CommandCargoExt;
-use cosmian_findex_cli::reexport::{
-    cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction,
-    cosmian_kms_client::{
-        kmip_2_1::kmip_data_structures::{KeyMaterial, KeyValue},
-        read_object_from_json_ttlv_file,
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kms_client::{
+            kmip_2_1::kmip_data_structures::{KeyMaterial, KeyValue},
+            read_object_from_json_ttlv_file,
+        },
+        test_kms_server::start_default_test_kms_server,
     },
 };
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server;
 #[cfg(not(feature = "fips"))]
 use tracing::trace;
 

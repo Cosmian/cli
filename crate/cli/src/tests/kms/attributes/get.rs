@@ -1,7 +1,7 @@
 use std::{collections::HashMap, process::Command};
 
 use assert_cmd::cargo::CommandCargoExt;
-use cosmian_findex_cli::reexport::cosmian_kms_client::{
+use cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_2_1::kmip_types::Tag, reexport::cosmian_kms_client_utils::attributes_utils::CLinkType,
 };
 use serde_json::Value;

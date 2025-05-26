@@ -4,11 +4,16 @@ use cosmian_findex_cli::{
     actions::findex_server::findex::{
         insert_or_delete::InsertOrDeleteAction, parameters::FindexParameters, search::SearchAction,
     },
-    reexport::cosmian_kms_client::KmsClient,
+    reexport::{
+        cosmian_findex_client::{
+            FindexRestClient, KmsEncryptionLayer, RestClient, RestClientConfig,
+        },
+        test_findex_server::start_default_test_findex_server,
+    },
 };
-use cosmian_findex_client::{FindexRestClient, KmsEncryptionLayer, RestClient, RestClientConfig};
-use test_findex_server::start_default_test_findex_server;
-use test_kms_server::start_default_test_kms_server;
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::KmsClient, test_kms_server::start_default_test_kms_server,
+};
 use uuid::Uuid;
 
 use super::basic::findex_number_of_threads;

@@ -4,13 +4,16 @@ use cosmian_findex_cli::{
     actions::findex_server::findex::{
         insert_or_delete::InsertOrDeleteAction, parameters::FindexParameters, search::SearchAction,
     },
-    reexport::cosmian_kms_client::KmsClient,
+    reexport::{
+        cosmian_findex_client::RestClient,
+        cosmian_findex_structs::{Permission, Value},
+        test_findex_server::start_default_test_findex_server_with_cert_auth,
+    },
 };
-use cosmian_findex_client::RestClient;
-use cosmian_findex_structs::{Permission, Value};
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::KmsClient, test_kms_server::start_default_test_kms_server,
+};
 use cosmian_logger::log_init;
-use test_findex_server::start_default_test_findex_server_with_cert_auth;
-use test_kms_server::start_default_test_kms_server;
 use tracing::{debug, trace};
 use uuid::Uuid;
 

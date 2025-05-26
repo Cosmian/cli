@@ -4,7 +4,7 @@ use std::process::Command;
 
 use assert_cmd::prelude::*;
 #[cfg(not(feature = "fips"))]
-use cosmian_findex_cli::reexport::cosmian_kms_client::{
+use cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_0::kmip_types::BlockCipherMode,
     kmip_2_1::{
         kmip_data_structures::KeyMaterial,
@@ -12,12 +12,17 @@ use cosmian_findex_cli::reexport::cosmian_kms_client::{
     },
     pad_be_bytes,
 };
-use cosmian_findex_cli::reexport::{
-    cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction,
-    cosmian_kms_client::{
-        kmip_2_1::kmip_types::KeyFormatType,
-        read_bytes_from_file, read_object_from_json_ttlv_file,
-        reexport::cosmian_kms_client_utils::export_utils::{ExportKeyFormat, WrappingAlgorithm},
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kms_client::{
+            kmip_2_1::kmip_types::KeyFormatType,
+            read_bytes_from_file, read_object_from_json_ttlv_file,
+            reexport::cosmian_kms_client_utils::export_utils::{
+                ExportKeyFormat, WrappingAlgorithm,
+            },
+        },
+        test_kms_server::start_default_test_kms_server,
     },
 };
 #[cfg(not(feature = "fips"))]
@@ -25,7 +30,6 @@ use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
 use openssl::pkey::{Id, PKey};
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server;
 
 #[cfg(not(feature = "fips"))]
 use crate::tests::kms::cover_crypt::{
@@ -469,7 +473,7 @@ pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
 pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
     // create a temp dir
 
-    use cosmian_findex_cli::reexport::cosmian_kms_client::kmip_2_1::kmip_data_structures::KeyValue;
+    use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_2_1::kmip_data_structures::KeyValue;
     use tracing::trace;
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();

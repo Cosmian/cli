@@ -1,8 +1,9 @@
-use cosmian_findex_cli::actions::findex_server::permissions::{
-    CreateIndex, ListPermissions, RevokePermission, SetPermission,
+use cosmian_findex_cli::{
+    actions::findex_server::permissions::{
+        CreateIndex, ListPermissions, RevokePermission, SetPermission,
+    },
+    reexport::{cosmian_findex_client::RestClient, cosmian_findex_structs::Permission},
 };
-use cosmian_findex_client::RestClient;
-use cosmian_findex_structs::Permission;
 use uuid::Uuid;
 
 use crate::error::result::CosmianResult;

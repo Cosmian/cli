@@ -1,18 +1,23 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_findex_cli::reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::{
-    CertificateInputFormat, KeyUsage,
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::{
+        CertificateInputFormat, KeyUsage,
+    },
+    test_kms_server::start_default_test_kms_server,
 };
-use test_kms_server::start_default_test_kms_server;
 
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
-    error::{result::CosmianResult, CosmianError},
+    error::{CosmianError, result::CosmianResult},
     tests::{
+        PROG_NAME,
         kms::{
-            utils::{extract_uids::extract_unique_identifier, recover_cmd_logs}, KMS_SUBCOMMAND
-        }, save_kms_cli_config, PROG_NAME
+            KMS_SUBCOMMAND,
+            utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
+        },
+        save_kms_cli_config,
     },
 };
 

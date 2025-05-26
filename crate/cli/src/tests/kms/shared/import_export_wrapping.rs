@@ -3,26 +3,28 @@ use cosmian_crypto_core::{
     reexport::rand_core::{RngCore, SeedableRng},
 };
 #[cfg(not(feature = "fips"))]
-use cosmian_findex_cli::reexport::cosmian_kms_crypto::crypto::elliptic_curves::operation::create_x25519_key_pair;
-use cosmian_findex_cli::reexport::{
-    cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction,
-    cosmian_kms_client::{
-        cosmian_kmip::kmip_2_1::{
-            kmip_objects::Object,
-            kmip_types::{CryptographicAlgorithm, LinkType, UniqueIdentifier, WrappingMethod},
+use cosmian_kms_cli::reexport::cosmian_kms_crypto::crypto::elliptic_curves::operation::create_x25519_key_pair;
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kms_client::{
+            cosmian_kmip::kmip_2_1::{
+                kmip_objects::Object,
+                kmip_types::{CryptographicAlgorithm, LinkType, UniqueIdentifier, WrappingMethod},
+            },
+            kmip_2_1::{
+                kmip_attributes::Attributes, kmip_data_structures::KeyValue,
+                requests::create_symmetric_key_kmip_object,
+            },
+            read_object_from_json_ttlv_file,
+            reexport::cosmian_kms_client_utils::import_utils::KeyUsage,
+            write_kmip_object_to_file,
         },
-        kmip_2_1::{
-            kmip_attributes::Attributes, kmip_data_structures::KeyValue,
-            requests::create_symmetric_key_kmip_object,
-        },
-        read_object_from_json_ttlv_file,
-        reexport::cosmian_kms_client_utils::import_utils::KeyUsage,
-        write_kmip_object_to_file,
+        cosmian_kms_crypto::crypto::wrap::unwrap_key_block,
+        test_kms_server::start_default_test_kms_server,
     },
-    cosmian_kms_crypto::crypto::wrap::unwrap_key_block,
 };
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server;
 use tracing::{debug, trace};
 
 use super::ExportKeyParams;
@@ -119,7 +121,7 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
 #[cfg(not(feature = "fips"))]
 #[tokio::test]
 pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
-    use cosmian_findex_cli::reexport::cosmian_kms_client::kmip_0::kmip_types::CryptographicUsageMask;
+    use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_0::kmip_types::CryptographicUsageMask;
 
     cosmian_logger::log_init(None);
     // create a temp dir

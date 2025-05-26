@@ -5,21 +5,25 @@ use assert_cmd::cargo::CargoError;
 use cosmian_config_utils::ConfigUtilsError;
 use cosmian_findex_cli::{
     error::FindexCliError,
+    reexport::cosmian_findex_client::{
+        ClientError,
+        reexport::{
+            cosmian_findex::{self, ADDRESS_LENGTH, Address},
+            cosmian_findex_structs::StructsError,
+            cosmian_http_client::HttpClientError,
+        },
+    },
+};
+use cosmian_kms_cli::{
+    actions::kms::google::GoogleApiError,
+    error::KmsCliError,
     reexport::{
-        cosmian_kms_cli::{actions::kms::google::GoogleApiError, error::KmsCliError},
         cosmian_kms_client::{
             KmsClientError,
             cosmian_kmip::{KmipError, ttlv::TtlvError},
             reexport::cosmian_kms_client_utils::error::UtilsError,
         },
-    },
-};
-use cosmian_findex_client::{
-    ClientError,
-    reexport::{
-        cosmian_findex::{self, ADDRESS_LENGTH, Address},
-        cosmian_findex_structs::StructsError,
-        cosmian_http_client::HttpClientError,
+        cosmian_kms_crypto::CryptoError,
     },
 };
 use thiserror::Error;
@@ -44,7 +48,7 @@ pub enum CosmianError {
     #[error(transparent)]
     CovercryptError(#[from] cosmian_cover_crypt::Error),
     #[error(transparent)]
-    CryptoError(#[from] cosmian_findex_cli::reexport::cosmian_kms_crypto::CryptoError),
+    CryptoError(#[from] CryptoError),
     #[error(transparent)]
     CsvError(#[from] csv::Error),
     #[error("{0}")]

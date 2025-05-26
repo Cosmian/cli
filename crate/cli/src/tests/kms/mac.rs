@@ -1,15 +1,17 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_findex_cli::reexport::{
-    cosmian_kms_cli::actions::kms::{
+use cosmian_kms_cli::{
+    actions::kms::{
         mac::{CHashingAlgorithm, MacAction},
         symmetric::keys::create_key::CreateKeyAction,
     },
-    cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
+    reexport::{
+        cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
+        test_kms_server::start_default_test_kms_server,
+    },
 };
 use cosmian_logger::log_init;
-use test_kms_server::start_default_test_kms_server;
 
 use super::{KMS_SUBCOMMAND, utils::extract_uids::extract_uid};
 use crate::{

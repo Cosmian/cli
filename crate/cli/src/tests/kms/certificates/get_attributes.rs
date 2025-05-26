@@ -1,8 +1,10 @@
-use cosmian_findex_cli::reexport::cosmian_kms_client::{
-    kmip_2_1::kmip_types::{LinkType, Tag},
-    reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat,
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::{
+        kmip_2_1::kmip_types::{LinkType, Tag},
+        reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat,
+    },
+    test_kms_server::start_default_test_kms_server,
 };
-use test_kms_server::start_default_test_kms_server;
 use tracing::debug;
 
 use crate::{

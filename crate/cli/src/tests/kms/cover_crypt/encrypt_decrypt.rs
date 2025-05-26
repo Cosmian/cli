@@ -1,9 +1,10 @@
 use std::{fs, path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_findex_cli::reexport::cosmian_kms_client::read_bytes_from_file;
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::read_bytes_from_file, test_kms_server::start_default_test_kms_server,
+};
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server;
 
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,

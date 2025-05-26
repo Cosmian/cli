@@ -1,14 +1,16 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_findex_cli::reexport::{
-    cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction,
-    cosmian_kms_client::reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm,
+#[cfg(not(feature = "fips"))]
+use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server_with_privileged_users;
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kms_client::reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm,
+        test_kms_server::start_default_test_kms_server_with_cert_auth,
+    },
 };
 use cosmian_logger::log_init;
-use test_kms_server::start_default_test_kms_server_with_cert_auth;
-#[cfg(not(feature = "fips"))]
-use test_kms_server::start_default_test_kms_server_with_privileged_users;
 use tracing::trace;
 
 #[cfg(not(feature = "fips"))]

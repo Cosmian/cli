@@ -2,26 +2,27 @@ use std::vec;
 
 use cosmian_cli::{
     config::ClientConfig,
-    reexport::cosmian_findex_cli::reexport::cosmian_kms_client::{
-        ExportObjectParams, KmsClient, batch_export_objects, export_object,
+    reexport::cosmian_kms_cli::reexport::{
+        cosmian_kmip::{
+            self,
+            kmip_0::kmip_types::{BlockCipherMode, CryptographicUsageMask, PaddingMethod},
+            kmip_2_1::{
+                kmip_attributes::Attributes,
+                kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
+                kmip_objects::{Object, ObjectType, SymmetricKey},
+                kmip_operations::{Decrypt, Encrypt, GetAttributes, Import, Locate},
+                kmip_types::{
+                    CryptographicAlgorithm, CryptographicParameters, KeyFormatType,
+                    RecommendedCurve, UniqueIdentifier,
+                },
+            },
+        },
+        cosmian_kms_client::{ExportObjectParams, KmsClient, batch_export_objects, export_object},
     },
 };
 use cosmian_crypto_core::{
     CsRng,
     reexport::rand_core::{RngCore, SeedableRng},
-};
-use cosmian_kmip::{
-    kmip_0::kmip_types::{BlockCipherMode, CryptographicUsageMask, PaddingMethod},
-    kmip_2_1::{
-        kmip_attributes::Attributes,
-        kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
-        kmip_objects::{Object, ObjectType, SymmetricKey},
-        kmip_operations::{Decrypt, Encrypt, GetAttributes, Import, Locate},
-        kmip_types::{
-            CryptographicAlgorithm, CryptographicParameters, KeyFormatType, RecommendedCurve,
-            UniqueIdentifier,
-        },
-    },
 };
 use cosmian_pkcs11_module::traits::{
     DecryptContext, EncryptContext, EncryptionAlgorithm, KeyAlgorithm,

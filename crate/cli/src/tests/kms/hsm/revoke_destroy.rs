@@ -1,6 +1,8 @@
-use cosmian_findex_cli::reexport::cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction;
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::test_kms_server::start_default_test_kms_server_with_utimaco_hsm,
+};
 use cosmian_logger::log_init;
-use test_kms_server::start_default_test_kms_server_with_utimaco_hsm;
 use tracing::debug;
 use uuid::Uuid;
 

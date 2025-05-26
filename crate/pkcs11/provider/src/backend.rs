@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
-use cosmian_cli::reexport::cosmian_findex_cli::reexport::cosmian_kms_client::KmsClient;
-use cosmian_kmip::kmip_2_1::{kmip_objects::ObjectType, kmip_types::KeyFormatType};
+use cosmian_cli::reexport::cosmian_kms_cli::reexport::{
+    cosmian_kmip::kmip_2_1::{kmip_objects::ObjectType, kmip_types::KeyFormatType},
+    cosmian_kms_client::KmsClient,
+};
 use cosmian_pkcs11_module::{
     ModuleError, ModuleResult,
     core::object::Object,

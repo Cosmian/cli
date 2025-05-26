@@ -2,22 +2,22 @@
 use std::{fs, path::PathBuf};
 
 #[cfg(not(feature = "fips"))]
-use cosmian_findex_cli::reexport::cosmian_kms_client::{
+use cosmian_kms_cli::reexport::cosmian_kms_client::{
     read_bytes_from_file,
     reexport::cosmian_kms_client_utils::rsa_utils::{HashFn, RsaEncryptionAlgorithm},
 };
-use cosmian_findex_cli::reexport::{
-    cosmian_kms_cli::actions::kms::symmetric::{
-        KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction,
-    },
-    cosmian_kms_client::reexport::cosmian_kms_client_utils::{
-        create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
+use cosmian_kms_cli::{
+    actions::kms::symmetric::{KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction},
+    reexport::{
+        cosmian_kms_client::reexport::cosmian_kms_client_utils::{
+            create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
+        },
+        test_kms_server::start_default_test_kms_server_with_utimaco_hsm,
     },
 };
 use cosmian_logger::log_init;
 #[cfg(not(feature = "fips"))]
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server_with_utimaco_hsm;
 #[cfg(not(feature = "fips"))]
 use tracing::trace;
 use uuid::Uuid;

@@ -1,11 +1,11 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_findex_cli::reexport::cosmian_kms_cli::actions::kms::{
-    hash::HashAction, mac::CHashingAlgorithm,
+use cosmian_kms_cli::{
+    actions::kms::{hash::HashAction, mac::CHashingAlgorithm},
+    reexport::test_kms_server::start_default_test_kms_server,
 };
 use cosmian_logger::log_init;
-use test_kms_server::start_default_test_kms_server;
 
 use super::{KMS_SUBCOMMAND, utils::extract_uids::extract_uid};
 use crate::{

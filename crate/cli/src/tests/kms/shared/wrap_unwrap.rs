@@ -9,16 +9,18 @@ use cosmian_crypto_core::{
     CsRng,
     reexport::rand_core::{RngCore, SeedableRng},
 };
-use cosmian_findex_cli::reexport::{
-    cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction,
-    cosmian_kms_client::{
-        cosmian_kmip::kmip_2_1::kmip_types::{EncodingOption, WrappingMethod},
-        read_object_from_json_ttlv_file,
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kms_client::{
+            cosmian_kmip::kmip_2_1::kmip_types::{EncodingOption, WrappingMethod},
+            read_object_from_json_ttlv_file,
+        },
+        test_kms_server::start_default_test_kms_server,
     },
 };
 use cosmian_logger::log_init;
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server;
 
 use super::ExportKeyParams;
 use crate::{

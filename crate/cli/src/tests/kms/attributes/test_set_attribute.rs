@@ -1,23 +1,25 @@
-use cosmian_findex_cli::reexport::{
-    cosmian_kms_cli::actions::kms::{
+use cosmian_kms_cli::{
+    actions::kms::{
         attributes::{CCryptographicAlgorithm, SetOrDeleteAttributes, VendorAttributeCli},
         symmetric::keys::create_key::CreateKeyAction,
     },
-    cosmian_kms_client::{
-        kmip_0::kmip_types::CryptographicUsageMask,
-        kmip_2_1::{
-            extra::VENDOR_ID_COSMIAN,
-            kmip_types::{CryptographicAlgorithm, LinkType, Tag, VendorAttribute},
+    reexport::{
+        cosmian_kms_client::{
+            kmip_0::kmip_types::CryptographicUsageMask,
+            kmip_2_1::{
+                extra::VENDOR_ID_COSMIAN,
+                kmip_types::{CryptographicAlgorithm, LinkType, Tag, VendorAttribute},
+            },
+            reexport::cosmian_kms_client_utils::{
+                attributes_utils::CLinkType,
+                certificate_utils::Algorithm,
+                import_utils::{KeyUsage, build_usage_mask_from_key_usage},
+            },
         },
-        reexport::cosmian_kms_client_utils::{
-            attributes_utils::CLinkType,
-            certificate_utils::Algorithm,
-            import_utils::{KeyUsage, build_usage_mask_from_key_usage},
-        },
+        test_kms_server::start_default_test_kms_server,
     },
 };
 use strum::IntoEnumIterator;
-use test_kms_server::start_default_test_kms_server;
 use tracing::trace;
 
 use crate::{

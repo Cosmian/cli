@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use cosmian_findex_structs::Value;
+use cosmian_findex_cli::reexport::cosmian_findex_structs::Value;
 
 #[derive(Clone)]
 pub(crate) struct SearchOptions {

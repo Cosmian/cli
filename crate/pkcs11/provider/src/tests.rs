@@ -1,12 +1,15 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use cosmian_cli::reexport::cosmian_findex_cli::reexport::cosmian_kms_client::KmsClient;
-use cosmian_kmip::kmip_2_1::{
-    kmip_attributes::Attributes,
-    kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
-    kmip_objects::{Object, PrivateKey},
-    kmip_types::{CryptographicAlgorithm, KeyFormatType},
-    requests::{self, create_symmetric_key_kmip_object, import_object_request},
+use cosmian_cli::reexport::cosmian_kms_cli::reexport::{
+    cosmian_kmip::kmip_2_1::{
+        kmip_attributes::Attributes,
+        kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
+        kmip_objects::{Object, PrivateKey},
+        kmip_types::{CryptographicAlgorithm, KeyFormatType},
+        requests::{self, create_symmetric_key_kmip_object, import_object_request},
+    },
+    cosmian_kms_client::KmsClient,
+    test_kms_server::start_default_test_kms_server,
 };
 use cosmian_logger::log_init;
 use cosmian_pkcs11_module::{
@@ -16,7 +19,6 @@ use cosmian_pkcs11_module::{
 };
 use pkcs11_sys::{CK_FUNCTION_LIST, CK_INVALID_HANDLE, CKF_SERIAL_SESSION, CKR_OK};
 use serial_test::serial;
-use test_kms_server::start_default_test_kms_server;
 use tracing::debug;
 
 use crate::{
