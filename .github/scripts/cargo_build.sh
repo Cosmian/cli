@@ -83,7 +83,5 @@ rm -f /tmp/*.json /tmp/*.toml
 
 export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=debug"
 
-cargo install --version 0.6.36 cargo-hack --force
-
 # shellcheck disable=SC2086
-cargo hack test --all --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS
+cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS
