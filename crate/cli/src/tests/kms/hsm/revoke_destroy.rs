@@ -1,25 +1,29 @@
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::test_kms_server::TestsContext,
+};
 use cosmian_logger::log_init;
-use test_kms_server::start_default_test_kms_server_with_utimaco_hsm;
 use tracing::debug;
 use uuid::Uuid;
 
 use crate::{
-    actions::kms::symmetric::keys::create_key::CreateKeyAction,
     error::result::CosmianResult,
-    tests::kms::{
-        shared::{ExportKeyParams, destroy, export_key, revoke},
-        symmetric::create_key::create_symmetric_key,
+    tests::{
+        kms::{
+            shared::{ExportKeyParams, destroy, export_key, revoke},
+            symmetric::create_key::create_symmetric_key,
+        },
+        save_kms_cli_config,
     },
 };
 
-#[tokio::test]
-async fn test_revoke_symmetric_key() -> CosmianResult<()> {
+pub(crate) fn test_revoke_symmetric_key(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(None);
-    let ctx = start_default_test_kms_server_with_utimaco_hsm().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // sym
     let key_id = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             key_id: Some("hsm::0::".to_string() + &Uuid::new_v4().to_string()),
             ..Default::default()
@@ -27,12 +31,7 @@ async fn test_revoke_symmetric_key() -> CosmianResult<()> {
     )?;
 
     // revoke
-    match revoke(
-        &ctx.owner_client_conf_path,
-        "sym",
-        &key_id,
-        "revocation test",
-    ) {
+    match revoke(&owner_client_conf_path, "sym", &key_id, "revocation test") {
         Ok(()) => {
             debug!("revocation successful");
         }
@@ -42,10 +41,10 @@ async fn test_revoke_symmetric_key() -> CosmianResult<()> {
     }
 
     // The key is always removed when it is an HSM
-    destroy(&ctx.owner_client_conf_path, "sym", &key_id, true)?;
+    destroy(&owner_client_conf_path, "sym", &key_id, true)?;
 
     let res = export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path,
         sub_command: "sym".to_string(),
         key_id,
         key_file: "/tmp/key".to_string(),

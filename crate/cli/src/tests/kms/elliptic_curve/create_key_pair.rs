@@ -1,7 +1,7 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use test_kms_server::start_default_test_kms_server;
+use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
 use crate::{
@@ -16,6 +16,7 @@ use crate::{
                 recover_cmd_logs,
             },
         },
+        save_kms_cli_config,
     },
 };
 
@@ -66,8 +67,10 @@ pub(crate) fn create_ec_key_pair(
 pub(crate) async fn test_create_key_pair() -> CosmianResult<()> {
     // from specs
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     create_ec_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "nist-p256",
         &["tag1", "tag2"],
         false,

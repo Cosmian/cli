@@ -1,21 +1,24 @@
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::cargo::CommandCargoExt;
-use cosmian_kms_client::{
-    cosmian_kmip::{
-        kmip_2_1::{kmip_objects::Object, kmip_types::LinkType},
-        ttlv::{TTLV, from_ttlv},
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::{
+        cosmian_kmip::{
+            kmip_2_1::{kmip_objects::Object, kmip_types::LinkType},
+            ttlv::{TTLV, from_ttlv},
+        },
+        kmip_2_1::{kmip_attributes::Attributes, kmip_objects::Certificate},
+        read_from_json_file, read_object_from_json_ttlv_file,
+        reexport::cosmian_kms_client_utils::{
+            certificate_utils::Algorithm, export_utils::CertificateExportFormat,
+            import_utils::CertificateInputFormat,
+        },
     },
-    kmip_2_1::{kmip_attributes::Attributes, kmip_objects::Certificate},
-    read_from_json_file, read_object_from_json_ttlv_file,
-    reexport::cosmian_kms_client_utils::{
-        export_utils::CertificateExportFormat, import_utils::CertificateInputFormat,
-    },
+    test_kms_server::start_default_test_kms_server,
 };
 use cosmian_logger::log_init;
 use openssl::{nid::Nid, x509::X509};
 use tempfile::TempDir;
-use test_kms_server::{TestsContext, start_default_test_kms_server};
 use tracing::{debug, info};
 use uuid::Uuid;
 use x509_parser::{der_parser::oid, prelude::*};
@@ -24,7 +27,6 @@ use super::validate;
 #[cfg(not(feature = "fips"))]
 use crate::tests::kms::rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair};
 use crate::{
-    actions::kms::certificates::Algorithm,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
@@ -38,6 +40,7 @@ use crate::{
             shared::{ExportKeyParams, export_key},
             utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
         },
+        save_kms_cli_config,
     },
 };
 
@@ -128,11 +131,11 @@ pub(crate) fn certify(cli_conf_path: &str, certify_op: CertifyOp) -> CosmianResu
 }
 
 pub(crate) fn import_root_and_intermediate(
-    ctx: &TestsContext,
+    owner_client_conf_path: &str,
 ) -> CosmianResult<(String, String, String)> {
     // import Root CA
     let root_ca_id = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/csr/ca.crt",
         format: &CertificateInputFormat::Pem,
@@ -143,7 +146,7 @@ pub(crate) fn import_root_and_intermediate(
 
     // import Intermediate CA
     let intermediate_ca_id = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/csr/intermediate.crt",
         format: &CertificateInputFormat::Pem,
@@ -155,7 +158,7 @@ pub(crate) fn import_root_and_intermediate(
 
     // import Intermediate p12
     let intermediate_ca_private_key_id = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/csr/intermediate.p12",
         format: &CertificateInputFormat::Pkcs12,
@@ -174,14 +177,17 @@ pub(crate) fn import_root_and_intermediate(
 }
 
 /// Fetch a certificate and return its Object, attributes and DER bytes
-fn fetch_certificate(ctx: &TestsContext, certificate_id: &str) -> (Object, Attributes, Vec<u8>) {
+fn fetch_certificate(
+    owner_client_conf_path: &str,
+    certificate_id: &str,
+) -> (Object, Attributes, Vec<u8>) {
     let tmp_dir = TempDir::new().unwrap();
     let tmp_path = tmp_dir.path();
     // export the certificate
     let exported_cert_file = tmp_path.join("new_cert.pem");
     debug!("exporting certificate: new_cert: {:?}", exported_cert_file);
     export_certificate(
-        &ctx.owner_client_conf_path,
+        owner_client_conf_path,
         certificate_id,
         exported_cert_file.to_str().unwrap(),
         Some(CertificateExportFormat::JsonTtlv),
@@ -226,20 +232,21 @@ fn fetch_certificate(ctx: &TestsContext, certificate_id: &str) -> (Object, Attri
 /// Check a generated certificate chain
 /// and return its Object, attributes and DER bytes
 fn check_certificate_chain(
-    ctx: &TestsContext,
+    owner_client_conf_path: &str,
     issuer_private_key_id: &str,
     certificate_id: &str,
 ) -> (Object, Attributes, Vec<u8>) {
     let tmp_dir = TempDir::new().unwrap();
     let tmp_path = tmp_dir.path();
     // fetch generated certificate
-    let (cert, cert_attributes, cert_x509_der) = fetch_certificate(ctx, certificate_id);
+    let (cert, cert_attributes, cert_x509_der) =
+        fetch_certificate(owner_client_conf_path, certificate_id);
     // check that the attributes contain a certificate link to the intermediate
     let certificate_link = cert_attributes.get_link(LinkType::CertificateLink).unwrap();
     // export the intermediate certificate
     let signer_cert_file = tmp_path.join("signer_cert.pem");
     export_certificate(
-        &ctx.owner_client_conf_path,
+        owner_client_conf_path,
         &certificate_link.to_string(),
         signer_cert_file.to_str().unwrap(),
         Some(CertificateExportFormat::Pem),
@@ -333,7 +340,7 @@ fn check_certificate_added_extensions(cert_x509_der: &[u8]) {
 }
 
 fn check_certificate_and_public_key_linked(
-    ctx: &TestsContext,
+    owner_client_conf_path: &str,
     certificate_id: &str,
     certificate_attributes: &Attributes,
 ) -> (String, Attributes) {
@@ -346,7 +353,7 @@ fn check_certificate_and_public_key_linked(
     let tmp_path = tmp_dir.path();
     let tmp_exported_pubkey = tmp_path.join("exported_pubkey.json");
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "rsa".to_owned(),
         key_id: public_key_link.to_string(),
         key_file: tmp_exported_pubkey.to_str().unwrap().to_string(),
@@ -364,7 +371,7 @@ fn check_certificate_and_public_key_linked(
 }
 
 fn check_public_and_private_key_linked(
-    ctx: &TestsContext,
+    owner_client_conf_path: &str,
     public_key_id: &str,
     public_key_attributes: &Attributes,
 ) -> String {
@@ -377,7 +384,7 @@ fn check_public_and_private_key_linked(
     let tmp_path = tmp_dir.path();
     let tmp_exported_privkey = tmp_path.join("exported_privkey.json");
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "rsa".to_owned(),
         key_id: private_key_link.to_string(),
         key_file: tmp_exported_privkey.to_str().unwrap().to_string(),
@@ -400,12 +407,15 @@ async fn test_certify_a_csr_without_extensions() -> CosmianResult<()> {
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // import signers
-    let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
+    let (root_id, intermediate_id, issuer_private_key_id) =
+        import_root_and_intermediate(&owner_client_conf_path)?;
 
     // Certify the CSR with the intermediate CA
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             csr_file: Some("../../test_data/certificates/csr/leaf.csr".to_owned()),
             issuer_private_key_id: Some(issuer_private_key_id.clone()),
@@ -414,10 +424,14 @@ async fn test_certify_a_csr_without_extensions() -> CosmianResult<()> {
         },
     )?;
 
-    check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
+    check_certificate_chain(
+        &owner_client_conf_path,
+        &issuer_private_key_id,
+        &certificate_id,
+    );
 
     let validation = validate::validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![root_id, intermediate_id, certificate_id],
         None,
@@ -432,12 +446,15 @@ async fn test_certify_a_csr_with_extensions() -> CosmianResult<()> {
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // import signers
-    let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
+    let (root_id, intermediate_id, issuer_private_key_id) =
+        import_root_and_intermediate(&owner_client_conf_path)?;
 
     // Certify the CSR with the intermediate CA
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             csr_file: Some("../../test_data/certificates/csr/leaf.csr".to_owned()),
             issuer_private_key_id: Some(issuer_private_key_id.clone()),
@@ -450,14 +467,17 @@ async fn test_certify_a_csr_with_extensions() -> CosmianResult<()> {
     )?;
 
     // check the certificate
-    let (_, _, cert_x509_der) =
-        check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
+    let (_, _, cert_x509_der) = check_certificate_chain(
+        &owner_client_conf_path,
+        &issuer_private_key_id,
+        &certificate_id,
+    );
 
     // check the added extensions
     check_certificate_added_extensions(&cert_x509_der);
 
     let validation = validate::validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![root_id, intermediate_id, certificate_id],
         None,
@@ -472,17 +492,19 @@ async fn test_certify_a_public_key_test_without_extensions() -> CosmianResult<()
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // import signers
-    let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
+    let (root_id, intermediate_id, issuer_private_key_id) =
+        import_root_and_intermediate(&owner_client_conf_path)?;
 
     // create an RSA key pair
     let (_private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
+        create_rsa_key_pair(&owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // Certify the public key with the intermediate CA
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             public_key_id_to_certify: Some(public_key_id),
             issuer_private_key_id: Some(issuer_private_key_id.clone()),
@@ -494,13 +516,17 @@ async fn test_certify_a_public_key_test_without_extensions() -> CosmianResult<()
     )?;
 
     // check the certificate
-    let (_, attributes, _) = check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
+    let (_, attributes, _) = check_certificate_chain(
+        &owner_client_conf_path,
+        &issuer_private_key_id,
+        &certificate_id,
+    );
 
     // check links to public key
-    check_certificate_and_public_key_linked(ctx, &certificate_id, &attributes);
+    check_certificate_and_public_key_linked(&owner_client_conf_path, &certificate_id, &attributes);
 
     let validation = validate::validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![root_id, intermediate_id, certificate_id],
         None,
@@ -515,17 +541,19 @@ async fn test_certify_a_public_key_test_with_extensions() -> CosmianResult<()> {
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // import signers
-    let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
+    let (root_id, intermediate_id, issuer_private_key_id) =
+        import_root_and_intermediate(&owner_client_conf_path)?;
 
     // create an RSA key pair
     let (_private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
+        create_rsa_key_pair(&owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // Certify the public key with the intermediate CA
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             public_key_id_to_certify: Some(public_key_id),
             issuer_private_key_id: Some(issuer_private_key_id.clone()),
@@ -540,18 +568,21 @@ async fn test_certify_a_public_key_test_with_extensions() -> CosmianResult<()> {
     )?;
 
     // check the certificate
-    let (_, attributes, cert_x509_der) =
-        check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
+    let (_, attributes, cert_x509_der) = check_certificate_chain(
+        &owner_client_conf_path,
+        &issuer_private_key_id,
+        &certificate_id,
+    );
 
     // check the added extensions
     check_certificate_added_extensions(&cert_x509_der);
 
     // check links to public key
-    check_certificate_and_public_key_linked(ctx, &certificate_id, &attributes);
+    check_certificate_and_public_key_linked(&owner_client_conf_path, &certificate_id, &attributes);
 
     // validating generated certificate
     let validation = validate::validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![root_id, intermediate_id, certificate_id],
         None,
@@ -565,12 +596,15 @@ async fn test_certify_renew_a_certificate() -> CosmianResult<()> {
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // import signers
-    let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
+    let (root_id, intermediate_id, issuer_private_key_id) =
+        import_root_and_intermediate(&owner_client_conf_path)?;
 
     // Certify the CSR with the intermediate CA
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             csr_file: Some("../../test_data/certificates/csr/leaf.csr".to_owned()),
             issuer_private_key_id: Some(issuer_private_key_id.clone()),
@@ -579,14 +613,18 @@ async fn test_certify_renew_a_certificate() -> CosmianResult<()> {
         },
     )?;
 
-    let (_, _, der) = check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
+    let (_, _, der) = check_certificate_chain(
+        &owner_client_conf_path,
+        &issuer_private_key_id,
+        &certificate_id,
+    );
     let x509 = X509::from_der(&der).unwrap();
     let num_days = x509.not_before().diff(x509.not_after()).unwrap().days;
     assert_eq!(num_days, 365);
 
     // renew the certificate
     let renewed_certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             certificate_id_to_re_certify: Some(certificate_id.clone()),
             issuer_private_key_id: Some(issuer_private_key_id.clone()),
@@ -598,14 +636,18 @@ async fn test_certify_renew_a_certificate() -> CosmianResult<()> {
 
     assert_eq!(renewed_certificate_id, certificate_id);
 
-    let (_, _, der) = check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
+    let (_, _, der) = check_certificate_chain(
+        &owner_client_conf_path,
+        &issuer_private_key_id,
+        &certificate_id,
+    );
     let x509 = X509::from_der(&der).unwrap();
     let num_days = x509.not_before().diff(x509.not_after()).unwrap().days;
     assert_eq!(num_days, 42);
 
     // validating generated certificate
     let validation = validate::validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![root_id, intermediate_id, renewed_certificate_id],
         None,
@@ -619,12 +661,15 @@ async fn test_certify_issue_with_subject_name() -> CosmianResult<()> {
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // import signers
-    let (root_id, intermediate_id, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
+    let (root_id, intermediate_id, issuer_private_key_id) =
+        import_root_and_intermediate(&owner_client_conf_path)?;
 
     // Certify the CSR with the intermediate CA
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             generate_keypair: true,
             algorithm: Some(Algorithm::NistP256),
@@ -637,16 +682,27 @@ async fn test_certify_issue_with_subject_name() -> CosmianResult<()> {
         },
     )?;
 
-    let (_, attributes, _) = check_certificate_chain(ctx, &issuer_private_key_id, &certificate_id);
+    let (_, attributes, _) = check_certificate_chain(
+        &owner_client_conf_path,
+        &issuer_private_key_id,
+        &certificate_id,
+    );
     info!("{attributes:?}");
 
     // check links to public key
-    let (public_key_id, public_key_attributes) =
-        check_certificate_and_public_key_linked(ctx, &certificate_id, &attributes);
-    check_public_and_private_key_linked(ctx, &public_key_id, &public_key_attributes);
+    let (public_key_id, public_key_attributes) = check_certificate_and_public_key_linked(
+        &owner_client_conf_path,
+        &certificate_id,
+        &attributes,
+    );
+    check_public_and_private_key_linked(
+        &owner_client_conf_path,
+        &public_key_id,
+        &public_key_attributes,
+    );
 
     let validation = validate::validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![root_id, intermediate_id, certificate_id],
         None,
@@ -661,14 +717,15 @@ async fn test_certify_a_public_key_test_self_signed() -> CosmianResult<()> {
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // create an RSA key pair
     let (_private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
+        create_rsa_key_pair(&owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // Certify the public key with the intermediate CA
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             public_key_id_to_certify: Some(public_key_id),
             subject_name: Some(
@@ -678,13 +735,13 @@ async fn test_certify_a_public_key_test_self_signed() -> CosmianResult<()> {
         },
     )?;
 
-    let (_, attributes, _) = fetch_certificate(ctx, &certificate_id);
+    let (_, attributes, _) = fetch_certificate(&owner_client_conf_path, &certificate_id);
     // since the certificate is self signed, the Certificate Link should point back to itself
     let certificate_link = attributes.get_link(LinkType::CertificateLink).unwrap();
     assert_eq!(certificate_link.to_string(), certificate_id);
 
     let validation = validate::validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![certificate_id],
         None,
@@ -694,14 +751,14 @@ async fn test_certify_a_public_key_test_self_signed() -> CosmianResult<()> {
 }
 
 #[cfg(not(feature = "fips"))]
-pub(crate) fn create_self_signed_cert(ctx: &TestsContext) -> CosmianResult<String> {
+pub(crate) fn create_self_signed_cert(owner_client_conf_path: &str) -> CosmianResult<String> {
     // create an RSA key pair
     let (_private_key_id, public_key_id) =
-        create_rsa_key_pair(&ctx.owner_client_conf_path, &RsaKeyPairOptions::default())?;
+        create_rsa_key_pair(owner_client_conf_path, &RsaKeyPairOptions::default())?;
 
     // Certify the public key with the intermediate CA
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        owner_client_conf_path,
         CertifyOp {
             public_key_id_to_certify: Some(public_key_id),
             subject_name: Some(
@@ -721,16 +778,18 @@ async fn test_certify_issue_with_subject_name_self_signed_without_extensions() -
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
-    // create a self signed certificate
-    let certificate_id = create_self_signed_cert(ctx)?;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
-    let (_, attributes, _) = fetch_certificate(ctx, &certificate_id);
+    // create a self signed certificate
+    let certificate_id = create_self_signed_cert(&owner_client_conf_path)?;
+
+    let (_, attributes, _) = fetch_certificate(&owner_client_conf_path, &certificate_id);
     // since the certificate is self signed, the Certificate Link should point back to itself
     let certificate_link = attributes.get_link(LinkType::CertificateLink).unwrap();
     assert_eq!(certificate_link.to_string(), certificate_id);
 
     let validation = validate::validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![certificate_id],
         None,
@@ -744,10 +803,11 @@ async fn test_certify_issue_with_subject_name_self_signed_with_extensions() -> C
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Certify the CSR without issuer i.e. self signed
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             generate_keypair: true,
             algorithm: Some(Algorithm::NistP256),
@@ -763,13 +823,13 @@ async fn test_certify_issue_with_subject_name_self_signed_with_extensions() -> C
         },
     )?;
 
-    let (_, attributes, _) = fetch_certificate(ctx, &certificate_id);
+    let (_, attributes, _) = fetch_certificate(&owner_client_conf_path, &certificate_id);
     // since the certificate is self signed, the Certificate Link should point back to itself
     let certificate_link = attributes.get_link(LinkType::CertificateLink).unwrap();
     assert_eq!(certificate_link.to_string(), certificate_id);
 
     let validation = validate::validate_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "certificates",
         vec![certificate_id],
         None,
@@ -784,10 +844,11 @@ async fn test_certify_twice() -> CosmianResult<()> {
     log_init(None);
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Certify the CSR without issuer i.e. self signed
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             generate_keypair: true,
             algorithm: Some(Algorithm::NistP256),
@@ -798,13 +859,13 @@ async fn test_certify_twice() -> CosmianResult<()> {
         },
     )?;
 
-    let (_, attributes, _) = fetch_certificate(ctx, &certificate_id);
+    let (_, attributes, _) = fetch_certificate(&owner_client_conf_path, &certificate_id);
     let private_key_id = attributes.get_link(LinkType::PrivateKeyLink).unwrap();
     let public_key_id = attributes.get_link(LinkType::PublicKeyLink).unwrap();
 
     // Certify again with the same certificate id
     let certificate_id2 = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             certificate_id: Some(certificate_id.clone()),
             generate_keypair: true,
@@ -816,7 +877,7 @@ async fn test_certify_twice() -> CosmianResult<()> {
         },
     )?;
 
-    let (_, attributes2, _) = fetch_certificate(ctx, &certificate_id2);
+    let (_, attributes2, _) = fetch_certificate(&owner_client_conf_path, &certificate_id2);
     let private_key_id2 = attributes2.get_link(LinkType::PrivateKeyLink).unwrap();
     let public_key_id2 = attributes2.get_link(LinkType::PublicKeyLink).unwrap();
 

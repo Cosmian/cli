@@ -6,12 +6,16 @@ use cosmian_crypto_core::{
     CsRng,
     reexport::rand_core::{RngCore, SeedableRng},
 };
-use cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm;
-use test_kms_server::start_default_test_kms_server;
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
+        test_kms_server::start_default_test_kms_server,
+    },
+};
 
 use super::SUB_COMMAND;
 use crate::{
-    actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
@@ -20,6 +24,7 @@ use crate::{
             KMS_SUBCOMMAND,
             utils::{extract_uids::extract_uid, recover_cmd_logs},
         },
+        save_kms_cli_config,
     },
 };
 
@@ -78,16 +83,18 @@ pub(crate) fn create_symmetric_key(
 #[tokio::test]
 pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     let mut rng = CsRng::from_entropy();
     let mut key = vec![0_u8; 32];
 
     // AES
     {
         // AES 256 bit key
-        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+        create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
         // AES 128 bit key
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 number_of_bits: Some(128),
                 ..Default::default()
@@ -97,7 +104,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
         rng.fill_bytes(&mut key);
         let key_b64 = general_purpose::STANDARD.encode(&key);
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 wrap_key_b64: Some(key_b64),
                 ..Default::default()
@@ -109,7 +116,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
     {
         // ChaCha20 256 bit key
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 algorithm: SymmetricAlgorithm::Chacha20,
                 ..Default::default()
@@ -117,7 +124,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
         )?;
         // ChaCha20 128 bit key
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 number_of_bits: Some(128),
                 algorithm: SymmetricAlgorithm::Chacha20,
@@ -130,7 +137,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
         rng.fill_bytes(&mut key);
         let key_b64 = general_purpose::STANDARD.encode(&key);
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 wrap_key_b64: Some(key_b64),
                 algorithm: SymmetricAlgorithm::Chacha20,
@@ -143,7 +150,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
     {
         // ChaCha20 256 bit salt
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 algorithm: SymmetricAlgorithm::Sha3,
                 ..Default::default()
@@ -151,7 +158,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
         )?;
         // ChaCha20 salts
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 number_of_bits: Some(224),
                 algorithm: SymmetricAlgorithm::Sha3,
@@ -159,7 +166,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
             },
         )?;
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 number_of_bits: Some(256),
                 algorithm: SymmetricAlgorithm::Sha3,
@@ -167,7 +174,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
             },
         )?;
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 number_of_bits: Some(384),
                 algorithm: SymmetricAlgorithm::Sha3,
@@ -175,7 +182,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
             },
         )?;
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 number_of_bits: Some(512),
                 algorithm: SymmetricAlgorithm::Sha3,
@@ -188,7 +195,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
         rng.fill_bytes(&mut salt);
         let key_b64 = general_purpose::STANDARD.encode(&salt);
         create_symmetric_key(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             CreateKeyAction {
                 wrap_key_b64: Some(key_b64),
                 algorithm: SymmetricAlgorithm::Sha3,
@@ -202,12 +209,13 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
 #[tokio::test]
 pub(crate) async fn test_create_wrapped_symmetric_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     let wrapping_key_id =
-        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+        create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
     // AES 128 bit key
     let _wrapped_symmetric_key = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             number_of_bits: Some(128),
             wrapping_key_id: Some(wrapping_key_id),

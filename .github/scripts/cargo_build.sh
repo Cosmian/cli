@@ -12,11 +12,6 @@ set -ex
 
 ROOT_FOLDER=$(pwd)
 
-# Build UI
-if [ -f /etc/lsb-release ]; then
-  bash .github/scripts/build_ui.sh
-fi
-
 if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   # First build the Debian and RPM packages. It must come at first since
   # after this step `cosmian` and `cosmian_gui` are built with custom features flags (fips for example).
@@ -58,7 +53,7 @@ fi
 rustup target add "$TARGET"
 
 if [ -f /etc/lsb-release ]; then
-  bash .github/scripts/test_utimaco.sh
+  bash .github/reusable_scripts/test_utimaco.sh
 fi
 
 cd "$ROOT_FOLDER"
@@ -88,7 +83,5 @@ rm -f /tmp/*.json /tmp/*.toml
 
 export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=debug"
 
-cargo install --version 0.6.36 cargo-hack --force
-
 # shellcheck disable=SC2086
-cargo hack test --all --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS
+cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS

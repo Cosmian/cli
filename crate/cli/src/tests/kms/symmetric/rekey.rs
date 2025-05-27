@@ -1,13 +1,17 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::read_object_from_json_ttlv_file;
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kms_client::read_object_from_json_ttlv_file,
+        test_kms_server::start_default_test_kms_server,
+    },
+};
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
 use crate::{
-    actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
@@ -18,6 +22,7 @@ use crate::{
             symmetric::create_key::create_symmetric_key,
             utils::{extract_uids::extract_uid, recover_cmd_logs},
         },
+        save_kms_cli_config,
     },
 };
 
@@ -56,10 +61,11 @@ pub(crate) async fn test_rekey_symmetric_key() -> CosmianResult<()> {
     let tmp_path = tmp_dir.path();
 
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // AES 256 bit key
     let id = create_symmetric_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CreateKeyAction {
             number_of_bits: Some(AES_KEY_SIZE),
             ..Default::default()
@@ -68,7 +74,7 @@ pub(crate) async fn test_rekey_symmetric_key() -> CosmianResult<()> {
 
     // Export as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "sym".to_owned(),
         key_id: id.clone(),
         key_file: tmp_path.join("aes_sym").to_str().unwrap().to_owned(),
@@ -76,13 +82,13 @@ pub(crate) async fn test_rekey_symmetric_key() -> CosmianResult<()> {
     })?;
 
     // and refresh it
-    let id_2 = rekey_symmetric_key(&ctx.owner_client_conf_path, &id)?;
+    let id_2 = rekey_symmetric_key(&owner_client_conf_path, &id)?;
 
     assert_eq!(id, id_2);
 
     // Export as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path,
         sub_command: "sym".to_owned(),
         key_id: id,
         key_file: tmp_path.join("aes_sym_2").to_str().unwrap().to_owned(),

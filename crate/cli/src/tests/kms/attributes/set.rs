@@ -1,9 +1,9 @@
 use std::process::Command;
 
 use assert_cmd::cargo::CommandCargoExt;
+use cosmian_kms_cli::actions::kms::attributes::SetOrDeleteAttributes;
 
 use crate::{
-    actions::kms::attributes::SetOrDeleteAttributes,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
