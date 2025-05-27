@@ -18,14 +18,32 @@ docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=Password@92" \
 
 ### Building the Container
 
+**For Apple Silicon Macs (M1/M2/M3):**
 ```bash
 docker buildx build . --platform linux/amd64 -t sql22_u2204:latest
 ```
 
+**For Intel/AMD systems:**
+```bash
+docker buildx build . -t sql22_u2204:latest
+```
+
 ### Running the Container
 
-The container requires specific flags to properly support SystemD:
+**For Apple Silicon Macs (M1/M2/M3):**
+```bash
+docker run -d \
+  --name sql22 \
+  --platform linux/amd64 \
+  --privileged \
+  -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+  --cgroupns=host \
+  -p 1433:1433 \
+  -p 2222:22 \
+  sql22_u2204:latest
+```
 
+**For Intel/AMD systems:**
 ```bash
 docker run -d \
   --name sql22 \

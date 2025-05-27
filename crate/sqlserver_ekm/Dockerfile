@@ -92,9 +92,6 @@ RUN mkdir -p /etc/systemd/system.conf.d && \
     echo 'LogLevel=info' >> /etc/systemd/system.conf.d/container.conf && \
     echo 'LogTarget=console' >> /etc/systemd/system.conf.d/container.conf
 
-# Set systemd as entrypoint (PID 1) with container-friendly options
-ENTRYPOINT ["/lib/systemd/systemd", "--system", "--unit=multi-user.target", "--log-level=info"]
-
 # Create SQL Server setup service that runs once
 RUN echo '[Unit]' > /etc/systemd/system/mssql-server-setup.service && \
     echo 'Description=SQL Server First-Time Setup' >> /etc/systemd/system/mssql-server-setup.service && \
@@ -149,6 +146,14 @@ RUN echo '#!/bin/bash' > /usr/local/bin/startup-info.sh && \
 # Add startup info to bashrc
 RUN echo '/usr/local/bin/startup-info.sh' >> /etc/bash.bashrc
 
+# # Create systemd startup wrapper
+RUN echo '#!/bin/bash' > /usr/local/bin/start-systemdXX.sh 
+# && \
+#     echo 'exec /lib/systemd/systemd --system --unit=multi-user.target --log-level=info' >> /usr/local/bin/start-systemd.sh && \
+#     chmod +x /usr/local/bin/start-systemd.sh
+
+# Set systemd as entrypoint (PID 1) with container-friendly options
+ENTRYPOINT ["/usr/local/bin/start-systemd.sh"]
 
 # Expose SQL Server and SSH ports
 EXPOSE 1433 22
