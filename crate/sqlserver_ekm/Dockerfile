@@ -133,6 +133,12 @@ ENV MSSQL_SA_PASSWORD="YourStrong!Passw0rd"
 ENV ACCEPT_EULA="Y"
 ENV MSSQL_PID="Developer"
 
+# Create systemd startup wrapper
+RUN echo '#!/bin/bash' > /usr/local/bin/start-systemd.sh && \
+    echo 'exec /lib/systemd/systemd --system --unit=multi-user.target --log-level=info' >> /usr/local/bin/start-systemd.sh && \
+    chmod +x /usr/local/bin/start-systemd.sh
+
+
 # Create a helpful startup message
 RUN echo '#!/bin/bash' > /usr/local/bin/startup-info.sh && \
     echo 'echo "=== SQL Server 2022 Container with SystemD ==="' >> /usr/local/bin/startup-info.sh && \
@@ -146,11 +152,6 @@ RUN echo '#!/bin/bash' > /usr/local/bin/startup-info.sh && \
 # Add startup info to bashrc
 RUN echo '/usr/local/bin/startup-info.sh' >> /etc/bash.bashrc
 
-# # Create systemd startup wrapper
-RUN echo '#!/bin/bash' > /usr/local/bin/start-systemdXX.sh 
-# && \
-#     echo 'exec /lib/systemd/systemd --system --unit=multi-user.target --log-level=info' >> /usr/local/bin/start-systemd.sh && \
-#     chmod +x /usr/local/bin/start-systemd.sh
 
 # Set systemd as entrypoint (PID 1) with container-friendly options
 ENTRYPOINT ["/usr/local/bin/start-systemd.sh"]
