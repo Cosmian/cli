@@ -17,8 +17,8 @@ version = "0.4.1"
 edition = "2024"
 rust-version = "1.85.0"
 authors = [
-  "Bruno Grieder <bruno.grieder@cosmian.com>",
-  "Emmanuel Coste <emmanuel.coste@cosmian.com>",
+    "Bruno Grieder <bruno.grieder@cosmian.com>",
+    "Emmanuel Coste <emmanuel.coste@cosmian.com>",
 ]
 license = "BUSL-1.1" # "Business Source License 1.1"
 license-file = "LICENSE"
@@ -50,10 +50,10 @@ clap = { version = "4.5", default-features = false }
 cosmian_config_utils = "0.2"
 cosmian_cover_crypt = { version = "15.0", default-features = false }
 cosmian_crypto_core = { version = "10.1", default-features = false, features = [
-  "ser",
+    "ser",
 ] }
-cosmian_findex_cli = { git = "https://github.com/Cosmian/findex-server", branch = "move_clap_actions" }
-cosmian_kms_cli = { git = "https://github.com/Cosmian/kms", branch = "move_clap_actions" }
+cosmian_findex_cli = { git = "https://github.com/Cosmian/findex-server", branch = "develop" }
+cosmian_kms_cli = "5.3"
 cosmian_http_client = "0.2"
 cosmian_logger = "0.2"
 der = { version = "0.7", default-features = false }
