@@ -5,8 +5,6 @@
 [submodule "kms"]
     path = kms
     url = https://github.com/Cosmian/kms.git
-    branch = develop
 [submodule "findex-server"]
     path = findex-server
     url = https://github.com/Cosmian/findex-server.git
-    branch = develop
