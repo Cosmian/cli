@@ -52,8 +52,8 @@ cosmian_cover_crypt = { version = "15.0", default-features = false }
 cosmian_crypto_core = { version = "10.1", default-features = false, features = [
   "ser",
 ] }
-cosmian_findex_cli = { git = "https://github.com/Cosmian/findex-server", branch = "move_clap_actions" }
-cosmian_kms_cli = { git = "https://github.com/Cosmian/kms", branch = "move_clap_actions" }
+cosmian_findex_cli = { git = "https://github.com/Cosmian/findex-server", branch = "fix/cli_cse_clap_short" }
+cosmian_kms_cli = { git = "https://github.com/Cosmian/kms", branch = "fix/cli_cse_clap_short" }
 cosmian_http_client = "0.2"
 cosmian_logger = "0.2"
 der = { version = "0.7", default-features = false }
