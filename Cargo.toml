@@ -48,12 +48,12 @@ actix-server = { version = "2.5", default-features = false }
 base64 = "0.22"
 clap = { version = "4.5", default-features = false }
 cosmian_config_utils = "0.2"
-cosmian_cover_crypt = { version = "15.0", default-features = false }
+cosmian_cover_crypt = { version = "15.0", default-features = true }
 cosmian_crypto_core = { version = "10.1", default-features = false, features = [
     "ser",
 ] }
-cosmian_findex_cli = { git = "https://github.com/Cosmian/findex-server", branch = "develop" }
-cosmian_kms_cli = "5.3"
+cosmian_findex_cli = { path = "findex-server/crate/cli" }
+cosmian_kms_cli = { path = "kms/crate/cli"}
 cosmian_http_client = "0.2"
 cosmian_logger = "0.2"
 der = { version = "0.7", default-features = false }
@@ -74,7 +74,28 @@ tokio = { version = "1.43", default-features = false }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", default-features = false }
 url = "2.5"
-uuid = "=1.11.1"
+uuid = { version = "=1.11.1", features = ["v4", "serde"] }
 x509-cert = { version = "0.2", default-features = false }
 x509-parser = "0.17"
 zeroize = { version = "1.8", default-features = false }
+# KMS deps
+cosmian_findex = { git = "https://github.com/Cosmian/findex", rev = "08b3989f800b26b9ec3093f6f1b52ee0f739835e", features = [
+  "redis-mem",
+  "sqlite-mem",
+  "test-utils",
+] }
+bitflags = "2.9"
+num-bigint-dig = { version = "0.8", default-features = false }
+time = "0.3"
+num-traits = "0.2"
+actix-rt = "2.10"
+actix-web = { version = "4.10", default-features = false }
+chrono = "0.4"
+native-tls = { version = "0.2", default-features = false }
+tempfile = "3.19"
+async-trait = "0.1"
+lru = "0.12"
+num_cpus = "1.16"
+libloading = "0.8"
+# Findex deps
+async-sqlite = { version = "0.4" }
