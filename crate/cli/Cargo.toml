@@ -88,11 +88,6 @@ assets = [
     "555",
   ],
   [
-    "target/release/cosmian_gui",
-    "usr/sbin/",
-    "555",
-  ],
-  [
     "target/release/libcosmian_pkcs11.so",
     "usr/local/lib/",
     "555",
@@ -111,7 +106,6 @@ features = ["fips"]
 license = "BUSL-1.1"
 assets = [
   { source = "target/release/cosmian", dest = "/usr/sbin/cosmian", mode = "555" },
-  { source = "target/release/cosmian_gui", dest = "/usr/sbin/cosmian_gui", mode = "555" },
   { source = "target/release/libcosmian_pkcs11.so", dest = "/usr/local/lib/libcosmian_pkcs11.so", mode = "555" },
 ]
 auto-req = "no" # do not try to discover .so dependencies

@@ -1,8 +1,7 @@
 [workspace]
-default-members = ["crate/cli", "crate/gui", "crate/pkcs11/provider"]
+default-members = ["crate/cli", "crate/pkcs11/provider"]
 members = [
     "crate/cli",
-    "crate/gui",
     "crate/pkcs11/module",
     "crate/pkcs11/provider",
 ]
@@ -15,7 +14,7 @@ exclude = ["kms"]
 resolver = "2"
 
 [workspace.package]
-version = "0.4.1"
+version = "0.5.0"
 edition = "2024"
 rust-version = "1.85.0"
 authors = [

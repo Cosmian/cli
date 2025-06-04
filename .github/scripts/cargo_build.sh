@@ -14,7 +14,7 @@ ROOT_FOLDER=$(pwd)
 
 if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   # First build the Debian and RPM packages. It must come at first since
-  # after this step `cosmian` and `cosmian_gui` are built with custom features flags (fips for example).
+  # after this step `cosmian` is built with custom features flags (fips for example).
   rm -rf target/"$TARGET"/debian
   rm -rf target/"$TARGET"/generate-rpm
   cargo build --target "$TARGET" --release
@@ -64,24 +64,26 @@ if [ -z "$OPENSSL_DIR" ]; then
 fi
 
 # shellcheck disable=SC2086
-cargo build --target $TARGET $RELEASE
+cargo build --target $TARGET $RELEASE \
+  -p cosmian_cli \
+  -p cosmian_pkcs11
 
 TARGET_FOLDER=./target/"$TARGET/$DEBUG_OR_RELEASE"
 "${TARGET_FOLDER}"/cosmian -h
-"${TARGET_FOLDER}"/cosmian_gui -h
 
 if [ "$(uname)" = "Linux" ]; then
   ldd "${TARGET_FOLDER}"/cosmian | grep ssl && exit 1
-  ldd "${TARGET_FOLDER}"/cosmian_gui | grep ssl && exit 1
 else
   otool -L "${TARGET_FOLDER}"/cosmian | grep openssl && exit 1
-  otool -L "${TARGET_FOLDER}"/cosmian_gui | grep openssl && exit 1
 fi
 
 find . -type d -name cosmian-findex-server -exec rm -rf \{\} \; -print || true
 rm -f /tmp/*.json /tmp/*.toml
 
-export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kmip=error,cosmian_kms_client=debug"
+export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kms_client=debug"
 
 # shellcheck disable=SC2086
-cargo test --workspace --lib --target $TARGET $RELEASE $FEATURES -- --nocapture $SKIP_SERVICES_TESTS
+cargo test --target $TARGET $RELEASE $FEATURES \
+  -p cosmian_cli \
+  -p cosmian_pkcs11 \
+  -- --nocapture $SKIP_SERVICES_TESTS
