@@ -1981,7 +1981,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_server"
-version = "0.3.0"
+version = "0.4.1"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -2004,12 +2004,14 @@ dependencies = [
  "reqwest 0.11.27",
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror 2.0.12",
  "tokio",
  "toml",
  "tracing",
  "url",
  "uuid",
+ "variant_count",
 ]
 
 [[package]]
@@ -2057,7 +2059,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kmip"
-version = "0.4.1"
+version = "5.3.0"
 dependencies = [
  "bitflags 2.9.1",
  "cosmian_logger 0.1.1",
@@ -2065,8 +2067,6 @@ dependencies = [
  "kmip-derive",
  "leb128",
  "num-bigint-dig",
- "num-traits",
- "rand 0.9.1",
  "serde",
  "serde_json",
  "strum",
@@ -2079,7 +2079,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_access"
-version = "0.4.1"
+version = "5.3.0"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -2103,14 +2103,10 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_cli"
-version = "0.4.1"
+version = "5.3.0"
 dependencies = [
- "actix-rt",
- "actix-server",
- "assert_cmd",
  "base64 0.22.1",
  "clap",
- "const-oid",
  "cosmian_config_utils",
  "cosmian_cover_crypt",
  "cosmian_crypto_core 10.1.0",
@@ -2122,18 +2118,13 @@ dependencies = [
  "der",
  "hex",
  "jwt-simple",
- "lazy_static",
  "leb128",
  "num-format",
- "openssl",
  "pem",
- "predicates",
- "regex",
  "reqwest 0.11.27",
  "serde",
  "serde_json",
  "strum",
- "tempfile",
  "test_kms_server",
  "thiserror 2.0.12",
  "tokio",
@@ -2141,13 +2132,12 @@ dependencies = [
  "url",
  "uuid",
  "x509-cert",
- "x509-parser",
  "zeroize",
 ]
 
 [[package]]
 name = "cosmian_kms_client"
-version = "0.4.1"
+version = "5.3.0"
 dependencies = [
  "cosmian_crypto_core 10.1.0",
  "cosmian_http_client",
@@ -2164,7 +2154,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client_utils"
-version = "0.4.1"
+version = "5.3.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -2182,7 +2172,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_crypto"
-version = "0.4.1"
+version = "5.3.0"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -4460,7 +4450,7 @@ dependencies = [
 
 [[package]]
 name = "kmip-derive"
-version = "0.4.1"
+version = "5.3.0"
 dependencies = [
  "quote",
  "syn 2.0.101",
@@ -7429,18 +7419,16 @@ dependencies = [
 
 [[package]]
 name = "test_kms_server"
-version = "0.4.1"
+version = "5.3.0"
 dependencies = [
  "actix-server",
  "cosmian_kms_client",
  "cosmian_kms_server",
  "cosmian_logger 0.2.0",
- "criterion",
  "serde_json",
  "tempfile",
  "tokio",
  "tracing",
- "zeroize",
 ]
 
 [[package]]
@@ -8122,6 +8110,16 @@ name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
+
+[[package]]
+name = "variant_count"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aae2faf80ac463422992abf4de234731279c058aaf33171ca70277c98406b124"
+dependencies = [
+ "quote",
+ "syn 1.0.109",
+]
 
 [[package]]
 name = "vcpkg"
