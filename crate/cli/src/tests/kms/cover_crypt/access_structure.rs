@@ -1,9 +1,9 @@
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
+use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server;
 use predicates::prelude::*;
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server;
 
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
@@ -21,16 +21,18 @@ use crate::{
             shared::{ExportKeyParams, export_key},
             utils::recover_cmd_logs,
         },
+        save_kms_cli_config,
     },
 };
 
 #[tokio::test]
 async fn test_view_access_structure() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // generate a new master key pair
     let (_master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
@@ -43,7 +45,7 @@ async fn test_view_access_structure() -> CosmianResult<()> {
     let public_key_path = tmp_path.join("public_key.json");
 
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "cc".to_owned(),
         key_id: master_public_key_id,
         key_file: format!("{}", public_key_path.display()),
@@ -54,7 +56,7 @@ async fn test_view_access_structure() -> CosmianResult<()> {
     // let object = read_object_from_json_ttlv_file(&tmp_path.join("output.export"))?;
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
-    cmd.env(COSMIAN_CLI_CONF_ENV, &ctx.owner_client_conf_path);
+    cmd.env(COSMIAN_CLI_CONF_ENV, &owner_client_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec![
         "access-structure",
@@ -70,7 +72,7 @@ async fn test_view_access_structure() -> CosmianResult<()> {
         .stdout(predicate::str::contains("RnD"));
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
-    cmd.env(COSMIAN_CLI_CONF_ENV, &ctx.owner_client_conf_path);
+    cmd.env(COSMIAN_CLI_CONF_ENV, &owner_client_conf_path);
 
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(vec![
         "access-structure",
@@ -203,6 +205,8 @@ pub(crate) async fn remove(
 #[tokio::test]
 async fn test_edit_access_structure() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -214,14 +218,14 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // generate a new master key pair
     let (master_secret_key_id, master_public_key_id) = create_cc_master_key_pair(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         "--specification",
         "../../test_data/access_structure_specifications.json",
         &[],
         false,
     )?;
     let user_decryption_key = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::MKG || Department::FIN) && Security Level::Top Secret",
         &[],
@@ -229,7 +233,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
     )?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &master_public_key_id,
         "Department::MKG && Security Level::Confidential",
@@ -239,7 +243,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[cipher_file.to_str().unwrap()],
         &user_decryption_key,
         Some(recovered_file.to_str().unwrap()),
@@ -248,7 +252,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // Rename MKG to Marketing
     rename(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::MKG",
         "Marketing",
@@ -257,7 +261,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // the user key should still be able to decrypt marketing file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[cipher_file.to_str().unwrap()],
         &user_decryption_key,
         Some(recovered_file.to_str().unwrap()),
@@ -266,7 +270,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // Adding new attribute "Department::Sales"
     add(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::Sales",
     )
@@ -274,7 +278,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // Encrypt message for the new attribute
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &master_public_key_id,
         "Department::Sales && Security Level::Confidential",
@@ -284,7 +288,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // Create a new user key with access to both the new and the renamed attribute
     let sales_mkg_user_decryption_key = create_user_decryption_key(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "(Department::Sales || Department::Marketing) && Security Level::Confidential",
         &[],
@@ -294,7 +298,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
     // finance and marketing user can not decrypt the sales file
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &[new_cipher_file.to_str().unwrap()],
             &user_decryption_key,
             Some(recovered_file.to_str().unwrap()),
@@ -305,7 +309,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // sales and marketing user can decrypt the sales file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[new_cipher_file.to_str().unwrap()],
         &sales_mkg_user_decryption_key,
         Some(recovered_file.to_str().unwrap()),
@@ -314,7 +318,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // disable attribute Sales
     disable(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::Sales",
     )
@@ -323,7 +327,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
     // can no longer encrypt for this attribute
     assert!(
         encrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &[input_file.to_str().unwrap()],
             &master_public_key_id,
             "Department::Sales && Security Level::Confidential",
@@ -335,7 +339,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // can still decrypt existing sales files
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[new_cipher_file.to_str().unwrap()],
         &sales_mkg_user_decryption_key,
         Some(recovered_file.to_str().unwrap()),
@@ -344,7 +348,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
 
     // remove attribute Sales
     remove(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &master_secret_key_id,
         "Department::Sales",
     )
@@ -353,7 +357,7 @@ async fn test_edit_access_structure() -> CosmianResult<()> {
     // can no longer decrypt message for this attribute
     assert!(
         decrypt(
-            &ctx.owner_client_conf_path,
+            &owner_client_conf_path,
             &[new_cipher_file.to_str().unwrap()],
             &sales_mkg_user_decryption_key,
             Some(recovered_file.to_str().unwrap()),

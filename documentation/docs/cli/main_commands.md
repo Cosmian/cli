@@ -1558,7 +1558,7 @@ metadata for a user.
 ### Arguments
 ` <USER_ID>` The requester's primary email address
 
-`--cse-key-id [-w] <CSE_KEY_ID>` CSE key ID to wrap exported user private key
+`--cse-key-id <CSE_KEY_ID>` CSE key ID to wrap exported user private key
 
 `--issuer-private-key-id [-i] <ISSUER_PRIVATE_KEY_ID>` The issuer private key id
 

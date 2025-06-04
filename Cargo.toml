@@ -1,15 +1,12 @@
 [workspace]
-default-members = ["crate/cli", "crate/gui", "crate/pkcs11/provider", "crate/wasm"]
+default-members = ["crate/cli", "crate/pkcs11/provider"]
 members = [
     "crate/cli",
-    "crate/findex_client",
-    "crate/kms_client",
-    "crate/gui",
     "crate/pkcs11/module",
     "crate/pkcs11/provider",
-    "crate/client_utils",
-    "crate/wasm",
 ]
+# Exclude crates from KMS
+exclude = ["kms"]
 
 # Do that if you don't want to enable `dev` feature by default due to the `dev-dependencies` of the cli.
 # For more details, read: https://doc.rust-lang.org/cargo/reference/resolver.html#feature-resolver-version-2
@@ -17,7 +14,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.4.1"
+version = "0.5.0"
 edition = "2024"
 rust-version = "1.85.0"
 authors = [
@@ -53,57 +50,20 @@ base64 = "0.22"
 clap = { version = "4.5", default-features = false }
 cosmian_config_utils = "0.2"
 cosmian_cover_crypt = { version = "15.0", default-features = false }
-
-### Local crates have been also declared here to simplify publishing - centralizing the versions
-cosmian_kms_client_utils = { path = "crate/client_utils" }
-cosmian_kms_client_wasm = { path = "crate/wasm" }
-cosmian_kms_client = { path = "crate/kms_client" }
-cosmian_findex_client = { path = "crate/findex_client" }
-cosmian_cli = { path = "crate/cli" }
-test_kms_server = { path = "crate/test_kms_server" }
-test_findex_server = { path = "crate/test_findex_server" }
-cosmian_pkcs11_module = { path = "crate/pkcs11/module" }
-cosmian_pkcs11_provider = { path = "crate/pkcs11/provider" }
-### Uncomment the following lines if you want to publish new crates
-# cosmian_kms_client_utils = "0.4"
-# cosmian_kms_client_wasm = "0.4"
-# cosmian_kms_client = "0.4"
-# cosmian_findex_client = "0.4"
-# cosmian_cli = "0.4"
-# test_kms_server = "0.4"
-# test_findex_server = "0.4"
-# cosmian_pkcs11_module = "0.4"
-# cosmian_pkcs11_provider = "0.4"
-
 cosmian_crypto_core = { version = "10.1", default-features = false, features = [
     "ser",
 ] }
-cosmian_findex = { version = "7.1.0", default-features = false }
-cosmian_findex_server = "0.3"
-cosmian_findex_structs = "0.3"
+cosmian_findex_cli = { path = "findex-server/crate/cli" }
+cosmian_kms_cli = { path = "kms/crate/cli" }
 cosmian_http_client = "0.2"
 cosmian_logger = "0.2"
-
-# cosmian_pkcs11_sys = "0.2"
-# cosmian_kmip = "5.0"
-# cosmian_kms_access = "5.0"
-# cosmian_kms_crypto = "5.0"
-# cosmian_kms_server = "5.0"
-# cosmian_kms_server_database = "5.0"
-# Uncomment the following lines to use the latest develop branch of Cosmian KMS
-cosmian_pkcs11_sys = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
-cosmian_kmip = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
-cosmian_kms_access = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
-cosmian_kms_crypto = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
-cosmian_kms_server = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
-cosmian_kms_server_database = { git = "https://www.github.com/Cosmian/kms", branch = "develop" }
-
 der = { version = "0.7", default-features = false }
 hex = { version = "0.4", default-features = false }
 leb128 = "0.2"
 log = { version = "0.4", default-features = false }
 num-format = "0.4"
 pem = "3.0"
+pkcs11-sys = "0.2"
 openssl = { version = "0.10", default-features = false }
 rand = "0.9.1"
 reqwest = { version = "0.11", default-features = false }
@@ -115,7 +75,28 @@ tokio = { version = "1.43", default-features = false }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", default-features = false }
 url = "2.5"
-uuid = "=1.11.1"
+uuid = { version = "=1.11.1", features = ["v4", "serde"] }
 x509-cert = { version = "0.2", default-features = false }
 x509-parser = "0.17"
 zeroize = { version = "1.8", default-features = false }
+# KMS deps
+cosmian_findex = { git = "https://github.com/Cosmian/findex", rev = "08b3989f800b26b9ec3093f6f1b52ee0f739835e", features = [
+    "redis-mem",
+    "sqlite-mem",
+    "test-utils",
+] }
+bitflags = "2.9"
+num-bigint-dig = { version = "0.8", default-features = false }
+time = "0.3"
+num-traits = "0.2"
+actix-rt = "2.10"
+actix-web = { version = "4.10", default-features = false }
+chrono = "0.4"
+native-tls = { version = "0.2", default-features = false }
+tempfile = "3.19"
+async-trait = "0.1"
+lru = "0.12"
+num_cpus = "1.16"
+libloading = "0.8"
+# Findex deps
+async-sqlite = { version = "0.4" }

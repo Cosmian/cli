@@ -1,10 +1,11 @@
 use std::{fs, path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::read_bytes_from_file;
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::read_bytes_from_file, test_kms_server::start_default_test_kms_server,
+};
 use predicates::prelude::*;
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
 use crate::{
@@ -16,6 +17,7 @@ use crate::{
             KMS_SUBCOMMAND, elliptic_curve::create_key_pair::create_ec_key_pair,
             utils::recover_cmd_logs,
         },
+        save_kms_cli_config,
     },
 };
 
@@ -74,6 +76,8 @@ pub(crate) fn decrypt(
 #[tokio::test]
 async fn test_encrypt_decrypt_using_ids() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -86,10 +90,10 @@ async fn test_encrypt_decrypt_using_ids() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (private_key_id, public_key_id) =
-        create_ec_key_pair(&ctx.owner_client_conf_path, "nist-p256", &[], false)?;
+        create_ec_key_pair(&owner_client_conf_path, "nist-p256", &[], false)?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         &public_key_id,
         Some(output_file.to_str().unwrap()),
@@ -97,7 +101,7 @@ async fn test_encrypt_decrypt_using_ids() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         output_file.to_str().unwrap(),
         &private_key_id,
         Some(recovered_file.to_str().unwrap()),
@@ -114,6 +118,8 @@ async fn test_encrypt_decrypt_using_ids() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // create a temp dir
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
@@ -126,10 +132,10 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
     assert!(!output_file.exists());
 
     let (_private_key_id, _public_key_id) =
-        create_ec_key_pair(&ctx.owner_client_conf_path, "nist-p256", &["tag_ec"], false)?;
+        create_ec_key_pair(&owner_client_conf_path, "nist-p256", &["tag_ec"], false)?;
 
     encrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &[input_file.to_str().unwrap()],
         "[\"tag_ec\"]",
         Some(output_file.to_str().unwrap()),
@@ -137,7 +143,7 @@ async fn test_encrypt_decrypt_using_tags() -> CosmianResult<()> {
 
     // the user key should be able to decrypt the file
     decrypt(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         output_file.to_str().unwrap(),
         "[\"tag_ec\"]",
         Some(recovered_file.to_str().unwrap()),

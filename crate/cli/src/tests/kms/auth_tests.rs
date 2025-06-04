@@ -2,22 +2,24 @@ use std::{path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
 use base64::Engine;
-use cosmian_kms_client::read_object_from_json_ttlv_file;
+use cosmian_kms_cli::{
+    actions::kms::symmetric::keys::create_key::CreateKeyAction,
+    reexport::{
+        cosmian_kms_client::read_object_from_json_ttlv_file,
+        test_kms_server::{AuthenticationOptions, MainDBConfig, start_test_server_with_options},
+    },
+};
 use cosmian_logger::log_init;
 use tempfile::TempDir;
-use test_kms_server::{
-    AuthenticationOptions, MainDBConfig, TestsContext, start_test_server_with_options,
-};
 use tokio::fs;
 use tracing::{info, trace};
 
 use super::{KMS_SUBCOMMAND, utils::recover_cmd_logs};
 use crate::{
-    actions::kms::symmetric::keys::create_key::CreateKeyAction,
     config::COSMIAN_CLI_CONF_ENV,
     error::result::CosmianResult,
     tests::{
-        PROG_NAME,
+        PROG_NAME, force_save_kms_cli_config,
         kms::{
             access::SUB_COMMAND,
             shared::{ExportKeyParams, export_key},
@@ -45,10 +47,9 @@ fn run_owned_cli_command_expect_failure(owner_client_conf_path: &str) {
     cmd.assert().failure();
 }
 
-fn create_api_token(ctx: &TestsContext) -> CosmianResult<(String, String)> {
+fn create_api_token(owner_client_conf_path: &str) -> CosmianResult<(String, String)> {
     // Create and export an API token
-    let api_token_id =
-        create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
+    let api_token_id = create_symmetric_key(owner_client_conf_path, CreateKeyAction::default())?;
     trace!("Symmetric key created of unique identifier: {api_token_id:?}");
 
     // Export as default (JsonTTLV with Raw Key Format Type)
@@ -56,7 +57,7 @@ fn create_api_token(ctx: &TestsContext) -> CosmianResult<(String, String)> {
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "sym".to_owned(),
         key_id: api_token_id.clone(),
         key_file: tmp_path.join("api_token").to_str().unwrap().to_owned(),
@@ -74,7 +75,7 @@ fn create_api_token(ctx: &TestsContext) -> CosmianResult<(String, String)> {
 
 // let us not make other test cases fail
 const DEFAULT_KMS_SERVER_PORT: u16 = 9998;
-const PORT: u16 = DEFAULT_KMS_SERVER_PORT + 5; // +5 since there are other KMS test servers running
+const PORT: u16 = DEFAULT_KMS_SERVER_PORT + 10; // +10 since there are other KMS test servers running
 // in parallel (see test_server.rs)
 
 #[tokio::test]
@@ -101,9 +102,11 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+
+    run_owned_cli_command(&owner_client_conf_path);
     // Create an API auth token with admin rights for later
-    let (api_token_id, api_token) = create_api_token(&ctx)?;
+    let (api_token_id, api_token) = create_api_token(&owner_client_conf_path)?;
     ctx.stop_server().await?;
 
     let default_db_config = MainDBConfig {
@@ -117,7 +120,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("==> Testing server with JWT token over HTTP");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 1,
         AuthenticationOptions {
             use_jwt_token: true,
             ..Default::default()
@@ -127,14 +130,15 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // tls token auth
     info!("==> Testing server with JWT token auth over HTTPS");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 2,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -145,14 +149,15 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // Client Certificate authentication
     info!("==> Testing server with Client Certificate auth");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 3,
         AuthenticationOptions {
             use_https: true,
             use_client_cert: true,
@@ -163,7 +168,8 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // SCENARIO 1: Both Client Certificates and JWT authentication enabled, user presents JWT token only
@@ -172,7 +178,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     );
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 4,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -187,7 +193,8 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // SCENARIO 2: Both Client Certificates and API token authentication enabled, user presents API token only
@@ -197,7 +204,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     );
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 5,
         AuthenticationOptions {
             use_jwt_token: false,
             use_https: true,
@@ -212,14 +219,15 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // SCENARIO 3: Both JWT and API token authentication enabled, user presents API token only
     info!("==> Testing server with both JWT and API token auth - User sends the API token only");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 6,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -233,14 +241,15 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // SCENARIO 4: JWT authentication enabled, no token provided (failure case)
     info!("==> Testing server with JWT auth - User does not send the token (should fail)");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 7,
         AuthenticationOptions {
             use_jwt_token: true,
             do_not_send_jwt_token: true,
@@ -251,14 +260,15 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command_expect_failure(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // SCENARIO 5: Client Certificate authentication enabled, no certificate provided (failure case)
     info!("==> Testing server with Client Certificate auth - missing certificate (should fail)");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 8,
         AuthenticationOptions {
             use_https: true,
             use_client_cert: true,
@@ -270,14 +280,15 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command_expect_failure(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // SCENARIO 6: API token authentication enabled, no token provided (failure case)
     info!("==> Testing server with API token auth - missing token (should fail)");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 9,
         AuthenticationOptions {
             use_https: true,
             api_token_id: Some(api_token_id.clone()),
@@ -290,14 +301,15 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command_expect_failure(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // SCENARIO 7: JWT authentication enabled, but no JWT token presented (failure case)
     info!("===> Testing server with JWT auth - but no JWT token sent (should fail)");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 10,
         AuthenticationOptions {
             use_jwt_token: true,
             do_not_send_jwt_token: true,
@@ -308,14 +320,15 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command_expect_failure(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command_expect_failure(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // Bad API token auth but JWT auth used at first
     info!("==> Testing server with bad API token auth but JWT auth used at first");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 11,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -328,14 +341,15 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // Bad API token auth, but cert auth used at first
     info!("==> Testing server with bad API token auth but cert auth used at first");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT,
+        PORT + 12,
         AuthenticationOptions {
             use_https: true,
             use_client_cert: true,
@@ -348,7 +362,8 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // Bad API token and good JWT token auth but still cert auth used at first
@@ -358,7 +373,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     );
     let ctx = start_test_server_with_options(
         default_db_config,
-        PORT,
+        PORT + 13,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -372,7 +387,8 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         None,
     )
     .await?;
-    run_owned_cli_command(&ctx.owner_client_conf_path);
+    let (owner_client_conf_path, _) = force_save_kms_cli_config(&ctx);
+    run_owned_cli_command(&owner_client_conf_path);
     ctx.stop_server().await?;
 
     // delete the temp db dir

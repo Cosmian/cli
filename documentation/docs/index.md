@@ -10,7 +10,7 @@ Additionally, the CLI facilitates interaction with the [Findex server](https://g
 By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic functionalities and secure search capabilities into their applications, enhancing data security and privacy.
 
 !!! important
-    A graphical version of the CLI is also available as a separate tool called `cosmian_gui`.
+    A Web UI version of the CLI is also available when installing the KMS server.
 
 - [Cosmian Command Line Interface (CLI)](#cosmian-command-line-interface-cli)
   - [Version correspondence](#version-correspondence)
@@ -18,10 +18,10 @@ By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic
   - [Configuration](#configuration)
   - [Usage](#usage)
 
-!!! info "Download cosmian and cosmian_gui"
+!!! info "Download cosmian"
 
     Please download the latest versions for your Operating System from
-    the [Cosmian public packages repository](https://package.cosmian.com/cli/0.4.1/)
+    the [Cosmian public packages repository](https://package.cosmian.com/cli/0.5.0/)
     See below for installation instructions.
 
 ## Version correspondence
@@ -47,7 +47,7 @@ By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic
 
 ## Configuration
 
-To communicate with KMS and Findex server, the clients `cosmian` and `cosmian_gui` expect the same configuration file. Please read the [configuration](./configuration.md) section.
+To communicate with KMS and Findex server, the clients `cosmian` expect the same configuration file. Please read the [configuration](./configuration.md) section.
 
 ## Usage
 

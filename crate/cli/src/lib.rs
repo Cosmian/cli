@@ -35,9 +35,8 @@ pub mod error;
 pub use commands::{Cli, CliCommands, cosmian_main};
 
 pub mod reexport {
-    pub use cosmian_findex_client;
-    pub use cosmian_kms_client;
-    pub use cosmian_kms_crypto;
+    pub use cosmian_findex_cli;
+    pub use cosmian_kms_cli;
 }
 
 #[cfg(test)]

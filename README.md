@@ -12,11 +12,11 @@ Additionally, the CLI facilitates interaction with the [Findex server](https://g
 By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic functionalities and secure search capabilities into their applications, enhancing data security and privacy.
 
 > [!NOTE]
-> A graphical version of the CLI is also available as a separate tool called `cosmian_gui`.
+> A Web UI version of the CLI is also available when installing the KMS server.
 
 ## Installation
 
-Please follow the installation instructions [here](./documentation/docs/installation.md).
+Please follow the [installation instructions](./documentation/docs/installation.md).
 
 Then you can run a Cosmian KMS server (using Docker image) on `http://localhost:9998` and use the CLI to issue commands to the KMS.
 In that example, KMS stores its data inside the container:
@@ -76,11 +76,7 @@ See the [documentation](https://docs.cosmian.com/key_management_system/) for mor
 
 ## Repository content
 
-The server is written in [Rust](https://www.rust-lang.org/) and is broken down into several
-binaries:
-
-- The classic CLI (`cosmian_cli`)
-- The graphical version of the CLI (`cosmian_gui`)
+The client is written in [Rust](https://www.rust-lang.org/).
 
 Find the [public documentation](https://docs.cosmian.com/cosmian_cli/) of the CLI in the `documentation`
 directory.
@@ -97,7 +93,8 @@ Retrieve OpenSSL v3.2.0 (already build) with the following commands:
 export OPENSSL_DIR=/usr/local/openssl
 sudo mkdir -p ${OPENSSL_DIR}
 sudo chown -R $USER ${OPENSSL_DIR}
-bash .github/scripts/get_openssl_binaries.sh
+git submodule update --init --recursive
+bash .github/reusable_scripts/get_openssl_binaries.sh
 ```
 
 ### Windows

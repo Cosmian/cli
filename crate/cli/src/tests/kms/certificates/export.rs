@@ -1,18 +1,22 @@
 use std::process::Command;
 
 use assert_cmd::prelude::CommandCargoExt;
-use cosmian_kms_client::{
-    cosmian_kmip::ttlv::{TTLV, from_ttlv},
-    kmip_2_1::{
-        kmip_attributes::Attributes,
-        kmip_objects::{Certificate, Object},
-        kmip_types::{KeyFormatType, LinkType},
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::{
+        cosmian_kmip::ttlv::{TTLV, from_ttlv},
+        kmip_2_1::{
+            kmip_attributes::Attributes,
+            kmip_objects::{Certificate, Object},
+            kmip_types::{KeyFormatType, LinkType},
+        },
+        read_from_json_file, read_object_from_json_ttlv_file,
+        reexport::cosmian_kms_client_utils::{
+            certificate_utils::Algorithm,
+            export_utils::{CertificateExportFormat, ExportKeyFormat::JsonTtlv},
+            import_utils::CertificateInputFormat,
+        },
     },
-    read_from_json_file, read_object_from_json_ttlv_file,
-    reexport::cosmian_kms_client_utils::{
-        export_utils::{CertificateExportFormat, ExportKeyFormat::JsonTtlv},
-        import_utils::CertificateInputFormat,
-    },
+    test_kms_server::start_default_test_kms_server,
 };
 use cosmian_logger::log_init;
 use openssl::{
@@ -22,13 +26,11 @@ use openssl::{
     x509::{X509, store::X509StoreBuilder},
 };
 use tempfile::TempDir;
-use test_kms_server::start_default_test_kms_server;
 use uuid::Uuid;
 
 #[cfg(not(feature = "fips"))]
 use crate::tests::kms::certificates::certify::create_self_signed_cert;
 use crate::{
-    actions::kms::certificates::Algorithm,
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
@@ -42,6 +44,7 @@ use crate::{
             shared::{ExportKeyParams, export_key},
             utils::recover_cmd_logs,
         },
+        save_kms_cli_config,
     },
 };
 
@@ -53,13 +56,14 @@ async fn test_import_export_p12_25519() {
         include_bytes!("../../../../../../test_data/certificates/another_p12/server.p12");
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     //parse the PKCS#12 with openssl
     let p12 = Pkcs12::from_der(p12_bytes).unwrap();
     let parsed_p12 = p12.parse2("secret").unwrap();
     //import the certificate
     let imported_p12_sk = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/another_p12/server.p12",
         format: &CertificateInputFormat::Pkcs12,
@@ -83,7 +87,7 @@ async fn test_import_export_p12_25519() {
 
     // export the private key
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path.to_string(),
         sub_command: "ec".to_owned(),
         key_id: imported_p12_sk.clone(),
         key_file: tmp_exported_sk.to_str().unwrap().to_string(),
@@ -105,7 +109,7 @@ async fn test_import_export_p12_25519() {
 
     // export the certificate
     export_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &certificate_id.to_string(),
         tmp_exported_cert.to_str().unwrap(),
         Some(CertificateExportFormat::JsonTtlv),
@@ -131,7 +135,7 @@ async fn test_import_export_p12_25519() {
 
     // export the chain - there should be only one certificate in the chain
     export_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &issuer_id.to_string(),
         tmp_exported_cert.to_str().unwrap(),
         Some(CertificateExportFormat::JsonTtlv),
@@ -170,7 +174,7 @@ async fn test_import_export_p12_25519() {
 
     // export the pkcs12
     export_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &imported_p12_sk,
         tmp_exported_cert_p12.to_str().unwrap(),
         Some(CertificateExportFormat::Pkcs12),
@@ -229,13 +233,14 @@ async fn test_import_p12_rsa() {
     let p12_bytes = include_bytes!("../../../../../../test_data/certificates/csr/intermediate.p12");
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     //parse the PKCS#12 with openssl
     let p12 = Pkcs12::from_der(p12_bytes).unwrap();
     let parsed_p12 = p12.parse2("secret").unwrap();
     //import the certificate
     let imported_p12_sk = import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: "../../test_data/certificates/csr/intermediate.p12",
         format: &CertificateInputFormat::Pkcs12,
@@ -249,7 +254,7 @@ async fn test_import_p12_rsa() {
     // export the private key
     let key_file = tmp_path.join("exported_p12_sk.json");
     export_key(ExportKeyParams {
-        cli_conf_path: ctx.owner_client_conf_path.clone(),
+        cli_conf_path: owner_client_conf_path,
         sub_command: "ec".to_owned(),
         key_id: imported_p12_sk,
         key_file: key_file.to_str().unwrap().to_string(),
@@ -281,12 +286,15 @@ async fn test_export_pkcs7() -> Result<(), CosmianError> {
 
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // import signers
-    let (root_ca_id, _, issuer_private_key_id) = import_root_and_intermediate(ctx)?;
+    let (root_ca_id, _, issuer_private_key_id) =
+        import_root_and_intermediate(&owner_client_conf_path)?;
 
     // Certify the CSR with the intermediate CA
     let certificate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             generate_keypair: true,
             algorithm: Some(Algorithm::RSA4096),
@@ -303,7 +311,7 @@ async fn test_export_pkcs7() -> Result<(), CosmianError> {
 
     // Export the pkcs7
     export_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &certificate_id,
         tmp_exported_pkcs7.to_str().unwrap(),
         Some(CertificateExportFormat::Pkcs7),
@@ -323,7 +331,7 @@ async fn test_export_pkcs7() -> Result<(), CosmianError> {
 
     // Export intermediate cert
     export_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &issuer_private_key_id,
         tmp_exported_int.to_str().unwrap(),
         Some(CertificateExportFormat::Pkcs12),
@@ -339,7 +347,7 @@ async fn test_export_pkcs7() -> Result<(), CosmianError> {
 
     // Export root cert
     export_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &root_ca_id,
         tmp_exported_root.to_str().unwrap(),
         Some(CertificateExportFormat::Pem),
@@ -430,14 +438,16 @@ pub(crate) fn export_certificate(
 async fn test_self_signed_export_loop() -> CosmianResult<()> {
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
     // Create a self-signed certificate - the certificate link points to the certificate itself
-    let certificate_id = create_self_signed_cert(ctx)?;
+    let certificate_id = create_self_signed_cert(&owner_client_conf_path)?;
 
     // export
     let tmp_dir = TempDir::new()?;
     let tmp_exported_cert = tmp_dir.path().join("cert.p12");
     export_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &certificate_id,
         tmp_exported_cert.to_str().unwrap(),
         Some(CertificateExportFormat::Pkcs12),
@@ -447,7 +457,7 @@ async fn test_self_signed_export_loop() -> CosmianResult<()> {
 
     // try re-importing the PKCS#12
     import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: tmp_exported_cert.to_str().unwrap(),
         format: &CertificateInputFormat::Pkcs12,
@@ -463,10 +473,11 @@ async fn test_self_signed_export_loop() -> CosmianResult<()> {
 async fn test_export_root_and_intermediate_pkcs12() -> CosmianResult<()> {
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Generate a self-signed root CA
     let ca_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             generate_keypair: true,
             algorithm: Some(Algorithm::NistP256),
@@ -479,7 +490,7 @@ async fn test_export_root_and_intermediate_pkcs12() -> CosmianResult<()> {
 
     // Certify an intermediate CA with the root CA
     let intermediate_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             issuer_certificate_id: Some(ca_id),
             generate_keypair: true,
@@ -495,7 +506,7 @@ async fn test_export_root_and_intermediate_pkcs12() -> CosmianResult<()> {
     let tmp_dir = TempDir::new()?;
     let tmp_exported_cert = tmp_dir.path().join("cert.p12");
     export_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &intermediate_id,
         tmp_exported_cert.to_str().unwrap(),
         Some(CertificateExportFormat::Pkcs12),
@@ -505,7 +516,7 @@ async fn test_export_root_and_intermediate_pkcs12() -> CosmianResult<()> {
 
     // try re-importing the PKCS#12
     import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: tmp_exported_cert.to_str().unwrap(),
         format: &CertificateInputFormat::Pkcs12,
@@ -522,10 +533,11 @@ async fn test_export_root_and_intermediate_pkcs12() -> CosmianResult<()> {
 async fn test_export_import_legacy_p12() -> CosmianResult<()> {
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Generate a self-signed root CA
     let cert_id = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             generate_keypair: true,
             algorithm: Some(Algorithm::NistP256),
@@ -540,7 +552,7 @@ async fn test_export_import_legacy_p12() -> CosmianResult<()> {
     let tmp_dir = TempDir::new()?;
     let tmp_exported_cert = tmp_dir.path().join("cert_legacy.p12");
     export_certificate(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         &cert_id,
         tmp_exported_cert.to_str().unwrap(),
         Some(CertificateExportFormat::Pkcs12Legacy),
@@ -550,7 +562,7 @@ async fn test_export_import_legacy_p12() -> CosmianResult<()> {
 
     // try re-importing the PKCS#12
     import_certificate(ImportCertificateInput {
-        cli_conf_path: &ctx.owner_client_conf_path,
+        cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
         key_file: tmp_exported_cert.to_str().unwrap(),
         format: &CertificateInputFormat::Pkcs12,

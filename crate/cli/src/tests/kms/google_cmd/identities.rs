@@ -1,10 +1,12 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_client::{GmailApiConf, write_json_object_to_file};
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::{GmailApiConf, write_json_object_to_file},
+    test_kms_server::{TestsContext, start_default_test_kms_server},
+};
 use serde::Deserialize;
 use tempfile::TempDir;
-use test_kms_server::{TestsContext, start_default_test_kms_server};
 use tracing::trace;
 
 use crate::{
@@ -37,7 +39,10 @@ fn list_identities(
         .collect();
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
-    cmd.arg(KMS_SUBCOMMAND).arg("google").arg("identities").args(args);
+    cmd.arg(KMS_SUBCOMMAND)
+        .arg("google")
+        .arg("identities")
+        .args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         if output.stdout.is_empty() {
@@ -62,7 +67,10 @@ fn get_identities(cli_conf_path: &str, user_id: &str) -> Result<Identity, Cosmia
         .collect();
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
-    cmd.arg(KMS_SUBCOMMAND).arg("google").arg("identities").args(args);
+    cmd.arg(KMS_SUBCOMMAND)
+        .arg("google")
+        .arg("identities")
+        .args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         let output = std::str::from_utf8(&output.stdout)?;
@@ -82,7 +90,10 @@ fn delete_identities(cli_conf_path: &str, user_id: &str) -> Result<(), CosmianEr
         .collect();
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
-    cmd.arg(KMS_SUBCOMMAND).arg("google").arg("identities").args(args);
+    cmd.arg(KMS_SUBCOMMAND)
+        .arg("google")
+        .arg("identities")
+        .args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         return Ok(())
@@ -104,7 +115,10 @@ fn insert_identities(
         .collect();
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
-    cmd.arg(KMS_SUBCOMMAND).arg("google").arg("identities").args(args);
+    cmd.arg(KMS_SUBCOMMAND)
+        .arg("google")
+        .arg("identities")
+        .args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         let output = std::str::from_utf8(&output.stdout)?;

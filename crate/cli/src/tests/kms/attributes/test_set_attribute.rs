@@ -1,28 +1,36 @@
-use cosmian_kms_client::{
-    kmip_0::kmip_types::CryptographicUsageMask,
-    kmip_2_1::{
-        extra::VENDOR_ID_COSMIAN,
-        kmip_types::{CryptographicAlgorithm, LinkType, Tag, VendorAttribute},
+use cosmian_kms_cli::{
+    actions::kms::{
+        attributes::{CCryptographicAlgorithm, SetOrDeleteAttributes, VendorAttributeCli},
+        symmetric::keys::create_key::CreateKeyAction,
     },
-    reexport::cosmian_kms_client_utils::import_utils::{KeyUsage, build_usage_mask_from_key_usage},
+    reexport::{
+        cosmian_kms_client::{
+            kmip_0::kmip_types::CryptographicUsageMask,
+            kmip_2_1::{
+                extra::VENDOR_ID_COSMIAN,
+                kmip_types::{CryptographicAlgorithm, LinkType, Tag, VendorAttribute},
+            },
+            reexport::cosmian_kms_client_utils::{
+                attributes_utils::CLinkType,
+                certificate_utils::Algorithm,
+                import_utils::{KeyUsage, build_usage_mask_from_key_usage},
+            },
+        },
+        test_kms_server::start_default_test_kms_server,
+    },
 };
 use strum::IntoEnumIterator;
-use test_kms_server::{TestsContext, start_default_test_kms_server};
 use tracing::trace;
 
 use crate::{
-    actions::kms::{
-        attributes::{
-            CCryptographicAlgorithm, CLinkType, SetOrDeleteAttributes, VendorAttributeCli,
-        },
-        certificates::Algorithm,
-        symmetric::keys::create_key::CreateKeyAction,
-    },
     error::result::CosmianResult,
-    tests::kms::{
-        attributes::{delete::delete_attributes, get::get_attributes, set::set_attributes},
-        certificates::certify::{CertifyOp, certify},
-        symmetric::create_key::create_symmetric_key,
+    tests::{
+        kms::{
+            attributes::{delete::delete_attributes, get::get_attributes, set::set_attributes},
+            certificates::certify::{CertifyOp, certify},
+            symmetric::create_key::create_symmetric_key,
+        },
+        save_kms_cli_config,
     },
 };
 
@@ -44,12 +52,12 @@ fn get_all_link_types() -> Vec<CLinkType> {
 
 #[expect(clippy::cognitive_complexity)]
 fn get_and_check_attributes(
-    ctx: &TestsContext,
+    owner_client_conf_path: &str,
     uid: &str,
     requested_attributes: &SetOrDeleteAttributes,
 ) -> CosmianResult<()> {
     let get_attributes = get_attributes(
-        &ctx.owner_client_conf_path,
+        owner_client_conf_path,
         uid,
         &get_all_attribute_tags(),
         &get_all_link_types(),
@@ -158,12 +166,12 @@ fn get_and_check_attributes(
 
 #[expect(clippy::cognitive_complexity)]
 fn get_and_check_none_attributes(
-    ctx: &TestsContext,
+    owner_client_conf_path: &str,
     uid: &str,
     requested_attributes: &SetOrDeleteAttributes,
 ) -> CosmianResult<()> {
     let get_attributes = get_attributes(
-        &ctx.owner_client_conf_path,
+        owner_client_conf_path,
         uid,
         &get_all_attribute_tags(),
         &get_all_link_types(),
@@ -204,7 +212,7 @@ fn get_and_check_none_attributes(
     Ok(())
 }
 
-fn check_set_delete_attributes(uid: &str, ctx: &TestsContext) -> CosmianResult<()> {
+fn check_set_delete_attributes(uid: &str, owner_client_conf_path: &str) -> CosmianResult<()> {
     let key_usage = Some(vec![KeyUsage::Encrypt, KeyUsage::Decrypt]);
     for activation_date in [None, Some(5)] {
         for cryptographic_length in [None, Some(256)] {
@@ -227,14 +235,10 @@ fn check_set_delete_attributes(uid: &str, ctx: &TestsContext) -> CosmianResult<(
                 }),
                 ..SetOrDeleteAttributes::default()
             };
-            set_attributes(&ctx.owner_client_conf_path, &requested_attributes)?;
-            get_and_check_attributes(ctx, uid, &requested_attributes)?;
-            delete_attributes(
-                &ctx.owner_client_conf_path,
-                Some(&requested_attributes),
-                None,
-            )?;
-            get_and_check_none_attributes(ctx, uid, &requested_attributes)?;
+            set_attributes(owner_client_conf_path, &requested_attributes)?;
+            get_and_check_attributes(owner_client_conf_path, uid, &requested_attributes)?;
+            delete_attributes(owner_client_conf_path, Some(&requested_attributes), None)?;
+            get_and_check_none_attributes(owner_client_conf_path, uid, &requested_attributes)?;
         }
     }
 
@@ -246,14 +250,10 @@ fn check_set_delete_attributes(uid: &str, ctx: &TestsContext) -> CosmianResult<(
             ..SetOrDeleteAttributes::default()
         };
 
-        set_attributes(&ctx.owner_client_conf_path, &requested_attributes)?;
-        get_and_check_attributes(ctx, uid, &requested_attributes)?;
-        delete_attributes(
-            &ctx.owner_client_conf_path,
-            Some(&requested_attributes),
-            None,
-        )?;
-        get_and_check_none_attributes(ctx, uid, &requested_attributes)?;
+        set_attributes(owner_client_conf_path, &requested_attributes)?;
+        get_and_check_attributes(owner_client_conf_path, uid, &requested_attributes)?;
+        delete_attributes(owner_client_conf_path, Some(&requested_attributes), None)?;
+        get_and_check_none_attributes(owner_client_conf_path, uid, &requested_attributes)?;
     }
 
     // Test key usage one by one
@@ -263,14 +263,10 @@ fn check_set_delete_attributes(uid: &str, ctx: &TestsContext) -> CosmianResult<(
             key_usage: Some(vec![key_usage.clone()]),
             ..SetOrDeleteAttributes::default()
         };
-        set_attributes(&ctx.owner_client_conf_path, &requested_attributes)?;
-        get_and_check_attributes(ctx, uid, &requested_attributes)?;
-        delete_attributes(
-            &ctx.owner_client_conf_path,
-            Some(&requested_attributes),
-            None,
-        )?;
-        get_and_check_none_attributes(ctx, uid, &requested_attributes)?;
+        set_attributes(owner_client_conf_path, &requested_attributes)?;
+        get_and_check_attributes(owner_client_conf_path, uid, &requested_attributes)?;
+        delete_attributes(owner_client_conf_path, Some(&requested_attributes), None)?;
+        get_and_check_none_attributes(owner_client_conf_path, uid, &requested_attributes)?;
     }
 
     trace!("Test delete all attributes by references");
@@ -280,7 +276,7 @@ fn check_set_delete_attributes(uid: &str, ctx: &TestsContext) -> CosmianResult<(
     });
     for tag in Tag::iter() {
         delete_attributes(
-            &ctx.owner_client_conf_path,
+            owner_client_conf_path,
             requested_attributes.as_ref(),
             Some(vec![tag]),
         )?;
@@ -292,7 +288,7 @@ fn check_set_delete_attributes(uid: &str, ctx: &TestsContext) -> CosmianResult<(
         attribute_tags.push(tag);
     }
     delete_attributes(
-        &ctx.owner_client_conf_path,
+        owner_client_conf_path,
         requested_attributes.as_ref(),
         Some(attribute_tags),
     )?;
@@ -324,14 +320,15 @@ fn check_set_delete_attributes(uid: &str, ctx: &TestsContext) -> CosmianResult<(
 async fn test_set_attribute() -> CosmianResult<()> {
     // Create a test server
     let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // AES 256 bit key
-    let uid = create_symmetric_key(&ctx.owner_client_conf_path, CreateKeyAction::default())?;
-    check_set_delete_attributes(&uid, ctx)?;
+    let uid = create_symmetric_key(&owner_client_conf_path, CreateKeyAction::default())?;
+    check_set_delete_attributes(&uid, &owner_client_conf_path)?;
 
     // Certify the CSR without issuer i.e. self signed
     let uid = certify(
-        &ctx.owner_client_conf_path,
+        &owner_client_conf_path,
         CertifyOp {
             generate_keypair: true,
             algorithm: Some(Algorithm::NistP256),
@@ -342,7 +339,7 @@ async fn test_set_attribute() -> CosmianResult<()> {
             ..Default::default()
         },
     )?;
-    check_set_delete_attributes(&uid, ctx)?;
+    check_set_delete_attributes(&uid, &owner_client_conf_path)?;
 
     Ok(())
 }
