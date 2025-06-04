@@ -1926,11 +1926,14 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_cli"
-version = "0.3.0"
-source = "git+https://github.com/Cosmian/findex-server?branch=move_clap_actions#53c51b0ccf1b1f7fd0b54852a3e90f1052ddf116"
+version = "0.4.1"
 dependencies = [
+ "actix-rt",
+ "actix-server",
+ "assert_cmd",
  "base64 0.22.1",
  "clap",
+ "const-oid",
  "cosmian_config_utils",
  "cosmian_cover_crypt",
  "cosmian_crypto_core 10.1.0",
@@ -1942,19 +1945,24 @@ dependencies = [
  "csv",
  "der",
  "hex",
+ "lazy_static",
+ "openssl",
+ "predicates",
+ "regex",
  "serde_json",
+ "tempfile",
  "test_findex_server",
  "thiserror 2.0.12",
  "tokio",
  "tracing",
  "url",
  "uuid",
+ "x509-parser",
 ]
 
 [[package]]
 name = "cosmian_findex_client"
-version = "0.3.0"
-source = "git+https://github.com/Cosmian/findex-server?branch=move_clap_actions#53c51b0ccf1b1f7fd0b54852a3e90f1052ddf116"
+version = "0.4.1"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.1.0",
@@ -1966,14 +1974,14 @@ dependencies = [
  "reqwest 0.11.27",
  "serde",
  "thiserror 2.0.12",
+ "tokio",
  "tracing",
  "uuid",
 ]
 
 [[package]]
 name = "cosmian_findex_server"
-version = "0.3.0"
-source = "git+https://github.com/Cosmian/findex-server?branch=move_clap_actions#53c51b0ccf1b1f7fd0b54852a3e90f1052ddf116"
+version = "0.4.1"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1996,18 +2004,19 @@ dependencies = [
  "reqwest 0.11.27",
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror 2.0.12",
  "tokio",
  "toml",
  "tracing",
  "url",
  "uuid",
+ "variant_count",
 ]
 
 [[package]]
 name = "cosmian_findex_structs"
-version = "0.3.0"
-source = "git+https://github.com/Cosmian/findex-server?branch=move_clap_actions#53c51b0ccf1b1f7fd0b54852a3e90f1052ddf116"
+version = "0.4.1"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.1.0",
@@ -2050,8 +2059,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kmip"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "bitflags 2.9.1",
  "cosmian_logger 0.1.1",
@@ -2071,8 +2079,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_access"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -2080,8 +2087,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_base_hsm"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
@@ -2097,8 +2103,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_cli"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -2132,8 +2137,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "cosmian_crypto_core 10.1.0",
  "cosmian_http_client",
@@ -2150,8 +2154,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client_utils"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -2169,8 +2172,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_crypto"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -2194,8 +2196,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_interfaces"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
@@ -2209,8 +2210,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -2265,8 +2265,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server_database"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "async-trait",
  "cloudproof_findex",
@@ -2415,6 +2414,7 @@ dependencies = [
  "ciborium",
  "clap",
  "criterion-plot",
+ "futures",
  "is-terminal",
  "itertools 0.10.5",
  "num-traits",
@@ -2427,6 +2427,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "tinytemplate",
+ "tokio",
  "walkdir",
 ]
 
@@ -4449,8 +4450,7 @@ dependencies = [
 
 [[package]]
 name = "kmip-derive"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "quote",
  "syn 2.0.101",
@@ -5895,8 +5895,7 @@ dependencies = [
 
 [[package]]
 name = "proteccio_pkcs11_loader"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -6229,6 +6228,7 @@ dependencies = [
  "tokio",
  "tokio-native-tls",
  "tokio-rustls 0.24.1",
+ "tokio-socks",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -7405,21 +7405,21 @@ checksum = "8f50febec83f5ee1df3015341d8bd429f2d1cc62bcba7ea2076759d315084683"
 
 [[package]]
 name = "test_findex_server"
-version = "0.3.0"
-source = "git+https://github.com/Cosmian/findex-server?branch=move_clap_actions#53c51b0ccf1b1f7fd0b54852a3e90f1052ddf116"
+version = "0.4.1"
 dependencies = [
  "actix-server",
  "cosmian_findex_client",
  "cosmian_findex_server",
  "cosmian_logger 0.2.0",
+ "criterion",
  "tokio",
  "tracing",
+ "zeroize",
 ]
 
 [[package]]
 name = "test_kms_server"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "actix-server",
  "cosmian_kms_client",
@@ -7682,6 +7682,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e727b36a1a0e8b74c376ac2211e40c2c8af09fb4013c60d910495810f008e9b"
 dependencies = [
  "rustls 0.23.27",
+ "tokio",
+]
+
+[[package]]
+name = "tokio-socks"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d4770b8024672c1101b3f6733eab95b18007dbe0847a8afe341fcf79e06043f"
+dependencies = [
+ "either",
+ "futures-util",
+ "thiserror 1.0.69",
  "tokio",
 ]
 
@@ -8067,8 +8079,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "utimaco_pkcs11_loader"
-version = "5.1.1"
-source = "git+https://github.com/Cosmian/kms?branch=move_clap_actions#32ff17efb75eed80936bdd7132b634684cdb2a33"
+version = "5.3.0"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -8099,6 +8110,16 @@ name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
+
+[[package]]
+name = "variant_count"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aae2faf80ac463422992abf4de234731279c058aaf33171ca70277c98406b124"
+dependencies = [
+ "quote",
+ "syn 1.0.109",
+]
 
 [[package]]
 name = "vcpkg"
