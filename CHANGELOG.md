@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2025-06-04
+
+### 🚀 Features
+
+- Support sqlite3 as database type (#61)
+- Allow KMS/Findex source code edition while modifying CLI (#65)
+
+### 🐛 Bug Fixes
+
+- Clap short duplicate (#67)
+
+### 🚜 Refactor
+
+- Remove client-crates and consume clap actions instead (#64)
+
 ## [0.4.1] - 2025-05-22
 
 ### 🚀 Features
