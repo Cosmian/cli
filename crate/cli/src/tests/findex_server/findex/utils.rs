@@ -4,16 +4,11 @@ use cosmian_findex_cli::{
     actions::findex_server::findex::{
         insert_or_delete::InsertOrDeleteAction, parameters::FindexParameters, search::SearchAction,
     },
-    reexport::{
-        cosmian_findex_client::{
-            FindexRestClient, KmsEncryptionLayer, RestClient, RestClientConfig,
-        },
-        test_findex_server::start_default_test_findex_server,
+    reexport::cosmian_findex_client::{
+        FindexRestClient, KmsEncryptionLayer, RestClient, RestClientConfig,
     },
 };
-use cosmian_kms_cli::reexport::{
-    cosmian_kms_client::KmsClient, test_kms_server::start_default_test_kms_server,
-};
+use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClient;
 use uuid::Uuid;
 
 use super::basic::findex_number_of_threads;
@@ -70,11 +65,10 @@ pub(crate) async fn insert_search_delete(
     Ok(())
 }
 
-pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>()
--> CosmianResult<KmsEncryptionLayer<WORD_LENGTH, FindexRestClient<WORD_LENGTH>>> {
-    let ctx = start_default_test_findex_server().await;
-    let ctx_kms = start_default_test_kms_server().await;
-    let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_config.clone())?;
+pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>(
+    kms_client: KmsClient,
+    rest_client: RestClient,
+) -> CosmianResult<KmsEncryptionLayer<WORD_LENGTH, FindexRestClient<WORD_LENGTH>>> {
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
         kms_client.clone(),
@@ -87,10 +81,7 @@ pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>()
         kms_client.clone(),
         findex_parameters.hmac_key_id.unwrap(),
         findex_parameters.aes_xts_key_id.unwrap(),
-        FindexRestClient::<WORD_LENGTH>::new(
-            RestClient::new(ctx.owner_client_conf.clone())?,
-            findex_parameters.index_id,
-        ),
+        FindexRestClient::<WORD_LENGTH>::new(rest_client, findex_parameters.index_id),
     );
     Ok(encryption_layer)
 }
