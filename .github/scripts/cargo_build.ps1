@@ -9,6 +9,7 @@ function BuildProject {
         [string]$BuildType
     )
 
+    $env:RUST_LOG = "cosmian_cli=error,cosmian_kms_server=error,test_kms_server=error"
     # Add target
     rustup target add x86_64-pc-windows-msvc
 
