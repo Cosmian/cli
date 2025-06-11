@@ -4,11 +4,16 @@ use cosmian_findex_cli::{
     actions::findex_server::findex::{
         insert_or_delete::InsertOrDeleteAction, parameters::FindexParameters, search::SearchAction,
     },
-    reexport::cosmian_findex_client::{
-        FindexRestClient, KmsEncryptionLayer, RestClient, RestClientConfig,
+    reexport::{
+        cosmian_findex_client::{
+            FindexRestClient, KmsEncryptionLayer, RestClient, RestClientConfig,
+        },
+        test_findex_server::start_default_test_findex_server,
     },
 };
-use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClient;
+use cosmian_kms_cli::reexport::{
+    cosmian_kms_client::KmsClient, test_kms_server::start_default_test_kms_server,
+};
 use uuid::Uuid;
 
 use super::basic::findex_number_of_threads;
@@ -65,23 +70,25 @@ pub(crate) async fn insert_search_delete(
     Ok(())
 }
 
-pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>(
-    kms_client: KmsClient,
-    rest_client: RestClient,
-) -> CosmianResult<KmsEncryptionLayer<WORD_LENGTH, FindexRestClient<WORD_LENGTH>>> {
+pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>()
+-> CosmianResult<KmsEncryptionLayer<WORD_LENGTH, FindexRestClient<WORD_LENGTH>>> {
+    let (ctx, ctx_kms) = tokio::join!(
+        start_default_test_findex_server(),
+        start_default_test_kms_server()
+    );
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        kms_client.clone(),
+        ctx_kms.get_owner_client(),
         true,
         findex_number_of_threads(),
     )
     .await?;
 
     let encryption_layer = KmsEncryptionLayer::<WORD_LENGTH, _>::new(
-        kms_client.clone(),
+        ctx_kms.get_owner_client(),
         findex_parameters.hmac_key_id.unwrap(),
         findex_parameters.aes_xts_key_id.unwrap(),
-        FindexRestClient::<WORD_LENGTH>::new(rest_client, findex_parameters.index_id),
+        FindexRestClient::<WORD_LENGTH>::new(ctx.get_owner_client(), findex_parameters.index_id),
     );
     Ok(encryption_layer)
 }
