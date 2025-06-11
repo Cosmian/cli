@@ -286,6 +286,6 @@ async fn test_findex_concurrent_read_write() -> CosmianResult<()> {
         ctx.get_owner_client(),
     ))
     .await?;
-    test_guarded_write_concurrent(&encryption_layer, gen_seed(), Some(20)).await;
+    test_guarded_write_concurrent(&encryption_layer, gen_seed(), Some(100)).await;
     Ok(())
 }
