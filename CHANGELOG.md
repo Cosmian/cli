@@ -40,9 +40,9 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Run KMS server with privileged users ([#40](https://github.com/Cosmian/client/pull/40)):
+- Run KMS server with privileged users ([#40](https://github.com/Cosmian/cli/pull/40)):
   - These users can grant or revoke access rights for other users
-- Support Kmip 1 ([#48](https://github.com/Cosmian/client/pull/48))
+- Support Kmip 1 ([#48](https://github.com/Cosmian/cli/pull/48))
 
 ### 🐛 Bug Fixes
 
@@ -50,7 +50,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🚜 Refactor
 
-- MemoryADT implementation for KmsEncryptionLayer ([#46](https://github.com/Cosmian/client/pull/46))
+- MemoryADT implementation for KmsEncryptionLayer ([#46](https://github.com/Cosmian/cli/pull/46))
 
 ### 📚 Documentation
 
@@ -66,7 +66,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Add Oracle Key Vault integration ([#24](https://github.com/Cosmian/client/pull/24))
+- Add Oracle Key Vault integration ([#24](https://github.com/Cosmian/cli/pull/24))
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -77,9 +77,9 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Delegates encryption to KMS ([#13](https://github.com/Cosmian/client/pull/13))
-- Add UI in React + WASM ([#21](https://github.com/Cosmian/client/pull/21))
-- Add CBC mode support for KMS encryption ([#23](https://github.com/Cosmian/client/pull/23))
+- Delegates encryption to KMS ([#13](https://github.com/Cosmian/cli/pull/13))
+- Add UI in React + WASM ([#21](https://github.com/Cosmian/cli/pull/21))
+- Add CBC mode support for KMS encryption ([#23](https://github.com/Cosmian/cli/pull/23))
 
 ### 🐛 Bug Fixes
 
@@ -90,7 +90,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🚜 Refactor
 
-- Import all KMS CLI crates ([#18](https://github.com/Cosmian/client/pull/18))
+- Import all KMS CLI crates ([#18](https://github.com/Cosmian/cli/pull/18))
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -101,11 +101,11 @@ All notable changes to this project will be documented in this file.
 
 ### 🚀 Features
 
-- Support Findex server v0.2 (including findex v7) ([#9](https://github.com/Cosmian/client/pull/9))
+- Support Findex server v0.2 (including findex v7) ([#9](https://github.com/Cosmian/cli/pull/9))
 
 ### 📚 Documentation
 
-- Edit authentication section ([#7](https://github.com/Cosmian/client/pull/7))
+- Edit authentication section ([#7](https://github.com/Cosmian/cli/pull/7))
 
 ### 🧪 Testing
 

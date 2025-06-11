@@ -8,16 +8,13 @@ use cosmian_findex_cli::{
         cosmian_findex::{
             gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
         },
-        cosmian_findex_client::RestClient,
         cosmian_findex_structs::{CUSTOM_WORD_LENGTH, Value},
         test_findex_server::{
             start_default_test_findex_server, start_default_test_findex_server_with_cert_auth,
         },
     },
 };
-use cosmian_kms_cli::reexport::{
-    cosmian_kms_client::KmsClient, test_kms_server::start_default_test_kms_server,
-};
+use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server;
 use cosmian_logger::log_init;
 use tracing::trace;
 use uuid::Uuid;
@@ -41,10 +38,10 @@ pub(crate) async fn test_findex_no_auth() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server().await;
     let ctx_kms = start_default_test_kms_server().await;
-    let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_config.clone())?;
+
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        kms_client.clone(),
+        ctx_kms.get_owner_client(),
         true,
         findex_number_of_threads(),
     )
@@ -64,7 +61,7 @@ pub(crate) async fn test_findex_no_auth() -> CosmianResult<()> {
         &findex_parameters,
         &ctx.owner_client_conf,
         search_options,
-        kms_client,
+        ctx_kms.get_owner_client(),
     )
     .await?;
     Ok(())
@@ -75,10 +72,9 @@ pub(crate) async fn test_findex_local_encryption() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server().await;
     let ctx_kms = start_default_test_kms_server().await;
-    let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_config.clone())?;
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        kms_client.clone(),
+        ctx_kms.get_owner_client(),
         false,
         findex_number_of_threads(),
     )
@@ -98,7 +94,7 @@ pub(crate) async fn test_findex_local_encryption() -> CosmianResult<()> {
         &findex_parameters,
         &ctx.owner_client_conf,
         search_options,
-        kms_client,
+        ctx_kms.get_owner_client(),
     )
     .await?;
     Ok(())
@@ -108,10 +104,10 @@ async fn run_huge_dataset_test(use_remote_crypto: bool) -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server().await;
     let ctx_kms = start_default_test_kms_server().await;
-    let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_config.clone())?;
+
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        kms_client.clone(),
+        ctx_kms.get_owner_client(),
         use_remote_crypto,
         findex_number_of_threads(),
     )
@@ -138,7 +134,7 @@ async fn run_huge_dataset_test(use_remote_crypto: bool) -> CosmianResult<()> {
         &findex_parameters,
         &ctx.owner_client_conf,
         search_options,
-        kms_client,
+        ctx_kms.get_owner_client(),
     )
     .await
 }
@@ -159,9 +155,7 @@ pub(crate) async fn test_findex_huge_dataset_local_crypto() -> CosmianResult<()>
 pub(crate) async fn test_findex_cert_auth() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server_with_cert_auth().await;
-    let owner_rest_client = RestClient::new(ctx.owner_client_conf.clone())?;
     let ctx_kms = start_default_test_kms_server().await;
-    let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_config.clone())?;
 
     let search_options = SearchOptions {
         dataset_path: SMALL_DATASET.into(),
@@ -173,12 +167,12 @@ pub(crate) async fn test_findex_cert_auth() -> CosmianResult<()> {
         },
     };
 
-    let index_id = create_index_id(owner_rest_client).await?;
+    let index_id = create_index_id(ctx.get_owner_client()).await?;
     trace!("index_id: {index_id}");
 
     let findex_parameters = FindexParameters::new(
         index_id,
-        kms_client.clone(),
+        ctx_kms.get_owner_client(),
         true,
         findex_number_of_threads(),
     )
@@ -188,7 +182,7 @@ pub(crate) async fn test_findex_cert_auth() -> CosmianResult<()> {
         &findex_parameters,
         &ctx.owner_client_conf,
         search_options,
-        kms_client,
+        ctx_kms.get_owner_client(),
     )
     .await?;
 
@@ -199,12 +193,9 @@ pub(crate) async fn test_findex_cert_auth() -> CosmianResult<()> {
 pub(crate) async fn test_findex_searching_with_bad_key() -> CosmianResult<()> {
     log_init(None);
     let ctx = start_default_test_findex_server().await;
-
-    let rest_client = RestClient::new(ctx.owner_client_conf.clone())?;
     let ctx_kms = start_default_test_kms_server().await;
-    let kms_client = KmsClient::new_with_config(ctx_kms.owner_client_config.clone())?;
 
-    let index_id = create_index_id(rest_client.clone()).await?;
+    let index_id = create_index_id(ctx.get_owner_client()).await?;
     trace!("index_id: {index_id}");
 
     // Search 2 entries in a small dataset. Expect 2 results.
@@ -219,7 +210,7 @@ pub(crate) async fn test_findex_searching_with_bad_key() -> CosmianResult<()> {
     };
     let findex_parameters = FindexParameters::new(
         Uuid::new_v4(),
-        kms_client.clone(),
+        ctx_kms.get_owner_client(),
         true,
         findex_number_of_threads(),
     )
@@ -230,7 +221,7 @@ pub(crate) async fn test_findex_searching_with_bad_key() -> CosmianResult<()> {
         findex_parameters: findex_parameters.clone(),
         csv: PathBuf::from(&search_options.dataset_path),
     }
-    .insert(rest_client.clone(), kms_client.clone())
+    .insert(ctx.get_owner_client(), ctx_kms.get_owner_client())
     .await?;
 
     // But change the findex keys
@@ -238,14 +229,14 @@ pub(crate) async fn test_findex_searching_with_bad_key() -> CosmianResult<()> {
     let search_results = SearchAction {
         findex_parameters: FindexParameters::new(
             Uuid::new_v4(),
-            kms_client.clone(),
+            ctx_kms.get_owner_client(),
             true,
             findex_number_of_threads(),
         )
         .await?,
         keyword: search_options.keywords.clone(),
     }
-    .run(rest_client, kms_client)
+    .run(ctx.get_owner_client(), ctx_kms.get_owner_client())
     .await?;
     assert!(search_results.is_empty());
     Ok(())
