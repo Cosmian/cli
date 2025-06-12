@@ -88,7 +88,10 @@ pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>()
         ctx_kms.get_owner_client(),
         findex_parameters.hmac_key_id.unwrap(),
         findex_parameters.aes_xts_key_id.unwrap(),
-        FindexRestClient::<WORD_LENGTH>::new(ctx_findex.get_owner_client(), findex_parameters.index_id),
+        FindexRestClient::<WORD_LENGTH>::new(
+            ctx_findex.get_owner_client(),
+            findex_parameters.index_id,
+        ),
     );
     Ok(encryption_layer)
 }
