@@ -5,7 +5,9 @@ use cosmian_findex_cli::{
         insert_or_delete::InsertOrDeleteAction, parameters::FindexParameters, search::SearchAction,
     },
     reexport::{
-        cosmian_findex::{gen_seed, test_guarded_write_concurrent},
+        cosmian_findex::{
+            gen_seed, test_guarded_write_concurrent, test_single_write_and_read, test_wrong_guard,
+        },
         cosmian_findex_structs::{CUSTOM_WORD_LENGTH, Value},
         test_findex_server::{
             start_default_test_findex_server, start_default_test_findex_server_with_cert_auth,
@@ -241,8 +243,34 @@ pub(crate) async fn test_findex_searching_with_bad_key() -> CosmianResult<()> {
 }
 
 #[tokio::test]
+pub(crate) async fn test_findex_sequential_read_write() -> CosmianResult<()> {
+    log_init(None);
+
+    test_single_write_and_read::<CUSTOM_WORD_LENGTH, _>(
+        &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
+        gen_seed(),
+    )
+    .await;
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_findex_sequential_wrong_guard() -> CosmianResult<()> {
+    test_wrong_guard(
+        &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
+        gen_seed(),
+    )
+    .await;
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_cli_findex_concurrent_read_write() -> CosmianResult<()> {
-    let encryption_layer = create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?;
-    test_guarded_write_concurrent(&encryption_layer, gen_seed(), Some(100)).await;
+    test_guarded_write_concurrent(
+        &create_encryption_layer::<CUSTOM_WORD_LENGTH>().await?,
+        gen_seed(),
+        Some(100),
+    )
+    .await;
     Ok(())
 }

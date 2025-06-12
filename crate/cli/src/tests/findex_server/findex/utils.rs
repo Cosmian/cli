@@ -72,7 +72,7 @@ pub(crate) async fn insert_search_delete(
 
 pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>()
 -> CosmianResult<KmsEncryptionLayer<WORD_LENGTH, FindexRestClient<WORD_LENGTH>>> {
-    let (ctx, ctx_kms) = tokio::join!(
+    let (ctx_findex, ctx_kms) = tokio::join!(
         start_default_test_findex_server(),
         start_default_test_kms_server()
     );
@@ -88,7 +88,7 @@ pub(crate) async fn create_encryption_layer<const WORD_LENGTH: usize>()
         ctx_kms.get_owner_client(),
         findex_parameters.hmac_key_id.unwrap(),
         findex_parameters.aes_xts_key_id.unwrap(),
-        FindexRestClient::<WORD_LENGTH>::new(ctx.get_owner_client(), findex_parameters.index_id),
+        FindexRestClient::<WORD_LENGTH>::new(ctx_findex.get_owner_client(), findex_parameters.index_id),
     );
     Ok(encryption_layer)
 }

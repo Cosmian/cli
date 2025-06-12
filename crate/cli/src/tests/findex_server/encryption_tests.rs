@@ -28,7 +28,7 @@ use cosmian_logger::log_init;
 use tracing::{info, trace};
 use uuid::Uuid;
 
-use crate::{config::ClientConfig, error::result::CosmianResult};
+use crate::error::result::CosmianResult;
 
 const SMALL_DATASET: &str = "../../test_data/datasets/smallpop.csv";
 const HUGE_DATASET: &str = "../../test_data/datasets/business-employment.csv";
@@ -52,21 +52,20 @@ struct SearchOptions {
 
 impl TestsCliContext {
     async fn new(
-        client_config: ClientConfig,
+        kms_client: KmsClient,
+        findex_client: RestClient,
         dataset: &str,
         keywords: Vec<String>,
         expected_results: &str,
         expected_len: usize,
     ) -> CosmianResult<Self> {
-        let kms = KmsClient::new_with_config(client_config.kms_config)?;
-        let findex = RestClient::new(client_config.findex_config.unwrap())?;
-        let kek_id = Some(CreateKeyAction::default().run(kms.clone()).await?);
-        let index_id = CreateIndex.run(findex.clone()).await?;
+        let kek_id = Some(CreateKeyAction::default().run(kms_client.clone()).await?);
+        let index_id = CreateIndex.run(findex_client.clone()).await?;
         trace!("index_id: {index_id}");
 
         Ok(Self {
-            findex,
-            kms,
+            findex: findex_client,
+            kms: kms_client,
             search_options: SearchOptions {
                 dataset_path: dataset.into(),
                 keywords,
@@ -151,13 +150,9 @@ async fn test_encrypt_and_index_no_auth() -> CosmianResult<()> {
     let findex_ctx = start_default_test_findex_server().await;
     let kms_ctx = start_default_test_kms_server().await;
 
-    let cosmian_cli_conf = ClientConfig {
-        kms_config: kms_ctx.owner_client_config.clone(),
-        findex_config: Some(findex_ctx.owner_client_conf.clone()),
-    };
-
     let ctx = TestsCliContext::new(
-        cosmian_cli_conf,
+        kms_ctx.get_owner_client(),
+        findex_ctx.get_owner_client(),
         SMALL_DATASET,
         vec!["Southborough".to_owned()],
         "States9686",
@@ -170,17 +165,13 @@ async fn test_encrypt_and_index_no_auth() -> CosmianResult<()> {
 #[tokio::test]
 async fn test_encrypt_and_index_cert_auth() -> CosmianResult<()> {
     log_init(None);
-    // log_init(Some("info,cosmian_kms_server=debug"));
 
     let findex_ctx = start_default_test_findex_server_with_cert_auth().await;
     let kms_ctx = start_default_test_kms_server().await;
-    let cosmian_cli_conf = ClientConfig {
-        kms_config: kms_ctx.owner_client_config.clone(),
-        findex_config: Some(findex_ctx.owner_client_conf.clone()),
-    };
 
     let ctx = TestsCliContext::new(
-        cosmian_cli_conf,
+        kms_ctx.get_owner_client(),
+        findex_ctx.get_owner_client(),
         SMALL_DATASET,
         vec!["Southborough".to_owned()],
         "States9686",
@@ -198,13 +189,9 @@ async fn test_encrypt_and_index_huge() -> CosmianResult<()> {
     let findex_ctx = start_default_test_findex_server_with_cert_auth().await;
     let kms_ctx = start_default_test_kms_server().await;
 
-    let cosmian_cli_conf = ClientConfig {
-        kms_config: kms_ctx.owner_client_config.clone(),
-        findex_config: Some(findex_ctx.owner_client_conf.clone()),
-    };
-
     let ctx = TestsCliContext::new(
-        cosmian_cli_conf,
+        kms_ctx.get_owner_client(),
+        findex_ctx.get_owner_client(),
         HUGE_DATASET,
         vec![
             "BDCQ.SEA1AA".to_owned(),
