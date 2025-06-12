@@ -44,7 +44,7 @@ jobs:
       - build
     uses: Cosmian/reusable_workflows/.github/workflows/push-artifacts.yml@develop
     with:
-      project-name: client
+      project-name: cli
       destination: cli # /mnt/packages/cli
       debug_or_release: ${{ inputs.debug_or_release }}
 
