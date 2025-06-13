@@ -91,8 +91,6 @@ assets = [
     "555",
   ],
 ]
-
-[package.metadata.deb.variants.non-fips]
 features = ["non-fips"]
 
 # END DEBIAN PACKAGING
@@ -108,8 +106,6 @@ assets = [
 ]
 auto-req = "no" # do not try to discover .so dependencies
 require-sh = true
-
-[package.metadata.generate-rpm.variants.non-fips]
 features = ["non-fips"]
 
 # END RPM PACKAGING
