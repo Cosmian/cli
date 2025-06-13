@@ -14,6 +14,8 @@ use cosmian_findex_cli::{
         },
     },
 };
+#[cfg(feature = "non-fips")]
+use cosmian_kms_cli::reexport::cosmian_kms_crypto::reexport::cosmian_cover_crypt;
 use cosmian_kms_cli::{
     actions::kms::google::GoogleApiError,
     error::KmsCliError,
@@ -45,6 +47,7 @@ pub enum CosmianError {
     Conversion(String),
     #[error(transparent)]
     ConfigUtilsError(#[from] ConfigUtilsError),
+    #[cfg(feature = "non-fips")]
     #[error(transparent)]
     CovercryptError(#[from] cosmian_cover_crypt::Error),
     #[error(transparent)]

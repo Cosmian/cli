@@ -18,11 +18,11 @@ use cosmian_cli::{
             },
         },
         cosmian_kms_client::{ExportObjectParams, KmsClient, batch_export_objects, export_object},
+        cosmian_kms_crypto::reexport::cosmian_crypto_core::{
+            CsRng,
+            reexport::rand_core::{RngCore, SeedableRng},
+        },
     },
-};
-use cosmian_crypto_core::{
-    CsRng,
-    reexport::rand_core::{RngCore, SeedableRng},
 };
 use cosmian_pkcs11_module::traits::{
     DecryptContext, EncryptContext, EncryptionAlgorithm, KeyAlgorithm,

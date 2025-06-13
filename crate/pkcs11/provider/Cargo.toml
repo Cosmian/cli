@@ -20,7 +20,6 @@ non-fips = ["cosmian_cli/non-fips"]
 
 [dependencies]
 cosmian_cli = { path = "../../cli" }
-cosmian_crypto_core = { workspace = true }
 cosmian_pkcs11_module = { path = "../module" }
 etcetera = "0.8.0"
 hex = "0.4"
