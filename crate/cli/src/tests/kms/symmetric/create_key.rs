@@ -112,7 +112,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
         )?;
     }
 
-    #[cfg(not(feature = "fips"))]
+    #[cfg(feature = "non-fips")]
     {
         // ChaCha20 256 bit key
         create_symmetric_key(

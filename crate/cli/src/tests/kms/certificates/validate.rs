@@ -1,20 +1,13 @@
-#[cfg(feature = "fips")]
-use std::path::PathBuf;
-use std::process::Command;
+use std::{path::PathBuf, process::Command};
 
 use assert_cmd::cargo::CommandCargoExt;
 use cosmian_kms_cli::reexport::{
     cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat,
     test_kms_server::start_default_test_kms_server,
 };
-#[cfg(feature = "fips")]
 use tempfile::TempDir;
-#[cfg(feature = "fips")]
-use tracing::debug;
-use tracing::info;
+use tracing::{debug, info};
 
-#[cfg(feature = "fips")]
-use crate::tests::kms::certificates::encrypt::encrypt;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
@@ -22,14 +15,16 @@ use crate::{
         PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
-            certificates::import::{ImportCertificateInput, import_certificate},
+            certificates::{
+                encrypt::encrypt,
+                import::{ImportCertificateInput, import_certificate},
+            },
             utils::recover_cmd_logs,
         },
         save_kms_cli_config,
     },
 };
 
-#[cfg(feature = "fips")]
 async fn import_revoked_certificate_encrypt(curve_name: &str) -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
@@ -87,7 +82,6 @@ async fn import_revoked_certificate_encrypt(curve_name: &str) -> CosmianResult<(
     Ok(())
 }
 
-#[cfg(feature = "fips")]
 #[tokio::test]
 #[ignore]
 async fn test_import_revoked_certificate_encrypt_prime256() -> CosmianResult<()> {

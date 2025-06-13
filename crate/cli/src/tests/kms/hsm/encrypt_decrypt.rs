@@ -1,7 +1,7 @@
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use std::{fs, path::PathBuf};
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     read_bytes_from_file,
     reexport::cosmian_kms_client_utils::rsa_utils::{HashFn, RsaEncryptionAlgorithm},
@@ -16,13 +16,13 @@ use cosmian_kms_cli::{
     },
 };
 use cosmian_logger::log_init;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use tempfile::TempDir;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use tracing::trace;
 use uuid::Uuid;
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::rsa::{
     create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair},
     encrypt_decrypt::{decrypt, encrypt},
@@ -61,7 +61,7 @@ pub(crate) fn test_aes_gcm(ctx: &TestsContext) -> CosmianResult<()> {
     )
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 pub(crate) fn test_rsa_pkcs_oaep(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(None);
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
@@ -149,7 +149,7 @@ pub(crate) fn test_rsa_pkcs_oaep(ctx: &TestsContext) -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 pub(crate) fn test_rsa_pkcs_v15(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(None);
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);

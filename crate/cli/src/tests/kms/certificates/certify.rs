@@ -24,7 +24,7 @@ use uuid::Uuid;
 use x509_parser::{der_parser::oid, prelude::*};
 
 use super::validate;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair};
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
@@ -486,7 +486,7 @@ async fn test_certify_a_csr_with_extensions() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_certify_a_public_key_test_without_extensions() -> CosmianResult<()> {
     log_init(None);
@@ -535,7 +535,7 @@ async fn test_certify_a_public_key_test_without_extensions() -> CosmianResult<()
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_certify_a_public_key_test_with_extensions() -> CosmianResult<()> {
     log_init(None);
@@ -711,7 +711,7 @@ async fn test_certify_issue_with_subject_name() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_certify_a_public_key_test_self_signed() -> CosmianResult<()> {
     log_init(None);
@@ -750,7 +750,7 @@ async fn test_certify_a_public_key_test_self_signed() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 pub(crate) fn create_self_signed_cert(owner_client_conf_path: &str) -> CosmianResult<String> {
     // create an RSA key pair
     let (_private_key_id, public_key_id) =
@@ -771,7 +771,7 @@ pub(crate) fn create_self_signed_cert(owner_client_conf_path: &str) -> CosmianRe
     Ok(certificate_id)
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_certify_issue_with_subject_name_self_signed_without_extensions() -> CosmianResult<()>
 {

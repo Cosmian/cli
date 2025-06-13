@@ -8,9 +8,9 @@ mod export;
 mod export_import;
 mod import;
 mod import_export_encodings;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 mod import_export_wrapping;
 mod locate;
 mod revoke;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 mod wrap_unwrap;

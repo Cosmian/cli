@@ -8,22 +8,21 @@ set -ex
 # export DEBUG_OR_RELEASE=debug
 # export OPENSSL_DIR=/usr/local/openssl
 # export SKIP_SERVICES_TESTS="--skip hsm"
-# export FEATURES="fips"
+# export FEATURES="non-fips"
 
 ROOT_FOLDER=$(pwd)
 
 if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   # First build the Debian and RPM packages. It must come at first since
-  # after this step `cosmian` is built with custom features flags (fips for example).
   rm -rf target/"$TARGET"/debian
   rm -rf target/"$TARGET"/generate-rpm
   cargo build --target "$TARGET" --release
   if [ -f /etc/redhat-release ]; then
     cargo install --version 0.16.0 cargo-generate-rpm --force
-    cargo generate-rpm --target "$TARGET" -p crate/cli
+    cargo generate-rpm --target "$TARGET" -p crate/cli --variant non-fips
   elif [ -f /etc/lsb-release ]; then
     cargo install --version 2.4.0 cargo-deb --force
-    cargo deb --target "$TARGET" -p cosmian_cli
+    cargo deb --target "$TARGET" -p cosmian_cli --variant non-fips
   fi
 fi
 
@@ -65,6 +64,7 @@ fi
 
 # shellcheck disable=SC2086
 cargo build --target $TARGET $RELEASE \
+  --features non-fips \
   -p cosmian_cli \
   -p cosmian_pkcs11
 
@@ -84,6 +84,7 @@ export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kms
 
 # shellcheck disable=SC2086
 cargo test --target $TARGET $RELEASE $FEATURES \
+  --features non-fips \
   -p cosmian_cli \
   -p cosmian_pkcs11 \
   -- --nocapture $SKIP_SERVICES_TESTS

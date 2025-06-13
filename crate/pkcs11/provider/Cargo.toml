@@ -16,7 +16,7 @@ crate-type = ["rlib", "dylib"]
 doctest = false
 
 [features]
-fips = ["cosmian_cli/fips"]
+non-fips = ["cosmian_cli/non-fips"]
 
 [dependencies]
 cosmian_cli = { path = "../../cli" }
