@@ -121,9 +121,10 @@ repos:
       - id: cargo-update
         stages: [manual]
       - id: cargo-machete
-      - id: cargo-build
+      - id: cargo-build-all
       - id: renew-cosmian-markdown
       - id: docker-compose-up
+      - id: cargo-build
       - id: cargo-test
         args: [--, --skip, test_wrap_auth, --skip, google_cse, --skip, hsm]
       - id: cargo-build-all
