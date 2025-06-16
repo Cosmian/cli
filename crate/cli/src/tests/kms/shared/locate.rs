@@ -5,12 +5,12 @@ use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::test_kms_server::start_default_test_kms_server_with_cert_auth,
 };
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use cosmian_logger::log_init;
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::elliptic_curve::create_key_pair::create_ec_key_pair;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::{
     access::{grant_access, revoke_access},
     cover_crypt::{
@@ -73,7 +73,7 @@ pub(crate) fn locate(
     ))
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
     use crate::tests::save_kms_cli_config;
@@ -223,7 +223,7 @@ pub(crate) async fn test_locate_cover_crypt() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_locate_elliptic_curve() -> CosmianResult<()> {
     use crate::tests::save_kms_cli_config;
@@ -390,7 +390,7 @@ pub(crate) async fn test_locate_symmetric_key() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_locate_grant() -> CosmianResult<()> {
     // init the test server

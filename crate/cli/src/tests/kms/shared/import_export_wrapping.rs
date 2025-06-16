@@ -1,8 +1,4 @@
-use cosmian_crypto_core::{
-    CsRng,
-    reexport::rand_core::{RngCore, SeedableRng},
-};
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use cosmian_kms_cli::reexport::cosmian_kms_crypto::crypto::elliptic_curves::operation::create_x25519_key_pair;
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
@@ -20,7 +16,13 @@ use cosmian_kms_cli::{
             reexport::cosmian_kms_client_utils::import_utils::KeyUsage,
             write_kmip_object_to_file,
         },
-        cosmian_kms_crypto::crypto::wrap::unwrap_key_block,
+        cosmian_kms_crypto::{
+            crypto::wrap::unwrap_key_block,
+            reexport::cosmian_crypto_core::{
+                CsRng,
+                reexport::rand_core::{RngCore, SeedableRng},
+            },
+        },
         test_kms_server::start_default_test_kms_server,
     },
 };
@@ -118,7 +120,7 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
     use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_0::kmip_types::CryptographicUsageMask;

@@ -28,7 +28,7 @@ use openssl::{
 use tempfile::TempDir;
 use uuid::Uuid;
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::certificates::certify::create_self_signed_cert;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
@@ -396,7 +396,7 @@ pub(crate) fn export_certificate(
     .collect();
     if let Some(certificate_format) = certificate_format {
         args.push("--format".to_owned());
-        #[cfg(not(feature = "fips"))]
+        #[cfg(feature = "non-fips")]
         let arg_value = match certificate_format {
             CertificateExportFormat::JsonTtlv => "json-ttlv",
             CertificateExportFormat::Pem => "pem",
@@ -404,7 +404,7 @@ pub(crate) fn export_certificate(
             CertificateExportFormat::Pkcs12Legacy => "pkcs12-legacy",
             CertificateExportFormat::Pkcs7 => "pkcs7",
         };
-        #[cfg(feature = "fips")]
+        #[cfg(not(feature = "non-fips"))]
         let arg_value = match certificate_format {
             CertificateExportFormat::JsonTtlv => "json-ttlv",
             CertificateExportFormat::Pem => "pem",
@@ -433,7 +433,7 @@ pub(crate) fn export_certificate(
     ))
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_self_signed_export_loop() -> CosmianResult<()> {
     // Create a test server
@@ -528,7 +528,7 @@ async fn test_export_root_and_intermediate_pkcs12() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_export_import_legacy_p12() -> CosmianResult<()> {
     // Create a test server

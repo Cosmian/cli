@@ -253,7 +253,7 @@ async fn test_aes_xts_server_side() -> CosmianResult<()> {
     )
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_aes_gcm_siv_server_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
@@ -276,7 +276,7 @@ async fn test_aes_gcm_siv_server_side() -> CosmianResult<()> {
     )
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_chacha20_poly1305_server_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
@@ -299,7 +299,7 @@ async fn test_chacha20_poly1305_server_side() -> CosmianResult<()> {
     )
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_encrypt_decrypt_with_tags() -> CosmianResult<()> {
     // create a temp dir
@@ -417,7 +417,7 @@ async fn test_aes_gcm_aes_xts_client_side() -> CosmianResult<()> {
     )
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_aes_gcm_chacha20_client_side() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;

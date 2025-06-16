@@ -10,11 +10,11 @@ use cosmian_kms_cli::{
 use tempfile::TempDir;
 use uuid::Uuid;
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::cover_crypt::{
     master_key_pair::create_cc_master_key_pair, user_decryption_keys::create_user_decryption_key,
 };
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::elliptic_curve::create_key_pair::create_ec_key_pair;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
@@ -102,7 +102,7 @@ async fn test_revoke_symmetric_key() -> CosmianResult<()> {
     assert_revoked(&owner_client_conf_path, &key_id)
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_revoke_ec_key() -> CosmianResult<()> {
     // init the test server
@@ -150,7 +150,7 @@ async fn test_revoke_ec_key() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_revoke_cover_crypt() -> CosmianResult<()> {
     // init the test server

@@ -102,7 +102,7 @@ pub(crate) fn decrypt(
     ))
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 async fn test_certificate_import_encrypt(
     ca_path: &str,
     subca_path: &str,
@@ -200,7 +200,7 @@ async fn test_certificate_import_encrypt(
 }
 
 #[tokio::test]
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 async fn test_certificate_import_ca_and_encrypt_using_x25519() -> CosmianResult<()> {
     test_certificate_import_encrypt(
         "p12/root.pem",
@@ -348,20 +348,20 @@ async fn import_encrypt_decrypt(
 }
 
 #[tokio::test]
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 // P-192 should not be used in FIPS mode. See NIST.SP.800-186 - Section 3.2.1.1.
 async fn test_certificate_encrypt_using_prime192() -> CosmianResult<()> {
     import_encrypt_decrypt("prime192v1", None).await
 }
 
 #[tokio::test]
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 async fn test_certificate_encrypt_using_prime224() -> CosmianResult<()> {
     import_encrypt_decrypt("secp224r1", None).await
 }
 
 #[tokio::test]
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 // Edwards curve shall be used **for digital signature only**.
 // See NIST.SP.800-186 - Section 3.1.2 table 2 and NIST.FIPS.186-5.
 async fn test_certificate_encrypt_using_ed25519() -> CosmianResult<()> {
@@ -369,19 +369,19 @@ async fn test_certificate_encrypt_using_ed25519() -> CosmianResult<()> {
 }
 
 #[tokio::test]
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 async fn test_certificate_encrypt_using_prime256() -> CosmianResult<()> {
     import_encrypt_decrypt("prime256v1", None).await
 }
 
 #[tokio::test]
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 async fn test_certificate_encrypt_using_secp384r1() -> CosmianResult<()> {
     import_encrypt_decrypt("secp384r1", None).await
 }
 
 #[tokio::test]
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 async fn test_certificate_encrypt_using_secp521r1() -> CosmianResult<()> {
     import_encrypt_decrypt("secp521r1", None).await
 }

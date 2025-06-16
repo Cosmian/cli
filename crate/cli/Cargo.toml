@@ -26,9 +26,9 @@ test = false
 doctest = false
 
 [features]
-fips = [
-  "cosmian_findex_cli/fips",
-  "cosmian_kms_cli/fips",
+non-fips = [
+  "cosmian_findex_cli/non-fips",
+  "cosmian_kms_cli/non-fips",
 ]
 
 [dependencies]
@@ -43,8 +43,6 @@ clap = { workspace = true, features = [
   "cargo",
 ] }
 cosmian_config_utils = { workspace = true }
-cosmian_cover_crypt = { workspace = true }
-cosmian_crypto_core = { workspace = true }
 cosmian_findex_cli = { workspace = true }
 cosmian_kms_cli = { workspace = true }
 cosmian_logger = { workspace = true }
@@ -93,9 +91,7 @@ assets = [
     "555",
   ],
 ]
-
-[package.metadata.deb.variants.fips]
-features = ["fips"]
+features = ["non-fips"]
 
 # END DEBIAN PACKAGING
 # ------------------------------------------------------------------------------
@@ -110,6 +106,7 @@ assets = [
 ]
 auto-req = "no" # do not try to discover .so dependencies
 require-sh = true
+features = ["non-fips"]
 
 # END RPM PACKAGING
 # ------------------------------------------------------------------------------
