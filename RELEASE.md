@@ -18,6 +18,14 @@ To proceed a new release, please follow the steps below:
     cargo install git-cliff
     ```
 
+   3. Make sure the 2 git submodules (root folders `kms` and `findex-server`) are at least on `develop` branch (better on a tag).
+
+    ```sh
+    git submodule update --init --recursive # just in case
+    cd kms && git checkout X.Y.Z && git pull && cd ..
+    cd findex-server && git checkout X.Y.Z && git pull && cd ..
+    ```
+
 1. Create new release branch with git-flow:
 
     ```sh
