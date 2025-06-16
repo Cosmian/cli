@@ -1374,19 +1374,16 @@ dependencies = [
  "cosmian_kms_cli",
  "cosmian_logger",
  "csv",
- "der",
  "hex",
  "lazy_static",
  "openssl",
  "predicates",
  "regex",
- "serde_json",
  "tempfile",
  "test_findex_server",
  "thiserror 2.0.12",
  "tokio",
  "tracing",
- "url",
  "uuid",
  "x509-parser",
 ]
@@ -1515,7 +1512,6 @@ dependencies = [
  "rand 0.9.1",
  "thiserror 2.0.12",
  "tracing",
- "tracing-subscriber",
  "zeroize",
 ]
 
@@ -4321,7 +4317,6 @@ dependencies = [
  "cosmian_kms_interfaces",
  "libloading",
  "pkcs11-sys",
- "tracing",
  "uuid",
 ]
 
@@ -6274,7 +6269,6 @@ dependencies = [
  "cosmian_kms_interfaces",
  "libloading",
  "pkcs11-sys",
- "tracing",
  "uuid",
 ]
 
