@@ -45,7 +45,7 @@ incremental = false
 opt-level = 0
 
 [workspace.dependencies]
-actix-server = { version = "2.5", default-features = false }
+actix-server = { version = "2.6", default-features = false }
 base64 = "0.22"
 clap = { version = "4.5", default-features = false }
 cosmian_config_utils = "0.2"
@@ -70,7 +70,7 @@ serde = "1.0"
 serde_json = "1.0"
 strum = { version = "0.27", default-features = false }
 thiserror = "2.0"
-tokio = { version = "1.43", default-features = false }
+tokio = { version = "1.45", default-features = false }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", default-features = false }
 url = "2.5"
@@ -89,13 +89,13 @@ num-bigint-dig = { version = "0.8", default-features = false }
 time = "0.3"
 num-traits = "0.2"
 actix-rt = "2.10"
-actix-web = { version = "4.10", default-features = false }
+actix-web = { version = "4.11", default-features = false }
 chrono = "0.4"
 native-tls = { version = "0.2", default-features = false }
-tempfile = "3.19"
+tempfile = "3.20"
 async-trait = "0.1"
 lru = "0.12"
-num_cpus = "1.16"
+num_cpus = "1.17"
 libloading = "0.8"
 # Findex deps
 async-sqlite = { version = "0.4" }

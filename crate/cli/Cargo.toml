@@ -30,6 +30,7 @@ non-fips = [
   "cosmian_findex_cli/non-fips",
   "cosmian_kms_cli/non-fips",
 ]
+default = ["non-fips"]
 
 [dependencies]
 base64 = { workspace = true }
@@ -67,7 +68,7 @@ lazy_static = "1.5"
 openssl = { workspace = true }
 predicates = "3.1"
 regex = { version = "1.11", default-features = false }
-tempfile = "3.19"
+tempfile = "3.20"
 x509-parser = { workspace = true, features = ["verify"] }
 
 # ------------------------------------------------------------------------------
