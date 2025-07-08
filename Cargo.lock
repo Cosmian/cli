@@ -1212,7 +1212,7 @@ dependencies = [
  "base64 0.22.1",
  "clap",
  "const-oid",
- "cosmian_config_utils",
+ "cosmian_config_utils 0.2.0",
  "cosmian_findex_cli",
  "cosmian_kms_cli",
  "cosmian_logger 0.2.0",
@@ -1240,6 +1240,21 @@ name = "cosmian_config_utils"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56b96586a73d420cdd4cee41e2a9f69f33c28ae5576cb429db329ffee9398662"
+dependencies = [
+ "base64 0.21.7",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "toml",
+ "tracing",
+ "url",
+]
+
+[[package]]
+name = "cosmian_config_utils"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "91a2391ecbf5eb9a6df4aabfc7fca8508c64fae697db949b5c768cc5959a99ea"
 dependencies = [
  "base64 0.21.7",
  "serde",
@@ -1367,7 +1382,7 @@ dependencies = [
  "base64 0.22.1",
  "clap",
  "const-oid",
- "cosmian_config_utils",
+ "cosmian_config_utils 0.2.0",
  "cosmian_findex 7.1.0",
  "cosmian_findex_client",
  "cosmian_findex_structs",
@@ -1475,9 +1490,9 @@ dependencies = [
 
 [[package]]
 name = "cosmian_http_client"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74dae22ffa29288f8db2fb7c64a2d35149d4e901fc49f165c01720f707dc32d1"
+checksum = "0be6c5aff7d8d56057bb9f9940824cd578c5ecd50b0acd6aa39b6f3d6567f023"
 dependencies = [
  "actix-web",
  "derive_more 0.99.20",
@@ -1541,11 +1556,11 @@ version = "5.4.1"
 dependencies = [
  "base64 0.22.1",
  "clap",
- "cosmian_config_utils",
+ "cosmian_config_utils 0.3.1",
  "cosmian_kmip",
  "cosmian_kms_client",
  "cosmian_kms_crypto",
- "cosmian_logger 0.3.0",
+ "cosmian_logger 0.3.1",
  "csv",
  "der",
  "hex",
@@ -1573,7 +1588,7 @@ name = "cosmian_kms_client"
 version = "5.4.1"
 dependencies = [
  "cosmian_crypto_core 10.1.0",
- "cosmian_http_client 0.3.0",
+ "cosmian_http_client 0.3.1",
  "cosmian_kms_client_utils",
  "der",
  "pem",
@@ -1591,7 +1606,7 @@ version = "5.4.1"
 dependencies = [
  "base64 0.22.1",
  "clap",
- "cosmian_config_utils",
+ "cosmian_config_utils 0.3.1",
  "cosmian_kmip",
  "cosmian_kms_access",
  "pem",
@@ -1661,7 +1676,7 @@ dependencies = [
  "clap",
  "cosmian_kms_access",
  "cosmian_kms_server_database",
- "cosmian_logger 0.3.0",
+ "cosmian_logger 0.3.1",
  "dotenvy",
  "futures",
  "hex",
@@ -1740,9 +1755,9 @@ dependencies = [
 
 [[package]]
 name = "cosmian_logger"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00527c806b20c89adc2a7230737709bc81aafdd6f0d09f6a0bfff27ed1200903"
+checksum = "b2c887d6087c95c041dd1c23628844c610f0b177b13fb3f4a51f71532c75298a"
 dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
@@ -5749,7 +5764,7 @@ dependencies = [
  "actix-server",
  "cosmian_kms_client",
  "cosmian_kms_server",
- "cosmian_logger 0.3.0",
+ "cosmian_logger 0.3.1",
  "serde_json",
  "tempfile",
  "tokio",
