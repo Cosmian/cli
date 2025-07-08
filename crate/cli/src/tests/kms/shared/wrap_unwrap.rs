@@ -5,16 +5,16 @@ use std::{
 
 use assert_cmd::prelude::CommandCargoExt;
 use base64::{Engine as _, engine::general_purpose};
-use cosmian_crypto_core::{
-    CsRng,
-    reexport::rand_core::{RngCore, SeedableRng},
-};
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::{
         cosmian_kms_client::{
             cosmian_kmip::kmip_2_1::kmip_types::{EncodingOption, WrappingMethod},
             read_object_from_json_ttlv_file,
+        },
+        cosmian_kms_crypto::reexport::cosmian_crypto_core::{
+            CsRng,
+            reexport::rand_core::{RngCore, SeedableRng},
         },
         test_kms_server::start_default_test_kms_server,
     },

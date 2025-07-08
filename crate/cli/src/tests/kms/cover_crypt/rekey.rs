@@ -1,15 +1,21 @@
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_cover_crypt::{
-    AccessPolicy, EncryptedHeader, MasterSecretKey, UserSecretKey, api::Covercrypt,
-};
-use cosmian_crypto_core::bytes_ser_de::{Deserializer, Serializable, test_serialization};
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::{
         cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::KeyUsage,
-        cosmian_kms_crypto::crypto::cover_crypt::access_structure::access_structure_from_json_file,
+        cosmian_kms_crypto::{
+            crypto::cover_crypt::access_structure::access_structure_from_json_file,
+            reexport::{
+                cosmian_cover_crypt::{
+                    AccessPolicy, EncryptedHeader, MasterSecretKey, UserSecretKey, api::Covercrypt,
+                },
+                cosmian_crypto_core::bytes_ser_de::{
+                    Deserializer, Serializable, test_serialization,
+                },
+            },
+        },
         test_kms_server::start_default_test_kms_server,
     },
 };

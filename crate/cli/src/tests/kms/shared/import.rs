@@ -1,21 +1,21 @@
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use std::path::PathBuf;
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_2_1::kmip_types::CryptographicAlgorithm, read_object_from_json_ttlv_file,
 };
 use cosmian_kms_cli::reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::{
     ImportKeyFormat, KeyUsage,
 };
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use cosmian_logger::log_init;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server;
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::{
     cover_crypt::master_key_pair::create_cc_master_key_pair,
     elliptic_curve::create_key_pair::create_ec_key_pair,
@@ -112,7 +112,7 @@ pub(crate) fn import_key(params: ImportKeyParams) -> CosmianResult<String> {
     ))
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
     use tempfile::TempDir;
@@ -170,7 +170,7 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
     use cosmian_kms_cli::{
@@ -223,7 +223,7 @@ pub(crate) async fn test_generate_export_import() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 pub(crate) fn export_import_test(
     cli_conf_path: &str,
     sub_command: &str,

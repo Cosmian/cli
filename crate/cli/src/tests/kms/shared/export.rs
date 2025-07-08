@@ -1,9 +1,9 @@
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use std::path::Path;
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_0::kmip_types::BlockCipherMode,
     kmip_2_1::{
@@ -25,13 +25,13 @@ use cosmian_kms_cli::{
         test_kms_server::start_default_test_kms_server,
     },
 };
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use cosmian_logger::log_init;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use openssl::pkey::{Id, PKey};
 use tempfile::TempDir;
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::cover_crypt::{
     master_key_pair::create_cc_master_key_pair, user_decryption_keys::create_user_decryption_key,
 };
@@ -46,7 +46,7 @@ use crate::{
         save_kms_cli_config,
     },
 };
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::{
     error::result::CosmianResultHelper,
     tests::kms::{
@@ -208,7 +208,7 @@ pub(crate) async fn test_export_sym_allow_revoked() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     log_init(option_env!("RUST_LOG"));
@@ -336,7 +336,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
     fn export_cc_test(
@@ -424,7 +424,7 @@ pub(crate) async fn test_export_covercrypt() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
     // create a temp dir
@@ -468,7 +468,7 @@ pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
     // create a temp dir
@@ -637,7 +637,7 @@ pub(crate) async fn test_sensitive_sym() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_sensitive_ec_key() -> CosmianResult<()> {
     // create a temp dir
@@ -678,7 +678,7 @@ pub(crate) async fn test_sensitive_ec_key() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_sensitive_rsa_key() -> CosmianResult<()> {
     // create a temp dir
@@ -724,7 +724,7 @@ pub(crate) async fn test_sensitive_rsa_key() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
     // create a temp dir

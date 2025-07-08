@@ -12,14 +12,14 @@ use cosmian_kms_cli::{
     },
 };
 use tempfile::TempDir;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use tracing::trace;
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::cover_crypt::{
     master_key_pair::create_cc_master_key_pair, user_decryption_keys::create_user_decryption_key,
 };
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::elliptic_curve::create_key_pair::create_ec_key_pair;
 use crate::{
     cli_bail,
@@ -148,7 +148,7 @@ async fn test_destroy_and_remove_symmetric_key() -> CosmianResult<()> {
     assert_destroyed(&owner_client_conf_path, &key_id, true)
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_destroy_ec_key() -> CosmianResult<()> {
     // init the test server
@@ -211,7 +211,7 @@ async fn test_destroy_ec_key() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_destroy_and_remove_ec_key() -> CosmianResult<()> {
     // init the test server
@@ -274,7 +274,7 @@ async fn test_destroy_and_remove_ec_key() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 async fn test_destroy_cover_crypt() -> CosmianResult<()> {
     // init the test server

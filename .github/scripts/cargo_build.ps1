@@ -9,6 +9,7 @@ function BuildProject {
         [string]$BuildType
     )
 
+    $env:RUST_LOG = "cosmian_cli=error,cosmian_kms_server=error,test_kms_server=error"
     # Add target
     rustup target add x86_64-pc-windows-msvc
 
@@ -19,13 +20,13 @@ function BuildProject {
     $env:FINDEX_TEST_DB = "sqlite-findex"
     if ($BuildType -eq "release")
     {
-        cargo build -p cosmian_cli -p cosmian_pkcs11 --release --target x86_64-pc-windows-msvc
-        cargo test  -p cosmian_cli --release --target x86_64-pc-windows-msvc -- --nocapture --skip sql --skip redis --skip google_cse --skip hsm --skip kms
+        cargo build --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --release --target x86_64-pc-windows-msvc
+        cargo test  --features "non-fips" -p cosmian_cli --release --target x86_64-pc-windows-msvc -- --nocapture --skip sql --skip redis --skip google_cse --skip hsm --skip kms
     }
     else
     {
-        cargo build -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc
-        cargo  test -p cosmian_cli --target x86_64-pc-windows-msvc -- --nocapture --skip sql --skip redis --skip google_cse --skip hsm --skip kms
+        cargo build --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc
+        cargo  test --features "non-fips" -p cosmian_cli --target x86_64-pc-windows-msvc -- --nocapture --skip sql --skip redis --skip google_cse --skip hsm --skip kms
     }
 
     # Check binaries

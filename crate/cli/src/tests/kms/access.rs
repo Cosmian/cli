@@ -1,7 +1,7 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server_with_privileged_users;
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
@@ -13,10 +13,10 @@ use cosmian_kms_cli::{
 use cosmian_logger::log_init;
 use tracing::trace;
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use super::rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair};
 use super::{KMS_SUBCOMMAND, symmetric::create_key::create_symmetric_key, utils::recover_cmd_logs};
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 use crate::tests::kms::shared::{ImportKeyParams, import_key};
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
@@ -39,7 +39,7 @@ fn gen_key(cli_conf_path: &str) -> CosmianResult<String> {
 }
 
 /// Export and import symmetric key
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 fn export_import_sym_key(key_id: &str, cli_conf_path: &str) -> Result<String, CosmianError> {
     export_key(ExportKeyParams {
         cli_conf_path: cli_conf_path.to_owned(),
@@ -786,7 +786,7 @@ pub(crate) async fn test_grant_with_without_object_uid() -> CosmianResult<()> {
     Ok(())
 }
 
-#[cfg(not(feature = "fips"))]
+#[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_privileged_users() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server_with_privileged_users(vec![

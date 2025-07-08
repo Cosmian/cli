@@ -2,14 +2,14 @@ use std::process::Command;
 
 use assert_cmd::prelude::*;
 use base64::{Engine as _, engine::general_purpose};
-use cosmian_crypto_core::{
-    CsRng,
-    reexport::rand_core::{RngCore, SeedableRng},
-};
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::{
         cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
+        cosmian_kms_crypto::reexport::cosmian_crypto_core::{
+            CsRng,
+            reexport::rand_core::{RngCore, SeedableRng},
+        },
         test_kms_server::start_default_test_kms_server,
     },
 };
@@ -112,7 +112,7 @@ pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
         )?;
     }
 
-    #[cfg(not(feature = "fips"))]
+    #[cfg(feature = "non-fips")]
     {
         // ChaCha20 256 bit key
         create_symmetric_key(
