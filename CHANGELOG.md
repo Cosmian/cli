@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2025-07-08
+
+### 🚀 Features
+
+- Invert fips feature
+- Handle extension file to define x509 setup extensions for Google CSE keypairs create command
+
+### ⚙️ Miscellaneous Tasks
+
+- Display items ID on google keypairs creation command
+
+### 🧪 Testing
+
+- Test with stackoverflow
+
 ## [0.5.0] - 2025-06-04
 
 ### 🚀 Features
