@@ -1573,10 +1573,24 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
 If the wrapping key is:
-
 - a symmetric key, AES-GCM will be used
 - a RSA key, RSA-OAEP will be used
 - a EC key, ECIES will be used (salsa20poly1305 for X25519)
+
+` --leaf-certificate-extensions [-e] <CERTIFICATE_EXTENSIONS>`
+Path to a file containing X.509 extensions, defined under a `[v3_ca]` section.
+These extensions will be applied to the generated leaf certificate and must
+comply with Google's S/MIME certificate requirements. For example:
+
+      ```text
+      [ v3_ca ]
+      keyUsage=critical,nonRepudiation,digitalSignature,dataEncipherment,keyEncipherment
+      extendedKeyUsage=emailProtection
+      subjectKeyIdentifier=hash
+      authorityKeyIdentifier=keyid:always,issuer
+      subjectAltName=email:john.doe@acme.com
+      crlDistributionPoints=URI:https://acme.com/crl.pem
+      ```
 
 `--dry-run <DRY_RUN>` Dry run mode. If set, the action will not be executed
 
@@ -2830,7 +2844,3 @@ Action to auto-generate doc in Markdown format Run `cargo run --bin cosmian -- m
 `
 ### Arguments
 ` <MARKDOWN_FILE>` The file to export the markdown to
-
-
-
-
