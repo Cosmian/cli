@@ -10,6 +10,7 @@ mod hash;
 mod hsm;
 mod mac;
 mod rsa;
+mod secret_data;
 mod shared;
 mod symmetric;
 pub(crate) mod utils;
