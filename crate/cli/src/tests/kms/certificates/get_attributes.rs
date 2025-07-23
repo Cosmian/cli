@@ -51,7 +51,7 @@ async fn test_get_attributes_p12() -> CosmianResult<()> {
         pkcs12_attributes
             .get(&Tag::KeyFormatType.to_string())
             .unwrap(),
-        &serde_json::json!("PKCS1")
+        &serde_json::json!("PKCS8")
     );
     let intermediate_certificate_id: String = serde_json::from_value(
         pkcs12_attributes
