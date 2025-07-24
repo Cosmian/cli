@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2025-07-23
+
+### 🚀 Features
+
+- Handle Secret Data
+
 ## [1.0.0] - 2025-07-08
 
 ### 🚀 Features
