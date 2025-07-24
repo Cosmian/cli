@@ -155,9 +155,9 @@ async fn locate_objects(kms_rest_client: &KmsClient, tags: &[String]) -> Pkcs11R
         ..Default::default()
     };
     let response = kms_rest_client.locate(locate).await?;
-    debug!("Locate response: ids: {:?}", response.unique_identifiers);
+    debug!("Locate response: ids: {:?}", response.unique_identifier);
     let uniques_identifiers = response
-        .unique_identifiers
+        .unique_identifier
         .unwrap_or_default()
         .iter()
         .map(std::string::ToString::to_string)
