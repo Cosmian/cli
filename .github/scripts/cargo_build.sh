@@ -16,8 +16,9 @@ if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   # First build the Debian and RPM packages. It must come at first since
   rm -rf target/"$TARGET"/debian
   rm -rf target/"$TARGET"/generate-rpm
-  cargo build --target "$TARGET" --release
+
   if [ -f /etc/redhat-release ]; then
+    cargo build --features non-fips --target "$TARGET" --release
     cargo install --version 0.16.0 cargo-generate-rpm --force
     cargo generate-rpm --target "$TARGET" -p crate/cli
   elif [ -f /etc/lsb-release ]; then
