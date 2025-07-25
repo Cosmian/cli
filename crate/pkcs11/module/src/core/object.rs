@@ -271,7 +271,7 @@ impl Object {
             },
         };
         debug!(
-            "Object: {}, attribute: {:?} => {:?}",
+            "attribute: Object: {}, attribute: {:?} => {:?}",
             self.name(),
             type_,
             attribute

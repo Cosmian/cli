@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use cosmian_pkcs11_module::{
     ModuleError, ModuleResult,
@@ -10,6 +10,7 @@ use sha3::Digest;
 use tracing::error;
 use x509_cert::{der::Encode, spki::SubjectPublicKeyInfoOwned};
 use zeroize::Zeroizing;
+use crate::kms_object::{key_algorithm_from_attributes, KmsObject};
 
 pub(crate) struct Pkcs11PublicKey {
     remote_id: String,
@@ -43,6 +44,29 @@ impl Pkcs11PublicKey {
             der_bytes,
             fingerprint,
             algorithm,
+        })
+    }
+
+    pub(crate) fn try_from_kms_object(kms_object: KmsObject) -> ModuleResult<Self> {
+        let der_bytes = Arc::new(RwLock::new(
+            kms_object
+                .object
+                .key_block()
+                .map_err(|e| ModuleError::Cryptography(e.to_string()))?
+                .symmetric_key_bytes()
+                .map_err(|e| ModuleError::Cryptography(e.to_string()))?,
+        ));
+        let key_size =
+            usize::try_from(kms_object.attributes.cryptographic_length.ok_or_else(|| {
+                ModuleError::Cryptography("try_from_kms_object: missing key size".to_owned())
+            })?)?;
+        let algorithm = key_algorithm_from_attributes(&kms_object.attributes)?;
+
+        Ok(Self {
+            remote_id: kms_object.remote_id,
+            algorithm,
+            key_size,
+            der_bytes,
         })
     }
 }

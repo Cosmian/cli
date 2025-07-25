@@ -106,7 +106,7 @@ pub(crate) async fn get_kms_objects_async(
 pub(crate) fn get_kms_object(
     kms_client: &KmsClient,
     object_id_or_tags: &str,
-    key_format_type: KeyFormatType,
+    key_format_type: Option<KeyFormatType>,
 ) -> Pkcs11Result<KmsObject> {
     tokio::runtime::Runtime::new()?.block_on(get_kms_object_async(
         kms_client,
@@ -118,14 +118,14 @@ pub(crate) fn get_kms_object(
 pub(crate) async fn get_kms_object_async(
     kms_client: &KmsClient,
     object_id_or_tags: &str,
-    key_format_type: KeyFormatType,
+    key_format_type: Option<KeyFormatType>,
 ) -> Pkcs11Result<KmsObject> {
     let (id, object, _) = export_object(
         kms_client,
         object_id_or_tags,
         ExportObjectParams {
             unwrap: true,
-            key_format_type: Some(key_format_type),
+            key_format_type,
             ..Default::default()
         },
     )
@@ -369,6 +369,7 @@ pub(crate) async fn get_kms_object_attributes_async(
             attribute_reference: None,
         })
         .await?;
+    trace!("GetAttributes response: {:?}", response);
     Ok(response.attributes)
 }
 

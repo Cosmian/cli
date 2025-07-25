@@ -111,7 +111,7 @@ impl Backend for CliBackend {
             }
         };
         let id = String::from_utf8(id)?;
-        let kms_object = get_kms_object(&self.kms_rest_client, &id, KeyFormatType::PKCS8)?;
+        let kms_object = get_kms_object(&self.kms_rest_client, &id, Some(KeyFormatType::PKCS8))?;
         Ok(Arc::new(Pkcs11PrivateKey::try_from_kms_object(kms_object)?))
     }
 
@@ -155,11 +155,8 @@ impl Backend for CliBackend {
             &[ "_pk".to_owned()],
         )?;
         for id in ids {
-            let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let sk: Arc<dyn PublicKey> = Arc::new(Pkcs11PublicKey::new(
-                id,
-                key_algorithm_from_attributes(&attributes)?,
-            ));
+            let kms_object = get_kms_object(&self.kms_rest_client, &id, None)?;
+            let sk: Arc<dyn PublicKey> = Arc::new(Pkcs11PublicKey::try_from_kms_object(kms_object));
             public_keys.push(sk);
         }
 
