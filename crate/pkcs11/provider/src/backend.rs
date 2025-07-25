@@ -148,8 +148,22 @@ impl Backend for CliBackend {
     }
 
     fn find_all_public_keys(&self) -> ModuleResult<Vec<Arc<dyn PublicKey>>> {
-        warn!("find_all_public_keys not implemented");
-        Ok(vec![])
+        trace!("find_all_public_keys");
+        let mut public_keys = vec![];
+        let ids = locate_kms_objects(
+            &self.kms_rest_client,
+            &[ "_pk".to_owned()],
+        )?;
+        for id in ids {
+            let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
+            let sk: Arc<dyn PublicKey> = Arc::new(Pkcs11PublicKey::new(
+                id,
+                key_algorithm_from_attributes(&attributes)?,
+            ));
+            public_keys.push(sk);
+        }
+
+        Ok(public_keys)
     }
 
     fn find_data_object(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>> {
