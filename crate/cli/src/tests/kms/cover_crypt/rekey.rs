@@ -16,10 +16,10 @@ use cosmian_kms_cli::{
                 },
             },
         },
-        test_kms_server::start_default_test_kms_server,
     },
 };
 use tempfile::TempDir;
+use test_kms_server::start_default_test_kms_server;
 
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,

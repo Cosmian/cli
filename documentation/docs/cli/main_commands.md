@@ -78,6 +78,8 @@ Handle KMS actions
 
 **`sym`** [[1.15]](#115-cosmian-kms-sym)  Manage symmetric keys. Encrypt and decrypt data
 
+**`secret-data`** [[1.16]](#116-cosmian-kms-secret-data)  Create, import, export and destroy secret data
+
 ---
 
 ## 1.1 cosmian kms access-rights
@@ -377,13 +379,13 @@ IDs.
 **`create-user-key`** [[1.4.1.2]](#1412-cosmian-kms-cc-keys-create-user-key)  Create a new user secret key for an access policy, and index it under some
 (optional) tags, that can later be used to retrieve the key.
 
-**`export`** [[1.4.1.3]](#1413-cosmian-kms-cc-keys-export)  Export a key from the KMS
+**`export`** [[1.4.1.3]](#1413-cosmian-kms-cc-keys-export)  Export a key or secret data from the KMS
 
-**`import`** [[1.4.1.4]](#1414-cosmian-kms-cc-keys-import)  Import a private or public key in the KMS.
+**`import`** [[1.4.1.4]](#1414-cosmian-kms-cc-keys-import)  Import a secret data or key in the KMS.
 
-**`wrap`** [[1.4.1.5]](#1415-cosmian-kms-cc-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
+**`wrap`** [[1.4.1.5]](#1415-cosmian-kms-cc-keys-wrap)  Locally wrap a secret data or key in KMIP JSON TTLV format.
 
-**`unwrap`** [[1.4.1.6]](#1416-cosmian-kms-cc-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
+**`unwrap`** [[1.4.1.6]](#1416-cosmian-kms-cc-keys-unwrap)  Locally unwrap a secret data or key in KMIP JSON TTLV format.
 
 **`revoke`** [[1.4.1.7]](#1417-cosmian-kms-cc-keys-revoke)  Revoke a Covercrypt master or user decryption key
 
@@ -455,7 +457,7 @@ If the wrapping key is:
 
 ## 1.4.1.3 cosmian kms cc keys export
 
-Export a key from the KMS
+Export a key or secret data from the KMS
 
 ### Usage
 `cosmian kms cc keys export [options] <KEY_FILE>
@@ -463,9 +465,9 @@ Export a key from the KMS
 ### Arguments
 ` <KEY_FILE>` The file to export the key to
 
-`--key-id [-k] <KEY_ID>` The key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <KEY_ID>` The key or secret data unique identifier stored in the KMS. If not specified, tags should be specified
 
-`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key or secret data id is specified. To specify multiple tags, use the option multiple times
 
 `--key-format [-f] <KEY_FORMAT>` The format of the key
 
@@ -477,6 +479,7 @@ Export a key from the KMS
       - symmetric keys
       - Covercrypt keys
       - wrapped keys
+      - secret data
 
 Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
 
@@ -506,7 +509,7 @@ By default, the algorithm used is
 
 ## 1.4.1.4 cosmian kms cc keys import
 
-Import a private or public key in the KMS.
+Import a secret data or key in the KMS.
 
 ### Usage
 `cosmian kms cc keys import [options] <KEY_FILE>
@@ -554,7 +557,7 @@ If the wrapping key is:
 
 ## 1.4.1.5 cosmian kms cc keys wrap
 
-Locally wrap a key in KMIP JSON TTLV format.
+Locally wrap a secret data or key in KMIP JSON TTLV format.
 
 ### Usage
 `cosmian kms cc keys wrap [options] <KEY_FILE_IN>
@@ -579,7 +582,7 @@ Locally wrap a key in KMIP JSON TTLV format.
 
 ## 1.4.1.6 cosmian kms cc keys unwrap
 
-Locally unwrap a key in KMIP JSON TTLV format.
+Locally unwrap a secret data or key in KMIP JSON TTLV format.
 
 ### Usage
 `cosmian kms cc keys unwrap [options] <KEY_FILE_IN>
@@ -592,9 +595,9 @@ Locally unwrap a key in KMIP JSON TTLV format.
 
 `--unwrap-key-b64 [-k] <UNWRAP_KEY_B64>` A symmetric key as a base 64 string to unwrap the imported key
 
-`--unwrap-key-id [-i] <UNWRAP_KEY_ID>` The id of a unwrapping key in the KMS that will be exported and used to unwrap the key
+`--unwrap-key-id [-i] <UNWRAP_KEY_ID>` The id of an unwrapping key in the KMS that will be exported and used to unwrap the key
 
-`--unwrap-key-file [-f] <UNWRAP_KEY_FILE>` A unwrapping key in a KMIP JSON TTLV file used to unwrap the key
+`--unwrap-key-file [-f] <UNWRAP_KEY_FILE>` An unwrapping key in a KMIP JSON TTLV file used to unwrap the key
 
 
 
@@ -1140,13 +1143,13 @@ Create, destroy, import, and export elliptic curve key pairs
 
 **`create`** [[1.6.1.1]](#1611-cosmian-kms-ec-keys-create)  Create an elliptic curve key pair
 
-**`export`** [[1.6.1.2]](#1612-cosmian-kms-ec-keys-export)  Export a key from the KMS
+**`export`** [[1.6.1.2]](#1612-cosmian-kms-ec-keys-export)  Export a key or secret data from the KMS
 
-**`import`** [[1.6.1.3]](#1613-cosmian-kms-ec-keys-import)  Import a private or public key in the KMS.
+**`import`** [[1.6.1.3]](#1613-cosmian-kms-ec-keys-import)  Import a secret data or key in the KMS.
 
-**`wrap`** [[1.6.1.4]](#1614-cosmian-kms-ec-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
+**`wrap`** [[1.6.1.4]](#1614-cosmian-kms-ec-keys-wrap)  Locally wrap a secret data or key in KMIP JSON TTLV format.
 
-**`unwrap`** [[1.6.1.5]](#1615-cosmian-kms-ec-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
+**`unwrap`** [[1.6.1.5]](#1615-cosmian-kms-ec-keys-unwrap)  Locally unwrap a secret data or key in KMIP JSON TTLV format.
 
 **`revoke`** [[1.6.1.6]](#1616-cosmian-kms-ec-keys-revoke)  Revoke a public or private key
 
@@ -1187,7 +1190,7 @@ If the wrapping key is:
 
 ## 1.6.1.2 cosmian kms ec keys export
 
-Export a key from the KMS
+Export a key or secret data from the KMS
 
 ### Usage
 `cosmian kms ec keys export [options] <KEY_FILE>
@@ -1195,9 +1198,9 @@ Export a key from the KMS
 ### Arguments
 ` <KEY_FILE>` The file to export the key to
 
-`--key-id [-k] <KEY_ID>` The key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <KEY_ID>` The key or secret data unique identifier stored in the KMS. If not specified, tags should be specified
 
-`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key or secret data id is specified. To specify multiple tags, use the option multiple times
 
 `--key-format [-f] <KEY_FORMAT>` The format of the key
 
@@ -1209,6 +1212,7 @@ Export a key from the KMS
       - symmetric keys
       - Covercrypt keys
       - wrapped keys
+      - secret data
 
 Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
 
@@ -1238,7 +1242,7 @@ By default, the algorithm used is
 
 ## 1.6.1.3 cosmian kms ec keys import
 
-Import a private or public key in the KMS.
+Import a secret data or key in the KMS.
 
 ### Usage
 `cosmian kms ec keys import [options] <KEY_FILE>
@@ -1286,7 +1290,7 @@ If the wrapping key is:
 
 ## 1.6.1.4 cosmian kms ec keys wrap
 
-Locally wrap a key in KMIP JSON TTLV format.
+Locally wrap a secret data or key in KMIP JSON TTLV format.
 
 ### Usage
 `cosmian kms ec keys wrap [options] <KEY_FILE_IN>
@@ -1311,7 +1315,7 @@ Locally wrap a key in KMIP JSON TTLV format.
 
 ## 1.6.1.5 cosmian kms ec keys unwrap
 
-Locally unwrap a key in KMIP JSON TTLV format.
+Locally unwrap a secret data or key in KMIP JSON TTLV format.
 
 ### Usage
 `cosmian kms ec keys unwrap [options] <KEY_FILE_IN>
@@ -1324,9 +1328,9 @@ Locally unwrap a key in KMIP JSON TTLV format.
 
 `--unwrap-key-b64 [-k] <UNWRAP_KEY_B64>` A symmetric key as a base 64 string to unwrap the imported key
 
-`--unwrap-key-id [-i] <UNWRAP_KEY_ID>` The id of a unwrapping key in the KMS that will be exported and used to unwrap the key
+`--unwrap-key-id [-i] <UNWRAP_KEY_ID>` The id of an unwrapping key in the KMS that will be exported and used to unwrap the key
 
-`--unwrap-key-file [-f] <UNWRAP_KEY_FILE>` A unwrapping key in a KMIP JSON TTLV file used to unwrap the key
+`--unwrap-key-file [-f] <UNWRAP_KEY_FILE>` An unwrapping key in a KMIP JSON TTLV file used to unwrap the key
 
 
 
@@ -1573,24 +1577,14 @@ Possible values:  `"true", "false"` [default: `"false"`]
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
 If the wrapping key is:
+
 - a symmetric key, AES-GCM will be used
 - a RSA key, RSA-OAEP will be used
 - a EC key, ECIES will be used (salsa20poly1305 for X25519)
 
-` --leaf-certificate-extensions [-e] <CERTIFICATE_EXTENSIONS>`
-Path to a file containing X.509 extensions, defined under a `[v3_ca]` section.
+`--leaf-certificate-extensions [-e] <CERTIFICATE_EXTENSIONS>` Path to a file containing X.509 extensions, defined under a `[v3_ca]` section.
 These extensions will be applied to the generated leaf certificate and must
 comply with Google's S/MIME certificate requirements. For example:
-
-      ```text
-      [ v3_ca ]
-      keyUsage=critical,nonRepudiation,digitalSignature,dataEncipherment,keyEncipherment
-      extendedKeyUsage=emailProtection
-      subjectKeyIdentifier=hash
-      authorityKeyIdentifier=keyid:always,issuer
-      subjectAltName=email:john.doe@acme.com
-      crlDistributionPoints=URI:https://acme.com/crl.pem
-      ```
 
 `--dry-run <DRY_RUN>` Dry run mode. If set, the action will not be executed
 
@@ -1848,13 +1842,13 @@ Create, destroy, import, and export RSA key pairs
 
 **`create`** [[1.13.1.1]](#11311-cosmian-kms-rsa-keys-create)  Create a new RSA key pair
 
-**`export`** [[1.13.1.2]](#11312-cosmian-kms-rsa-keys-export)  Export a key from the KMS
+**`export`** [[1.13.1.2]](#11312-cosmian-kms-rsa-keys-export)  Export a key or secret data from the KMS
 
-**`import`** [[1.13.1.3]](#11313-cosmian-kms-rsa-keys-import)  Import a private or public key in the KMS.
+**`import`** [[1.13.1.3]](#11313-cosmian-kms-rsa-keys-import)  Import a secret data or key in the KMS.
 
-**`wrap`** [[1.13.1.4]](#11314-cosmian-kms-rsa-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
+**`wrap`** [[1.13.1.4]](#11314-cosmian-kms-rsa-keys-wrap)  Locally wrap a secret data or key in KMIP JSON TTLV format.
 
-**`unwrap`** [[1.13.1.5]](#11315-cosmian-kms-rsa-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
+**`unwrap`** [[1.13.1.5]](#11315-cosmian-kms-rsa-keys-unwrap)  Locally unwrap a secret data or key in KMIP JSON TTLV format.
 
 **`revoke`** [[1.13.1.6]](#11316-cosmian-kms-rsa-keys-revoke)  Revoke a public or private key
 
@@ -1893,7 +1887,7 @@ If the wrapping key is:
 
 ## 1.13.1.2 cosmian kms rsa keys export
 
-Export a key from the KMS
+Export a key or secret data from the KMS
 
 ### Usage
 `cosmian kms rsa keys export [options] <KEY_FILE>
@@ -1901,9 +1895,9 @@ Export a key from the KMS
 ### Arguments
 ` <KEY_FILE>` The file to export the key to
 
-`--key-id [-k] <KEY_ID>` The key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <KEY_ID>` The key or secret data unique identifier stored in the KMS. If not specified, tags should be specified
 
-`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key or secret data id is specified. To specify multiple tags, use the option multiple times
 
 `--key-format [-f] <KEY_FORMAT>` The format of the key
 
@@ -1915,6 +1909,7 @@ Export a key from the KMS
       - symmetric keys
       - Covercrypt keys
       - wrapped keys
+      - secret data
 
 Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
 
@@ -1944,7 +1939,7 @@ By default, the algorithm used is
 
 ## 1.13.1.3 cosmian kms rsa keys import
 
-Import a private or public key in the KMS.
+Import a secret data or key in the KMS.
 
 ### Usage
 `cosmian kms rsa keys import [options] <KEY_FILE>
@@ -1992,7 +1987,7 @@ If the wrapping key is:
 
 ## 1.13.1.4 cosmian kms rsa keys wrap
 
-Locally wrap a key in KMIP JSON TTLV format.
+Locally wrap a secret data or key in KMIP JSON TTLV format.
 
 ### Usage
 `cosmian kms rsa keys wrap [options] <KEY_FILE_IN>
@@ -2017,7 +2012,7 @@ Locally wrap a key in KMIP JSON TTLV format.
 
 ## 1.13.1.5 cosmian kms rsa keys unwrap
 
-Locally unwrap a key in KMIP JSON TTLV format.
+Locally unwrap a secret data or key in KMIP JSON TTLV format.
 
 ### Usage
 `cosmian kms rsa keys unwrap [options] <KEY_FILE_IN>
@@ -2030,9 +2025,9 @@ Locally unwrap a key in KMIP JSON TTLV format.
 
 `--unwrap-key-b64 [-k] <UNWRAP_KEY_B64>` A symmetric key as a base 64 string to unwrap the imported key
 
-`--unwrap-key-id [-i] <UNWRAP_KEY_ID>` The id of a unwrapping key in the KMS that will be exported and used to unwrap the key
+`--unwrap-key-id [-i] <UNWRAP_KEY_ID>` The id of an unwrapping key in the KMS that will be exported and used to unwrap the key
 
-`--unwrap-key-file [-f] <UNWRAP_KEY_FILE>` A unwrapping key in a KMIP JSON TTLV file used to unwrap the key
+`--unwrap-key-file [-f] <UNWRAP_KEY_FILE>` An unwrapping key in a KMIP JSON TTLV file used to unwrap the key
 
 
 
@@ -2184,13 +2179,13 @@ Create, destroy, import, and export symmetric keys
 
 **`re-key`** [[1.15.1.2]](#11512-cosmian-kms-sym-keys-re-key)  Refresh an existing symmetric key
 
-**`export`** [[1.15.1.3]](#11513-cosmian-kms-sym-keys-export)  Export a key from the KMS
+**`export`** [[1.15.1.3]](#11513-cosmian-kms-sym-keys-export)  Export a key or secret data from the KMS
 
-**`import`** [[1.15.1.4]](#11514-cosmian-kms-sym-keys-import)  Import a private or public key in the KMS.
+**`import`** [[1.15.1.4]](#11514-cosmian-kms-sym-keys-import)  Import a secret data or key in the KMS.
 
-**`wrap`** [[1.15.1.5]](#11515-cosmian-kms-sym-keys-wrap)  Locally wrap a key in KMIP JSON TTLV format.
+**`wrap`** [[1.15.1.5]](#11515-cosmian-kms-sym-keys-wrap)  Locally wrap a secret data or key in KMIP JSON TTLV format.
 
-**`unwrap`** [[1.15.1.6]](#11516-cosmian-kms-sym-keys-unwrap)  Locally unwrap a key in KMIP JSON TTLV format.
+**`unwrap`** [[1.15.1.6]](#11516-cosmian-kms-sym-keys-unwrap)  Locally unwrap a secret data or key in KMIP JSON TTLV format.
 
 **`revoke`** [[1.15.1.7]](#11517-cosmian-kms-sym-keys-revoke)  Revoke a symmetric key
 
@@ -2248,7 +2243,7 @@ Refresh an existing symmetric key
 
 ## 1.15.1.3 cosmian kms sym keys export
 
-Export a key from the KMS
+Export a key or secret data from the KMS
 
 ### Usage
 `cosmian kms sym keys export [options] <KEY_FILE>
@@ -2256,9 +2251,9 @@ Export a key from the KMS
 ### Arguments
 ` <KEY_FILE>` The file to export the key to
 
-`--key-id [-k] <KEY_ID>` The key unique identifier stored in the KMS. If not specified, tags should be specified
+`--key-id [-k] <KEY_ID>` The key or secret data unique identifier stored in the KMS. If not specified, tags should be specified
 
-`--tag [-t] <TAG>` Tag to use to retrieve the key when no key id is specified. To specify multiple tags, use the option multiple times
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key or secret data id is specified. To specify multiple tags, use the option multiple times
 
 `--key-format [-f] <KEY_FORMAT>` The format of the key
 
@@ -2270,6 +2265,7 @@ Export a key from the KMS
       - symmetric keys
       - Covercrypt keys
       - wrapped keys
+      - secret data
 
 Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
 
@@ -2299,7 +2295,7 @@ By default, the algorithm used is
 
 ## 1.15.1.4 cosmian kms sym keys import
 
-Import a private or public key in the KMS.
+Import a secret data or key in the KMS.
 
 ### Usage
 `cosmian kms sym keys import [options] <KEY_FILE>
@@ -2347,7 +2343,7 @@ If the wrapping key is:
 
 ## 1.15.1.5 cosmian kms sym keys wrap
 
-Locally wrap a key in KMIP JSON TTLV format.
+Locally wrap a secret data or key in KMIP JSON TTLV format.
 
 ### Usage
 `cosmian kms sym keys wrap [options] <KEY_FILE_IN>
@@ -2372,7 +2368,7 @@ Locally wrap a key in KMIP JSON TTLV format.
 
 ## 1.15.1.6 cosmian kms sym keys unwrap
 
-Locally unwrap a key in KMIP JSON TTLV format.
+Locally unwrap a secret data or key in KMIP JSON TTLV format.
 
 ### Usage
 `cosmian kms sym keys unwrap [options] <KEY_FILE_IN>
@@ -2385,9 +2381,9 @@ Locally unwrap a key in KMIP JSON TTLV format.
 
 `--unwrap-key-b64 [-k] <UNWRAP_KEY_B64>` A symmetric key as a base 64 string to unwrap the imported key
 
-`--unwrap-key-id [-i] <UNWRAP_KEY_ID>` The id of a unwrapping key in the KMS that will be exported and used to unwrap the key
+`--unwrap-key-id [-i] <UNWRAP_KEY_ID>` The id of an unwrapping key in the KMS that will be exported and used to unwrap the key
 
-`--unwrap-key-file [-f] <UNWRAP_KEY_FILE>` A unwrapping key in a KMIP JSON TTLV file used to unwrap the key
+`--unwrap-key-file [-f] <UNWRAP_KEY_FILE>` An unwrapping key in a KMIP JSON TTLV file used to unwrap the key
 
 
 
@@ -2492,6 +2488,253 @@ Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-xts", "aes-gcm-siv", "rf
 `--output-file [-o] <OUTPUT_FILE>` The encrypted output file path
 
 `--authentication-data [-a] <AUTHENTICATION_DATA>` Optional authentication data that was supplied during encryption as a hex string
+
+
+
+
+---
+
+## 1.16 cosmian kms secret-data
+
+Create, import, export and destroy secret data
+
+### Usage
+`cosmian kms secret-data <subcommand>`
+
+### Subcommands
+
+**`create`** [[1.16.1]](#1161-cosmian-kms-secret-data-create)  Create a new secret data
+
+**`export`** [[1.16.2]](#1162-cosmian-kms-secret-data-export)  Export a key or secret data from the KMS
+
+**`import`** [[1.16.3]](#1163-cosmian-kms-secret-data-import)  Import a secret data or key in the KMS.
+
+**`wrap`** [[1.16.4]](#1164-cosmian-kms-secret-data-wrap)  Locally wrap a secret data or key in KMIP JSON TTLV format.
+
+**`unwrap`** [[1.16.5]](#1165-cosmian-kms-secret-data-unwrap)  Locally unwrap a secret data or key in KMIP JSON TTLV format.
+
+**`revoke`** [[1.16.6]](#1166-cosmian-kms-secret-data-revoke)  Revoke a secret data
+
+**`destroy`** [[1.16.7]](#1167-cosmian-kms-secret-data-destroy)  Destroy a secret data
+
+---
+
+## 1.16.1 cosmian kms secret-data create
+
+Create a new secret data
+
+### Usage
+`cosmian kms secret-data create [options] [SECRET_ID]
+`
+### Arguments
+`--value [-v] <SECRET_VALUE>` Optional secret data string, UTF-8 encoded. If not provided, a random 32-byte seed will be generated
+
+`--type <SECRET_TYPE>` The type of secret data. Defaults to a randomly generated Seed. To use a Password type, you must provide both this and a valid secret value
+
+Possible values:  `"password", "seed"` [default: `"seed"`]
+
+`--tag [-t] <TAG>` The tag to associate with the secret data. To specify multiple tags, use the option multiple times
+
+` <SECRET_ID>` The unique id of the secret; a random uuid is generated if not specified
+
+`--sensitive <SENSITIVE>` Sensitive: if set, the secret will not be exportable
+
+Possible values:  `"true", "false"` [default: `"false"`]
+
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap this new secret data with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
+
+
+
+---
+
+## 1.16.2 cosmian kms secret-data export
+
+Export a key or secret data from the KMS
+
+### Usage
+`cosmian kms secret-data export [options] <KEY_FILE>
+`
+### Arguments
+` <KEY_FILE>` The file to export the key to
+
+`--key-id [-k] <KEY_ID>` The key or secret data unique identifier stored in the KMS. If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the key when no key or secret data id is specified. To specify multiple tags, use the option multiple times
+
+`--key-format [-f] <KEY_FORMAT>` The format of the key
+
+ - `json-ttlv` [default]. It should be the format to use to later re-import the key
+ - `sec1-pem` and `sec1-der`only apply to NIST EC private keys (Not Curve25519 or X448)
+ - `pkcs1-pem` and `pkcs1-der` only apply to RSA private and public keys
+ - `pkcs8-pem` and `pkcs8-der` only apply to RSA and EC private keys
+ - `raw` returns the raw bytes of
+      - symmetric keys
+      - Covercrypt keys
+      - wrapped keys
+      - secret data
+
+Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
+
+`--unwrap [-u] <UNWRAP>` Unwrap the key if it is wrapped before export
+
+Possible values:  `"true", "false"` [default: `"false"`]
+
+`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate to use to wrap this key before export
+
+`--allow-revoked [-i] <ALLOW_REVOKED>` Allow exporting revoked and destroyed keys.
+The user must be the owner of the key.
+Destroyed keys have their key material removed.
+
+Possible values:  `"true", "false"` [default: `"false"`]
+
+`--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
+By default, the algorithm used is
+
+- `NISTKeyWrap` for symmetric keys (a.k.a. RFC 5649)
+- `RsaOaep` for RSA keys
+
+`--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
+
+
+
+---
+
+## 1.16.3 cosmian kms secret-data import
+
+Import a secret data or key in the KMS.
+
+### Usage
+`cosmian kms secret-data import [options] <KEY_FILE>
+ [KEY_ID]
+`
+### Arguments
+` <KEY_FILE>` The KMIP JSON TTLV key file
+
+` <KEY_ID>` The unique id of the key; a random uuid is generated if not specified
+
+`--key-format [-f] <KEY_FORMAT>` The format of the key
+
+Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `"json-ttlv"`]
+
+`--public-key-id [-p] <PUBLIC_KEY_ID>` For a private key: the corresponding KMS public key id if any
+
+`--private-key-id [-k] <PRIVATE_KEY_ID>` For a public key: the corresponding KMS private key id if any
+
+`--certificate-id [-c] <CERTIFICATE_ID>` For a public or private key: the corresponding certificate id if any
+
+`--unwrap [-u] <UNWRAP>` In the case of a JSON TTLV key, unwrap the key if it is wrapped before storing it
+
+Possible values:  `"true", "false"` [default: `"false"`]
+
+`--replace [-r] <REPLACE_EXISTING>` Replace an existing key under the same id
+
+Possible values:  `"true", "false"` [default: `"false"`]
+
+`--tag [-t] <TAG>` The tag to associate with the key. To specify multiple tags, use the option multiple times
+
+`--key-usage <KEY_USAGE>` For what operations should the key be used
+
+Possible values:  `"sign", "verify", "encrypt", "decrypt", "wrap-key", "unwrap-key", "mac-generate", "mac-verify", "derive-key", "key-agreement", "certificate-sign", "crl-sign", "authenticate", "unrestricted"`
+
+`--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap this imported key with.
+If the wrapping key is:
+
+- a symmetric key, AES-GCM will be used
+- a RSA key, RSA-OAEP will be used
+- a EC key, ECIES will be used (salsa20poly1305 for X25519)
+
+
+
+---
+
+## 1.16.4 cosmian kms secret-data wrap
+
+Locally wrap a secret data or key in KMIP JSON TTLV format.
+
+### Usage
+`cosmian kms secret-data wrap [options] <KEY_FILE_IN>
+ [KEY_FILE_OUT]
+`
+### Arguments
+` <KEY_FILE_IN>` The KMIP JSON TTLV input key file to wrap
+
+` <KEY_FILE_OUT>` The KMIP JSON output file. When not specified, the input file is overwritten
+
+`--wrap-password [-p] <WRAP_PASSWORD>` A password to wrap the imported key. This password will be derived into a AES-256 symmetric key. For security reasons, a fresh salt is internally handled and generated by `cosmian` and this final AES symmetric key will be displayed only once
+
+`--wrap-key-b64 [-k] <WRAP_KEY_B64>` A symmetric key as a base 64 string to wrap the imported key
+
+`--wrap-key-id [-i] <WRAP_KEY_ID>` The id of a wrapping key in the KMS that will be exported and used to wrap the key
+
+`--wrap-key-file [-f] <WRAP_KEY_FILE>` A wrapping key in a KMIP JSON TTLV file used to wrap the key
+
+
+
+---
+
+## 1.16.5 cosmian kms secret-data unwrap
+
+Locally unwrap a secret data or key in KMIP JSON TTLV format.
+
+### Usage
+`cosmian kms secret-data unwrap [options] <KEY_FILE_IN>
+ [KEY_FILE_OUT]
+`
+### Arguments
+` <KEY_FILE_IN>` The KMIP JSON TTLV input key file to unwrap
+
+` <KEY_FILE_OUT>` The KMIP JSON output file. When not specified the input file is overwritten
+
+`--unwrap-key-b64 [-k] <UNWRAP_KEY_B64>` A symmetric key as a base 64 string to unwrap the imported key
+
+`--unwrap-key-id [-i] <UNWRAP_KEY_ID>` The id of an unwrapping key in the KMS that will be exported and used to unwrap the key
+
+`--unwrap-key-file [-f] <UNWRAP_KEY_FILE>` An unwrapping key in a KMIP JSON TTLV file used to unwrap the key
+
+
+
+---
+
+## 1.16.6 cosmian kms secret-data revoke
+
+Revoke a secret data
+
+### Usage
+`cosmian kms secret-data revoke [options] <REVOCATION_REASON>
+`
+### Arguments
+` <REVOCATION_REASON>` The reason for the revocation as a string
+
+`--secret-data-id [-s] <SECRET_ID>` The secret unique identifier of the secret to revoke. If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the secret data when no secret data id is specified. To specify multiple tags, use the option multiple times
+
+
+
+---
+
+## 1.16.7 cosmian kms secret-data destroy
+
+Destroy a secret data
+
+### Usage
+`cosmian kms secret-data destroy [options]`
+### Arguments
+`--key-id [-s] <SECRET_ID>` The secret unique identifier. If not specified, tags should be specified
+
+`--tag [-t] <TAG>` Tag to use to retrieve the secret when no secret id is specified. To specify multiple tags, use the option multiple times
+
+`--remove <REMOVE>` If the secret should be removed from the database
+If not specified, the key will be destroyed
+but its metadata will still be available in the database.
+Please note that the KMIP specification does not support the removal of objects.
+
+Possible values:  `"true", "false"` [default: `"false"`]
 
 
 
@@ -2844,3 +3087,7 @@ Action to auto-generate doc in Markdown format Run `cargo run --bin cosmian -- m
 `
 ### Arguments
 ` <MARKDOWN_FILE>` The file to export the markdown to
+
+
+
+

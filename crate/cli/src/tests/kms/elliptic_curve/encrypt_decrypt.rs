@@ -1,11 +1,10 @@
 use std::{fs, path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_kms_cli::reexport::{
-    cosmian_kms_client::read_bytes_from_file, test_kms_server::start_default_test_kms_server,
-};
+use cosmian_kms_cli::reexport::cosmian_kms_client::read_bytes_from_file;
 use predicates::prelude::*;
 use tempfile::TempDir;
+use test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
 use crate::{

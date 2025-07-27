@@ -6,12 +6,10 @@ use cosmian_kms_cli::{
         mac::{CHashingAlgorithm, MacAction},
         symmetric::keys::create_key::CreateKeyAction,
     },
-    reexport::{
-        cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
-        test_kms_server::start_default_test_kms_server,
-    },
+    reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
 };
 use cosmian_logger::log_init;
+use test_kms_server::start_default_test_kms_server;
 
 use super::{KMS_SUBCOMMAND, utils::extract_uids::extract_uid};
 use crate::{

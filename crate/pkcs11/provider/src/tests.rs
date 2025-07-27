@@ -9,7 +9,6 @@ use cosmian_cli::reexport::cosmian_kms_cli::reexport::{
         requests::{self, create_symmetric_key_kmip_object, import_object_request},
     },
     cosmian_kms_client::KmsClient,
-    test_kms_server::start_default_test_kms_server,
 };
 use cosmian_logger::log_init;
 use cosmian_pkcs11_module::{
@@ -19,6 +18,7 @@ use cosmian_pkcs11_module::{
 };
 use pkcs11_sys::{CK_FUNCTION_LIST, CK_INVALID_HANDLE, CKF_SERIAL_SESSION, CKR_OK};
 use serial_test::serial;
+use test_kms_server::start_default_test_kms_server;
 use tracing::debug;
 
 use crate::{

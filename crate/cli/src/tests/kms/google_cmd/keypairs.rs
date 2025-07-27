@@ -1,7 +1,7 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server;
+use test_kms_server::start_default_test_kms_server;
 use serde::Deserialize;
 
 use crate::{
