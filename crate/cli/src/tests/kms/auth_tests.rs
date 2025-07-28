@@ -4,13 +4,11 @@ use assert_cmd::prelude::*;
 use base64::Engine;
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
-    reexport::{
-        cosmian_kms_client::read_object_from_json_ttlv_file,
-        test_kms_server::{AuthenticationOptions, MainDBConfig, start_test_server_with_options},
-    },
+    reexport::cosmian_kms_client::read_object_from_json_ttlv_file,
 };
 use cosmian_logger::log_init;
 use tempfile::TempDir;
+use test_kms_server::{AuthenticationOptions, MainDBConfig, start_test_server_with_options};
 use tokio::fs;
 use tracing::{info, trace};
 

@@ -1,9 +1,9 @@
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server;
 use predicates::prelude::*;
 use tempfile::TempDir;
+use test_kms_server::start_default_test_kms_server;
 
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,

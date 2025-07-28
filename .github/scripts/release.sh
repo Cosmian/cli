@@ -9,6 +9,9 @@ NEW_VERSION="$2"
 SED_BINARY=${SED_BINARY:-sed}
 
 ${SED_BINARY} -i "s/$OLD_VERSION/$NEW_VERSION/g" Cargo.toml
+${SED_BINARY} -i "s/$OLD_VERSION/$NEW_VERSION/g" crate/pkcs11/provider/Cargo.toml
+
+# Other files
 ${SED_BINARY} -i "s/$OLD_VERSION/$NEW_VERSION/g" Dockerfile
 ${SED_BINARY} -i "s/$OLD_VERSION/$NEW_VERSION/g" documentation/docs/index.md
 ${SED_BINARY} -i "s/$OLD_VERSION/$NEW_VERSION/g" documentation/docs/installation.md

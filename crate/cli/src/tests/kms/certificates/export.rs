@@ -1,22 +1,19 @@
 use std::process::Command;
 
 use assert_cmd::prelude::CommandCargoExt;
-use cosmian_kms_cli::reexport::{
-    cosmian_kms_client::{
-        cosmian_kmip::ttlv::{TTLV, from_ttlv},
-        kmip_2_1::{
-            kmip_attributes::Attributes,
-            kmip_objects::{Certificate, Object},
-            kmip_types::{KeyFormatType, LinkType},
-        },
-        read_from_json_file, read_object_from_json_ttlv_file,
-        reexport::cosmian_kms_client_utils::{
-            certificate_utils::Algorithm,
-            export_utils::{CertificateExportFormat, ExportKeyFormat::JsonTtlv},
-            import_utils::CertificateInputFormat,
-        },
+use cosmian_kms_cli::reexport::cosmian_kms_client::{
+    cosmian_kmip::ttlv::{TTLV, from_ttlv},
+    kmip_2_1::{
+        kmip_attributes::Attributes,
+        kmip_objects::{Certificate, Object},
+        kmip_types::{KeyFormatType, LinkType},
     },
-    test_kms_server::start_default_test_kms_server,
+    read_from_json_file, read_object_from_json_ttlv_file,
+    reexport::cosmian_kms_client_utils::{
+        certificate_utils::Algorithm,
+        export_utils::{CertificateExportFormat, ExportKeyFormat::JsonTtlv},
+        import_utils::CertificateInputFormat,
+    },
 };
 use cosmian_logger::log_init;
 use openssl::{
@@ -26,6 +23,7 @@ use openssl::{
     x509::{X509, store::X509StoreBuilder},
 };
 use tempfile::TempDir;
+use test_kms_server::start_default_test_kms_server;
 use uuid::Uuid;
 
 #[cfg(feature = "non-fips")]

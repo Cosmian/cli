@@ -3,12 +3,10 @@ use std::process::Command;
 use assert_cmd::prelude::*;
 use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
-    reexport::{
-        cosmian_kms_client::read_object_from_json_ttlv_file,
-        test_kms_server::start_default_test_kms_server,
-    },
+    reexport::cosmian_kms_client::read_object_from_json_ttlv_file,
 };
 use tempfile::TempDir;
+use test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
 use crate::{

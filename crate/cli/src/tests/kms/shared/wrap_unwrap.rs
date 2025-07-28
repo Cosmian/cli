@@ -16,11 +16,11 @@ use cosmian_kms_cli::{
             CsRng,
             reexport::rand_core::{RngCore, SeedableRng},
         },
-        test_kms_server::start_default_test_kms_server,
     },
 };
 use cosmian_logger::log_init;
 use tempfile::TempDir;
+use test_kms_server::start_default_test_kms_server;
 
 use super::ExportKeyParams;
 use crate::{

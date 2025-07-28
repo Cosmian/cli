@@ -5,19 +5,17 @@ use cosmian_kms_cli::{
     actions::kms::symmetric::{
         DecryptAction, EncryptAction, KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction,
     },
-    reexport::{
-        cosmian_kms_client::{
-            read_bytes_from_file,
-            reexport::cosmian_kms_client_utils::{
-                create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
-            },
+    reexport::cosmian_kms_client::{
+        read_bytes_from_file,
+        reexport::cosmian_kms_client_utils::{
+            create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
         },
-        test_kms_server::start_default_test_kms_server,
     },
 };
 use cosmian_logger::log_init;
 use strum::IntoEnumIterator;
 use tempfile::TempDir;
+use test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
 use crate::{

@@ -8,16 +8,14 @@ use cosmian_kms_cli::reexport::cosmian_kms_client::{
 };
 use cosmian_kms_cli::{
     actions::kms::symmetric::{KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction},
-    reexport::{
-        cosmian_kms_client::reexport::cosmian_kms_client_utils::{
-            create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
-        },
-        test_kms_server::TestsContext,
+    reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::{
+        create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
     },
 };
 use cosmian_logger::log_init;
 #[cfg(feature = "non-fips")]
 use tempfile::TempDir;
+use test_kms_server::TestsContext;
 #[cfg(feature = "non-fips")]
 use tracing::trace;
 use uuid::Uuid;

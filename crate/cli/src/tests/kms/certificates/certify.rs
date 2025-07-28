@@ -1,24 +1,22 @@
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::cargo::CommandCargoExt;
-use cosmian_kms_cli::reexport::{
-    cosmian_kms_client::{
-        cosmian_kmip::{
-            kmip_2_1::{kmip_objects::Object, kmip_types::LinkType},
-            ttlv::{TTLV, from_ttlv},
-        },
-        kmip_2_1::{kmip_attributes::Attributes, kmip_objects::Certificate},
-        read_from_json_file, read_object_from_json_ttlv_file,
-        reexport::cosmian_kms_client_utils::{
-            certificate_utils::Algorithm, export_utils::CertificateExportFormat,
-            import_utils::CertificateInputFormat,
-        },
+use cosmian_kms_cli::reexport::cosmian_kms_client::{
+    cosmian_kmip::{
+        kmip_2_1::{kmip_objects::Object, kmip_types::LinkType},
+        ttlv::{TTLV, from_ttlv},
     },
-    test_kms_server::start_default_test_kms_server,
+    kmip_2_1::{kmip_attributes::Attributes, kmip_objects::Certificate},
+    read_from_json_file, read_object_from_json_ttlv_file,
+    reexport::cosmian_kms_client_utils::{
+        certificate_utils::Algorithm, export_utils::CertificateExportFormat,
+        import_utils::CertificateInputFormat,
+    },
 };
 use cosmian_logger::log_init;
 use openssl::{nid::Nid, x509::X509};
 use tempfile::TempDir;
+use test_kms_server::start_default_test_kms_server;
 use tracing::{debug, info};
 use uuid::Uuid;
 use x509_parser::{der_parser::oid, prelude::*};
