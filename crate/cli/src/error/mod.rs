@@ -7,11 +7,7 @@ use cosmian_findex_cli::{
     error::FindexCliError,
     reexport::cosmian_findex_client::{
         ClientError,
-        reexport::{
-            cosmian_findex::{self, ADDRESS_LENGTH, Address},
-            cosmian_findex_structs::StructsError,
-            cosmian_http_client::HttpClientError,
-        },
+        reexport::{cosmian_findex_structs::StructsError, cosmian_http_client::HttpClientError},
     },
 };
 #[cfg(feature = "non-fips")]
