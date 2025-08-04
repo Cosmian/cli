@@ -24,6 +24,7 @@ use cosmian_kms_cli::{
         cosmian_kms_crypto::CryptoError,
     },
 };
+use cosmian_sse_memories::{ADDRESS_LENGTH, Address};
 use thiserror::Error;
 
 pub mod result;
