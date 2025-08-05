@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use cosmian_cli::reexport::cosmian_kms_cli::reexport::{
+use cosmian_cli::reexport::cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::{
     cosmian_kmip::kmip_2_1::{
         kmip_attributes::Attributes,
         kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},

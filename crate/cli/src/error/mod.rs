@@ -3,25 +3,29 @@ use std::str::Utf8Error;
 #[cfg(test)]
 use assert_cmd::cargo::CargoError;
 use cosmian_config_utils::ConfigUtilsError;
+#[cfg(feature = "non-fips")]
+use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::cosmian_kms_crypto::reexport::cosmian_cover_crypt;
 use cosmian_findex_cli::{
     error::FindexCliError,
-    reexport::cosmian_findex_client::{
-        ClientError,
-        reexport::{cosmian_findex_structs::StructsError, cosmian_http_client::HttpClientError},
-    },
-};
-#[cfg(feature = "non-fips")]
-use cosmian_kms_cli::reexport::cosmian_kms_crypto::reexport::cosmian_cover_crypt;
-use cosmian_kms_cli::{
-    actions::kms::google::GoogleApiError,
-    error::KmsCliError,
     reexport::{
-        cosmian_kms_client::{
-            KmsClientError,
-            cosmian_kmip::{KmipError, ttlv::TtlvError},
-            reexport::cosmian_kms_client_utils::error::UtilsError,
+        cosmian_findex_client::{
+            ClientError,
+            reexport::{
+                cosmian_findex_structs::StructsError, cosmian_http_client::HttpClientError,
+            },
         },
-        cosmian_kms_crypto::CryptoError,
+        cosmian_kms_cli::{
+            actions::kms::google::GoogleApiError,
+            error::KmsCliError,
+            reexport::{
+                cosmian_kms_client::{
+                    KmsClientError,
+                    cosmian_kmip::{KmipError, ttlv::TtlvError},
+                    reexport::cosmian_kms_client_utils::error::UtilsError,
+                },
+                cosmian_kms_crypto::CryptoError,
+            },
+        },
     },
 };
 use cosmian_sse_memories::{ADDRESS_LENGTH, Address};

@@ -49,7 +49,7 @@ cosmian_config_utils = "0.2"
 cosmian_crypto_core = { version = "10.2", default-features = false, features = [
     "ser",
 ] }
-cosmian_findex_cli = { path = "findex-server/crate/cli" }
+# cosmian_findex_cli = { path = "findex-server/crate/cli", version = "0.4.0" }
 cosmian_kms_cli = { path = "kms/crate/cli", version = "5.6.1" }
 test_kms_server = { path = "kms/crate/test_kms_server", version = "5.6.1" }
 cosmian_http_client = "0.2"
@@ -78,7 +78,7 @@ x509-parser = "0.17"
 zeroize = { version = "1.8", default-features = false }
 # KMS deps
 cosmian_findex = { git = "https://github.com/Cosmian/findex", branch = "chore/rename_memories_and_update_features", version = "8.0" }
-cosmian_sse_memories = { git = "https://github.com/Cosmian/findex", branch = "chore/rename_memories_and_update_features", version = "8.0" }
+# cosmian_sse_memories = { git = "https://github.com/Cosmian/findex", branch = "chore/rename_memories_and_update_features", version = "8.0" }
 bitflags = "2.9"
 num-bigint-dig = { version = "0.8", default-features = false }
 time = "0.3"
@@ -93,4 +93,4 @@ lru = "0.12"
 num_cpus = "1.17"
 libloading = "0.8"
 # Findex deps
-async-sqlite = { version = "0.4" }
+async-sqlite = { version = "=0.4" }

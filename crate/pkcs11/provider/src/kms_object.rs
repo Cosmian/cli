@@ -2,7 +2,7 @@ use std::vec;
 
 use cosmian_cli::{
     config::ClientConfig,
-    reexport::cosmian_kms_cli::reexport::{
+    reexport::cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::{
         cosmian_kmip::{
             self,
             kmip_0::kmip_types::{BlockCipherMode, CryptographicUsageMask, PaddingMethod},

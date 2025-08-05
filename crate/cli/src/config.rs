@@ -1,8 +1,10 @@
 use std::path::PathBuf;
 
 use cosmian_config_utils::{ConfigUtils, location};
-use cosmian_findex_cli::reexport::cosmian_findex_client::RestClientConfig;
-use cosmian_kms_cli::reexport::cosmian_kms_client::KmsClientConfig;
+use cosmian_findex_cli::reexport::{
+    cosmian_findex_client::RestClientConfig,
+    cosmian_kms_cli::reexport::cosmian_kms_client::KmsClientConfig,
+};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 

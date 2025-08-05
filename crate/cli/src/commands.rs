@@ -2,9 +2,14 @@ use std::path::PathBuf;
 
 use clap::{CommandFactory, Parser, Subcommand};
 use cosmian_findex_cli::{
-    actions::findex_server::actions::FindexActions, reexport::cosmian_findex_client::RestClient,
+    actions::findex_server::actions::FindexActions,
+    reexport::{
+        cosmian_findex_client::RestClient,
+        cosmian_kms_cli::{
+            actions::kms::actions::KmsActions, reexport::cosmian_kms_client::KmsClient,
+        },
+    },
 };
-use cosmian_kms_cli::{actions::kms::actions::KmsActions, reexport::cosmian_kms_client::KmsClient};
 use cosmian_logger::log_init;
 use tracing::{info, trace};
 
@@ -113,7 +118,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
     trace!("Configuration: {config:?}");
 
     // Instantiate the KMS client
-    let kms_rest_client = KmsClient::new_with_config(config.kms_config.clone())?;
+    let kms_rest_client = KmsClient::new_with_config(config.kms_config.clone()).unwrap();
 
     match &cli.command {
         CliCommands::Markdown(action) => {
@@ -121,7 +126,10 @@ pub async fn cosmian_main() -> CosmianResult<()> {
             return Ok(());
         }
         CliCommands::Kms(kms_actions) => {
-            let new_kms_config = Box::pin(kms_actions.process(kms_rest_client)).await?;
+            // TODO
+            let new_kms_config = Box::pin(kms_actions.process(kms_rest_client))
+                .await
+                .unwrap();
             if config.kms_config != new_kms_config {
                 config.kms_config = new_kms_config;
                 config.save(cli.conf_path.clone())?;
@@ -133,7 +141,10 @@ pub async fn cosmian_main() -> CosmianResult<()> {
                 .as_ref()
                 .ok_or_else(|| cli_error!("Missing Findex server configuration"))?;
             let findex_client = RestClient::new(findex_config.clone())?;
-            let new_findex_config = findex_actions.run(findex_client, kms_rest_client).await?;
+            let new_findex_config = findex_actions
+                .run(findex_client, kms_rest_client)
+                .await
+                .unwrap();
             if config.findex_config.as_ref() != Some(&new_findex_config) {
                 config.findex_config = Some(new_findex_config);
                 config.save(cli.conf_path.clone())?;
