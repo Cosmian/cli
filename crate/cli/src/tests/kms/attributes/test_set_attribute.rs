@@ -1,4 +1,4 @@
-use cosmian_kms_cli::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::{
     actions::kms::{
         attributes::{CCryptographicAlgorithm, SetOrDeleteAttributes, VendorAttributeCli},
         symmetric::keys::create_key::CreateKeyAction,

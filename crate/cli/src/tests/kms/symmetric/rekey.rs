@@ -1,7 +1,7 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_cli::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::cosmian_kms_client::read_object_from_json_ttlv_file,
 };

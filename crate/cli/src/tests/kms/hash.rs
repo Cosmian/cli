@@ -1,7 +1,9 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_cli::actions::kms::{hash::HashAction, mac::CHashingAlgorithm};
+use cosmian_findex_cli::reexport::cosmian_kms_cli::actions::kms::{
+    hash::HashAction, mac::CHashingAlgorithm,
+};
 use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server;
 

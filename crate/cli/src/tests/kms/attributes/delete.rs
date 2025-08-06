@@ -1,7 +1,7 @@
 use std::process::Command;
 
 use assert_cmd::cargo::CommandCargoExt;
-use cosmian_kms_cli::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::{
     actions::kms::attributes::SetOrDeleteAttributes,
     reexport::cosmian_kms_client::kmip_2_1::kmip_types::Tag,
 };

@@ -1,4 +1,4 @@
-use cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction;
+use cosmian_findex_cli::reexport::cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction;
 use cosmian_logger::log_init;
 use test_kms_server::TestsContext;
 use tracing::debug;

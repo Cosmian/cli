@@ -1,4 +1,4 @@
-use cosmian_kms_cli::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::export_utils::WrappingAlgorithm,
 };

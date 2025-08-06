@@ -1,7 +1,7 @@
 use std::process::Command;
 
 use assert_cmd::prelude::CommandCargoExt;
-use cosmian_kms_cli::reexport::cosmian_kms_client::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::cosmian_kms_client::{
     cosmian_kmip::ttlv::{TTLV, from_ttlv},
     kmip_2_1::{
         kmip_attributes::Attributes,

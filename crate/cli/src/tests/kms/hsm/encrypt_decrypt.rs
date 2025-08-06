@@ -2,11 +2,11 @@
 use std::{fs, path::PathBuf};
 
 #[cfg(feature = "non-fips")]
-use cosmian_kms_cli::reexport::cosmian_kms_client::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::cosmian_kms_client::{
     read_bytes_from_file,
     reexport::cosmian_kms_client_utils::rsa_utils::{HashFn, RsaEncryptionAlgorithm},
 };
-use cosmian_kms_cli::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::{
     actions::kms::symmetric::{KeyEncryptionAlgorithm, keys::create_key::CreateKeyAction},
     reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::{
         create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,

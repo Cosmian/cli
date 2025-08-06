@@ -1,4 +1,4 @@
-use cosmian_kms_cli::reexport::cosmian_kms_client::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::cosmian_kms_client::{
     kmip_2_1::kmip_types::{LinkType, Tag},
     reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat,
 };

@@ -1,7 +1,7 @@
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::cargo::CommandCargoExt;
-use cosmian_kms_cli::reexport::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::{
     cosmian_kms_client::reexport::cosmian_kms_client_utils::import_utils::CertificateInputFormat,
 };
 use    test_kms_server::start_default_test_kms_server;

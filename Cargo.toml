@@ -49,8 +49,8 @@ cosmian_config_utils = "0.2"
 cosmian_crypto_core = { version = "10.2", default-features = false, features = [
     "ser",
 ] }
-# cosmian_findex_cli = { path = "findex-server/crate/cli", version = "0.4.0" }
-cosmian_kms_cli = { path = "kms/crate/cli", version = "5.6.1" }
+# cosmian_findex_cli = { path = "findex-server/crate/cli", version = "0.4.0" } TODO
+# cosmian_kms_cli = { path = "kms/crate/cli", version = "5.6.1" }
 test_kms_server = { path = "kms/crate/test_kms_server", version = "5.6.1" }
 cosmian_http_client = "0.2"
 cosmian_logger = "0.2"
@@ -93,3 +93,6 @@ num_cpus = "1.17"
 libloading = "0.8"
 # Findex deps
 async-sqlite = { version = "=0.4" }
+
+# [patch."https://github.com/Cosmian/kms"]
+# cosmian_kms_client = { path = "kms/crate/kms_client" } # Patch to use local kms_client crate instead of the one from Cosmian/kms

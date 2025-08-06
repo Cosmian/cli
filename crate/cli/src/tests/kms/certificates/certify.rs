@@ -1,7 +1,7 @@
 use std::{path::PathBuf, process::Command};
 
 use assert_cmd::cargo::CommandCargoExt;
-use cosmian_kms_cli::reexport::cosmian_kms_client::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::cosmian_kms_client::{
     cosmian_kmip::{
         kmip_2_1::{kmip_objects::Object, kmip_types::LinkType},
         ttlv::{TTLV, from_ttlv},

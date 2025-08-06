@@ -1,6 +1,6 @@
 #[cfg(feature = "non-fips")]
-use cosmian_kms_cli::reexport::cosmian_kms_crypto::crypto::elliptic_curves::operation::create_x25519_key_pair;
-use cosmian_kms_cli::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::cosmian_kms_crypto::crypto::elliptic_curves::operation::create_x25519_key_pair;
+use cosmian_findex_cli::reexport::cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::{
         cosmian_kms_client::{
@@ -123,7 +123,7 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
 #[cfg(feature = "non-fips")]
 #[tokio::test]
 pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
-    use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_0::kmip_types::CryptographicUsageMask;
+    use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::cosmian_kms_client::kmip_0::kmip_types::CryptographicUsageMask;
 
     cosmian_logger::log_init(None);
     // create a temp dir

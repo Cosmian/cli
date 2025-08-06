@@ -1,7 +1,7 @@
 use std::{fs, path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
-use cosmian_kms_cli::reexport::cosmian_kms_client::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::cosmian_kms_client::{
     read_bytes_from_file,
     reexport::cosmian_kms_client_utils::{
         export_utils::{ExportKeyFormat, WrappingAlgorithm},

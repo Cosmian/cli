@@ -1,7 +1,7 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction;
+use cosmian_findex_cli::reexport::cosmian_kms_cli::actions::kms::symmetric::keys::create_key::CreateKeyAction;
 #[cfg(feature = "non-fips")]
 use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server_with_cert_auth;

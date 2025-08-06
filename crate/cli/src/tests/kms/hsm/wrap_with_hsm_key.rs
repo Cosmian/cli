@@ -1,6 +1,6 @@
 #[cfg(feature = "non-fips")]
-use cosmian_kms_cli::reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::export_utils::ExportKeyFormat;
-use cosmian_kms_cli::{actions::kms::symmetric::{keys::create_key::CreateKeyAction, KeyEncryptionAlgorithm}, reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::{
+use cosmian_findex_cli::reexport::cosmian_kms_cli::reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::export_utils::ExportKeyFormat;
+use cosmian_findex_cli::reexport::cosmian_kms_cli::{actions::kms::symmetric::{keys::create_key::CreateKeyAction, KeyEncryptionAlgorithm}, reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::{
     create_utils::SymmetricAlgorithm, symmetric_utils::DataEncryptionAlgorithm,
 }};
 use cosmian_logger::log_init;
