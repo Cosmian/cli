@@ -1402,7 +1402,7 @@ dependencies = [
  "clap",
  "const-oid",
  "cosmian_config_utils 0.2.0",
- "cosmian_findex 8.0.0 (git+https://github.com/Cosmian/findex?branch=chore%2Frename_memories_and_update_features)",
+ "cosmian_findex 8.0.0",
  "cosmian_findex_cli",
  "cosmian_logger 0.2.0",
  "cosmian_sse_memories 8.0.0 (git+https://github.com/Cosmian/findex?branch=chore%2Frename_memories_and_update_features)",
@@ -1549,17 +1549,6 @@ dependencies = [
 [[package]]
 name = "cosmian_findex"
 version = "8.0.0"
-source = "git+https://github.com/Cosmian/findex?branch=chore%2Frename_memories_and_update_features#eedc87278e1f7d46379299d0670126d6a08b5128"
-dependencies = [
- "aes",
- "cosmian_crypto_core 10.2.0",
- "cosmian_sse_memories 8.0.0 (git+https://github.com/Cosmian/findex?branch=chore%2Frename_memories_and_update_features)",
- "xts-mode",
-]
-
-[[package]]
-name = "cosmian_findex"
-version = "8.0.0"
 source = "git+https://github.com/Cosmian/findex?branch=develop#c553cc1a87b4441a1787e8a68b365752e71660ae"
 dependencies = [
  "aes",
@@ -1577,7 +1566,7 @@ dependencies = [
  "base64 0.22.1",
  "clap",
  "cosmian_config_utils 0.3.1",
- "cosmian_findex 8.0.0 (git+https://github.com/Cosmian/findex?branch=develop)",
+ "cosmian_findex 8.0.0",
  "cosmian_findex_client",
  "cosmian_findex_structs",
  "cosmian_kms_cli",
@@ -1596,7 +1585,7 @@ name = "cosmian_findex_client"
 version = "0.4.0"
 dependencies = [
  "base64 0.22.1",
- "cosmian_findex 8.0.0 (git+https://github.com/Cosmian/findex?branch=develop)",
+ "cosmian_findex 8.0.0",
  "cosmian_findex_structs",
  "cosmian_http_client",
  "cosmian_kms_cli",
@@ -1615,7 +1604,7 @@ version = "0.4.0"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.2.0",
- "cosmian_findex 8.0.0 (git+https://github.com/Cosmian/findex?branch=develop)",
+ "cosmian_findex 8.0.0",
  "cosmian_sse_memories 8.0.0 (git+https://github.com/Cosmian/findex?branch=develop)",
  "thiserror 2.0.12",
  "tracing",

@@ -77,8 +77,7 @@ x509-cert = { version = "0.2", default-features = false }
 x509-parser = "0.17"
 zeroize = { version = "1.8", default-features = false }
 # KMS deps
-cosmian_findex = { git = "https://github.com/Cosmian/findex", branch = "chore/rename_memories_and_update_features", version = "8.0" }
-# cosmian_sse_memories = { git = "https://github.com/Cosmian/findex", branch = "chore/rename_memories_and_update_features", version = "8.0" }
+cosmian_findex = { git = "https://github.com/Cosmian/findex", branch = "develop", version = "8.0" }
 bitflags = "2.9"
 num-bigint-dig = { version = "0.8", default-features = false }
 time = "0.3"
