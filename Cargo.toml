@@ -93,7 +93,3 @@ libloading = "0.8"
 # Findex deps
 async-sqlite = { version = "=0.4" }
 cosmian_sse_memories = { git = "https://github.com/Cosmian/findex", branch = "develop", version = "8.0" }
-
-
-# [patch."https://github.com/Cosmian/kms"]
-# cosmian_kms_client = { path = "kms/crate/kms_client" } # Patch to use local kms_client crate instead of the one from Cosmian/kms
