@@ -38,6 +38,8 @@ By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic
 | 0.3.1       | 4.24.*           | 0.3.0                 |
 | 0.4.0       | 5.0.*            | 0.3.0                 |
 | 0.4.1       | 5.1.*            | 0.3.0                 |
+| 1.1.0       | 5.6.*            | 0.3.0                 |
+| 1.1.1       | 5.6.*            | 0.4.*                 |
 
 ## Installation
 

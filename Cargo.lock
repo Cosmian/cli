@@ -1421,12 +1421,9 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 name = "cosmian_cli"
 version = "1.1.0"
 dependencies = [
- "actix-rt",
- "actix-server",
  "assert_cmd",
  "base64 0.22.1",
  "clap",
- "const-oid",
  "cosmian_config_utils 0.2.0",
  "cosmian_findex 8.0.0",
  "cosmian_findex_cli",
@@ -1435,7 +1432,6 @@ dependencies = [
  "csv",
  "der",
  "hex",
- "lazy_static",
  "openssl",
  "predicates",
  "regex",
@@ -1587,7 +1583,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_cli"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "assert_cmd",
  "base64 0.22.1",
@@ -1611,7 +1607,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_client"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "base64 0.22.1",
  "cosmian_findex 8.0.0",
@@ -1631,7 +1627,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_server"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1667,7 +1663,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_structs"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.2.0",
@@ -2005,7 +2001,6 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-error",
- "tracing-journald",
  "tracing-subscriber",
  "x509-cert",
  "zeroize",
@@ -3579,15 +3574,6 @@ checksum = "dbc5ebe9c3a1a7a5127f920a418f7585e9e758e911d0466ed004f393b0e380b2"
 dependencies = [
  "memchr",
  "serde",
-]
-
-[[package]]
-name = "itertools"
-version = "0.10.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
-dependencies = [
- "either",
 ]
 
 [[package]]
@@ -6697,17 +6683,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b1581020d7a273442f5b45074a6a57d5757ad0a47dac0e9f0bd57b81936f3db"
 dependencies = [
  "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "tracing-journald"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc0b4143302cf1022dac868d521e36e8b27691f72c84b3311750d5188ebba657"
-dependencies = [
- "libc",
- "tracing-core",
  "tracing-subscriber",
 ]
 
