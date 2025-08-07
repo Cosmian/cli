@@ -1588,7 +1588,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_cli"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "assert_cmd",
  "base64 0.22.1",
@@ -1612,7 +1612,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_client"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "base64 0.22.1",
  "cosmian_findex 8.0.0",
@@ -1632,7 +1632,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_server"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1668,7 +1668,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_structs"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.2.0",

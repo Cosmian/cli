@@ -26,6 +26,11 @@ jobs:
     with:
       toolchain: ${{ inputs.toolchain }}
 
+  cargo-machete:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-machete.yml@develop
+    with:
+      toolchain: ${{ inputs.toolchain }}
+
   build:
     uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@develop
     secrets: inherit
