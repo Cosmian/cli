@@ -72,7 +72,7 @@ impl PublicKey for Pkcs11PublicKey {
         self.algorithm
     }
 
-    fn rsa_public_key(&self) -> ModuleResult<RsaPublicKey> {
+    fn rsa_public_key(&self) -> ModuleResult<RsaPublicKey<'_>> {
         if self.algorithm == KeyAlgorithm::Rsa {
             RsaPublicKey::from_der(&self.der_bytes).map_err(|e| {
                 error!("Failed to parse RSA public key: {:?}", e);

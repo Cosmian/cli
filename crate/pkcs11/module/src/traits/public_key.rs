@@ -20,7 +20,7 @@ pub trait PublicKey: Send + Sync {
     fn delete(self: Arc<Self>);
     fn algorithm(&self) -> KeyAlgorithm;
     /// Return the RSA public key if the key is an RSA key
-    fn rsa_public_key(&self) -> ModuleResult<RsaPublicKey>;
+    fn rsa_public_key(&self) -> ModuleResult<RsaPublicKey<'_>>;
     /// Return the RSA modulus if the key is an RSA key
     /// In big endian
     fn rsa_modulus(&self) -> ModuleResult<Vec<u8>> {

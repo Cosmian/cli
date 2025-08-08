@@ -26,8 +26,8 @@ p256 = { version = "0.13.2", default-features = false, features = [
   "std",
 ] }
 pkcs1 = "0.7.5"
-rand = { workspace = true }
 pkcs11-sys = { workspace = true }
+rand = { workspace = true }
 rsa = "0.9"
 strum_macros = "0.26.4"
 thiserror = { workspace = true }
