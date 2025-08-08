@@ -3,6 +3,8 @@ name: CI in debug
 
 on:
   push:
+    branches:
+      - '**'
     tags-ignore:
       - '**'
 
