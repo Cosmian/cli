@@ -14,8 +14,8 @@ version = "1.1.0"
 edition = "2024"
 rust-version = "1.85.0"
 authors = [
-    "Bruno Grieder <bruno.grieder@cosmian.com>",
-    "Emmanuel Coste <emmanuel.coste@cosmian.com>",
+  "Bruno Grieder <bruno.grieder@cosmian.com>",
+  "Emmanuel Coste <emmanuel.coste@cosmian.com>",
 ]
 license = "BUSL-1.1" # "Business Source License 1.1"
 license-file = "LICENSE"
@@ -47,7 +47,7 @@ base64 = "0.22"
 clap = { version = "4.5", default-features = false }
 cosmian_config_utils = "0.2"
 cosmian_crypto_core = { version = "10.2", default-features = false, features = [
-    "ser",
+  "ser",
 ] }
 cosmian_findex_cli = { path = "findex-server/crate/cli", version = "0.4.1" }
 cosmian_kms_cli = { path = "kms/crate/cli", version = "5.6.1" }
