@@ -13,7 +13,7 @@ use cosmian_kms_cli::reexport::cosmian_kms_client::reexport::cosmian_kms_client_
 #[cfg(feature = "non-fips")]
 use cosmian_logger::log_init;
 #[cfg(feature = "non-fips")]
-use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server;
+use test_kms_server::start_default_test_kms_server;
 
 #[cfg(feature = "non-fips")]
 use crate::tests::kms::{

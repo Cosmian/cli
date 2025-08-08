@@ -6,9 +6,9 @@
 //!  cargo test --color=always --features hsm --lib tests::hsm::test_all_hsm_cli
 //! ```
 
-use cosmian_kms_cli::reexport::test_kms_server::start_default_test_kms_server_with_utimaco_hsm;
 use encrypt_decrypt::test_aes_gcm;
 use revoke_destroy::test_revoke_symmetric_key;
+use test_kms_server::start_default_test_kms_server_with_utimaco_hsm;
 use wrap_with_hsm_key::test_wrap_with_aes_gcm;
 #[cfg(feature = "non-fips")]
 use wrap_with_hsm_key::{test_unwrap_on_export, test_wrap_with_rsa_oaep};

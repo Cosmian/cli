@@ -1,6 +1,6 @@
 [package]
 name = "cosmian_cli"
-version.workspace = true
+version = "1.2.0"
 authors.workspace = true
 categories = ["security"]
 edition.workspace = true
@@ -29,6 +29,7 @@ doctest = false
 non-fips = [
   "cosmian_findex_cli/non-fips",
   "cosmian_kms_cli/non-fips",
+  "test_kms_server/non-fips",
 ]
 default = ["non-fips"]
 
@@ -44,9 +45,11 @@ clap = { workspace = true, features = [
   "cargo",
 ] }
 cosmian_config_utils = { workspace = true }
+cosmian_findex = { workspace = true }
 cosmian_findex_cli = { workspace = true }
 cosmian_kms_cli = { workspace = true }
 cosmian_logger = { workspace = true }
+cosmian_sse_memories = { workspace = true }
 csv = "1.3.1"
 der = { workspace = true, features = ["pem"] }
 hex = { workspace = true }
@@ -60,15 +63,12 @@ url = { workspace = true }
 uuid = { workspace = true }
 
 [dev-dependencies]
-actix-rt = "2.10"
-actix-server = { workspace = true }
 assert_cmd = "2.0"
-const-oid = { version = "0.9", features = ["db"] }
-lazy_static = "1.5"
 openssl = { workspace = true }
 predicates = "3.1"
 regex = { version = "1.11", default-features = false }
 tempfile = "3.20"
+test_kms_server = { workspace = true }
 x509-parser = { workspace = true, features = ["verify"] }
 
 # ------------------------------------------------------------------------------
@@ -107,7 +107,6 @@ assets = [
 ]
 auto-req = "no" # do not try to discover .so dependencies
 require-sh = true
-features = ["non-fips"]
 
 # END RPM PACKAGING
 # ------------------------------------------------------------------------------

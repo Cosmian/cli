@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2025-08-08
+
+### 🚀 Features
+
+- Upgrade findex to v8 and clean some dependency import paths (#87)
+
+### 🐛 Bug Fixes
+
+- Rocky package must be NON-FIPS (#83)
+- Reduce binaries size (EXE and DLL) (#84)
+
+### 📚 Documentation
+
+- Add updated google key-pairs create command (#76)
+
+### ⚙️ Miscellaneous Tasks
+
+- Replace test_data folder with git submodule (#86)
+
 ## [1.1.0] - 2025-07-23
 
 ### 🚀 Features

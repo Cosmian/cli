@@ -16,11 +16,11 @@ crate-type = ["rlib", "dylib"]
 doctest = false
 
 [features]
-non-fips = ["cosmian_cli/non-fips"]
+non-fips = ["cosmian_cli/non-fips", "test_kms_server/non-fips"]
 
 [dependencies]
-cosmian_cli = { path = "../../cli" }
-cosmian_pkcs11_module = { path = "../module" }
+cosmian_cli = { path = "../../cli", version = "1.2.0" }
+cosmian_pkcs11_module = { path = "../module", version = "1.2.0" }
 etcetera = "0.8.0"
 hex = "0.4"
 p256 = { version = "0.13.2", default-features = false, features = [
@@ -40,9 +40,7 @@ tracing-subscriber = { workspace = true, features = ["env-filter"] }
 x509-cert = { version = "0.2", default-features = false }
 zeroize = { workspace = true }
 
-[target.'cfg(target_os = "linux")'.dependencies]
-tracing-journald = "0.3.1"
-
 [dev-dependencies]
 cosmian_logger = { workspace = true }
 serial_test = { version = "3.2.0", default-features = true }
+test_kms_server = { workspace = true }

@@ -10,9 +10,9 @@ use cosmian_kms_cli::{
             CsRng,
             reexport::rand_core::{RngCore, SeedableRng},
         },
-        test_kms_server::start_default_test_kms_server,
     },
 };
+use test_kms_server::start_default_test_kms_server;
 
 use super::SUB_COMMAND;
 use crate::{

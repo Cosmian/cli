@@ -21,7 +21,7 @@ use crate::{
         create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test,
     }, save_kms_cli_config},
 };
-use cosmian_kms_cli::reexport::test_kms_server::TestsContext;
+use test_kms_server::TestsContext;
 
 pub(crate) fn test_wrap_with_aes_gcm(ctx: &TestsContext) -> CosmianResult<()> {
     log_init(option_env!("RUST_LOG"));
