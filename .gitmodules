@@ -8,3 +8,6 @@
 [submodule "findex-server"]
     path = findex-server
     url = https://github.com/Cosmian/findex-server.git
+[submodule "test_data"]
+	path = test_data
+	url = https://github.com/Cosmian/test_data.git
