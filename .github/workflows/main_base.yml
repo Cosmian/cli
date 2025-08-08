@@ -43,22 +43,28 @@ jobs:
 
       - name: Publishing - dry run
         run: |
-          cd crate/pkcs11/module
+          pushd crate/pkcs11/module
           cargo publish --dry-run
-          cd crate/pkcs11/provider
+          popd
+          push crate/pkcs11/provider
           cargo publish --dry-run
-          cd crate/cli
+          popd
+          pushd crate/cli
           cargo publish --dry-run
+          popd
 
       - name: Publishing
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          cd crate/pkcs11/module
+          pushd crate/pkcs11/module
           cargo publish --token ${{ secrets.token }}
-          cd crate/pkcs11/provider
+          popd
+          pushd crate/pkcs11/provider
           cargo publish --token ${{ secrets.token }}
-          cd crate/cli
+          popd
+          pushd crate/cli
           cargo publish --token ${{ secrets.token }}
+          popd
 
   build:
     uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@develop
