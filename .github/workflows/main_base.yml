@@ -43,28 +43,52 @@ jobs:
 
       - name: Publishing - dry run
         run: |
-          pushd crate/pkcs11/module
-          cargo publish --dry-run
-          popd
-          pushd crate/pkcs11/provider
-          cargo publish --dry-run
-          popd
-          pushd crate/cli
-          cargo publish --dry-run
-          popd
+          cargo +nightly publish --dry-run --workspace -Z package-workspace \
+            --exclude cosmian_findex_cli \
+            --exclude cosmian_findex_client \
+            --exclude cosmian_findex_structs \
+            --exclude cosmian_findex_server \
+            --exclude test_findex_server \
+            --exclude cosmian_kms_access \
+            --exclude cosmian_kms_cli \
+            --exclude cosmian_kms_client_utils \
+            --exclude cosmian_kms_crypto \
+            --exclude cosmian_kms_base_hsm \
+            --exclude cosmian_kms_proteccio \
+            --exclude cosmian_kms_utimaco \
+            --exclude cosmian_kms_softhsm2 \
+            --exclude cosmian_kms_interfaces \
+            --exclude cosmian_kms_kmip \
+            --exclude cosmian_kms_kmip-derive \
+            --exclude cosmian_kms_client \
+            --exclude cosmian_kms_server \
+            --exclude test_kms_server \
+            --exclude cosmian_kms_server_database
 
       - name: Publishing
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          pushd crate/pkcs11/module
-          cargo publish --token ${{ secrets.token }}
-          popd
-          pushd crate/pkcs11/provider
-          cargo publish --token ${{ secrets.token }}
-          popd
-          pushd crate/cli
-          cargo publish --token ${{ secrets.token }}
-          popd
+          cargo +nightly publish --workspace -Z package-workspace --token ${{ secrets.token }} \
+            --exclude cosmian_findex_cli \
+            --exclude cosmian_findex_client \
+            --exclude cosmian_findex_structs \
+            --exclude cosmian_findex_server \
+            --exclude test_findex_server \
+            --exclude cosmian_kms_access \
+            --exclude cosmian_kms_cli \
+            --exclude cosmian_kms_client_utils \
+            --exclude cosmian_kms_crypto \
+            --exclude cosmian_kms_base_hsm \
+            --exclude cosmian_kms_proteccio \
+            --exclude cosmian_kms_utimaco \
+            --exclude cosmian_kms_softhsm2 \
+            --exclude cosmian_kms_interfaces \
+            --exclude cosmian_kms_kmip \
+            --exclude cosmian_kms_kmip-derive \
+            --exclude cosmian_kms_client \
+            --exclude cosmian_kms_server \
+            --exclude test_kms_server \
+            --exclude cosmian_kms_server_database
 
   build:
     uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@develop
