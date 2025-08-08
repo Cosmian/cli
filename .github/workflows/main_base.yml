@@ -46,7 +46,7 @@ jobs:
           pushd crate/pkcs11/module
           cargo publish --dry-run
           popd
-          push crate/pkcs11/provider
+          pushd crate/pkcs11/provider
           cargo publish --dry-run
           popd
           pushd crate/cli
