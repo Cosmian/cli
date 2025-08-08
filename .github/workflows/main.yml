@@ -3,6 +3,8 @@ name: CI in debug
 
 on:
   push:
+    tags-ignore:
+      - '**'
 
 jobs:
   main:
