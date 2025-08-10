@@ -9,6 +9,16 @@ services:
       ORACLE_PWD: 1234
       ENABLE_ARCHIVELOG: true
       ENABLE_FORCE_LOGGING: true
+      COSMIAN_PKCS11_LOGGING_LEVEL: trace
     volumes:
       - ./oradata:/opt/oracle/oradata
       - ./keystore:/opt/oracle/keystore
+  kms:
+    container_name: kms
+    # image: ghcr.io/cosmian/kms:5.6.2
+    # image: ghcr.io/cosmian/kms:feat-import_opaque_object
+    image: kms_server_eco
+    ports:
+      - 9998:9998
+    environment:
+      RUST_LOG: cosmian_kms_server=trace

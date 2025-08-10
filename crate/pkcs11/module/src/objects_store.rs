@@ -7,7 +7,10 @@ use std::{
 use pkcs11_sys::CK_OBJECT_HANDLE;
 use tracing::debug;
 
-use crate::core::object::{Object, ObjectType};
+use crate::{
+    ModuleError, ModuleResult,
+    core::object::{Object, ObjectType},
+};
 
 /// The objects store is a global store for all the objects that are fetched by the PKCS#11 module.
 /// These objects are visible across all the sessions and are not session-specific.
@@ -35,7 +38,7 @@ impl ObjectsStore {
         let handle = if self.ids.is_empty() {
             1 // start from 1, 0 is reserved for invalid handle
         } else {
-            self.ids.len() as CK_OBJECT_HANDLE
+            1 + self.ids.len() as CK_OBJECT_HANDLE
         };
         debug!("STORE: inserting new object with remote id: {id} and handle: {handle}");
         self.ids.insert(handle, Arc::downgrade(&object));
@@ -64,6 +67,15 @@ impl ObjectsStore {
             .collect()
     }
 
+    pub(crate) fn remove_by_handle(&mut self, handle: CK_OBJECT_HANDLE) -> ModuleResult<()> {
+        self.ids.remove(&handle).ok_or_else(|| {
+            ModuleError::Default(
+                "Unexpected failure while removing handle from object store".to_owned(),
+            )
+        })?;
+        Ok(())
+    }
+
     /// The number of objects in the store
     #[expect(dead_code)]
     pub(crate) fn len(&self) -> usize {
@@ -73,6 +85,6 @@ impl ObjectsStore {
 
 impl Display for ObjectsStore {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ObjectsStore {{ objects: {:?} }}", self.objects)
+        write!(f, "ObjectsStore {{ objects: {:#?} }}", self.objects)
     }
 }

@@ -329,7 +329,7 @@ Compare with clear table:
 ```sql
 connect C##u1
 create table infos_societes (nom varchar2(40),
-  raison varchar2(40),
+  reason varchar2(40),
   address varchar2(40),
   code_postal number(6) );
 insert into infos_societes values ('Capdata','SA','9 rue de la porte de Buc Versailles','78000');
