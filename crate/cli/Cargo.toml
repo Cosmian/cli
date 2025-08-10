@@ -31,7 +31,6 @@ non-fips = [
   "cosmian_kms_cli/non-fips",
   "test_kms_server/non-fips",
 ]
-default = ["non-fips"]
 
 [dependencies]
 base64 = { workspace = true }
