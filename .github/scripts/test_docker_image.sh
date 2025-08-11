@@ -11,7 +11,7 @@ rm -rf keystore oradata
 mkdir -p keystore oradata
 docker compose up -d
 cd ../../..
-sleep 180
+sleep 240
 
 # Copy the Cosmian PKCS#11 library to Oracle image
 bash .github/scripts/oracle/set_hsm.sh
