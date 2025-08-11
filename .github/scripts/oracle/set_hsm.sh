@@ -4,7 +4,13 @@ set -e
 
 #
 # Copy the Cosmian PKCS#11 library from the libpkcs11 Docker container
+# Manual docker build:
+# docker buildx build --progress=plain --platform linux/arm64 -t dll_p11 .
 #
+
+if [ -z "${DOCKER_IMAGE_NAME}" ]; then
+  DOCKER_IMAGE_NAME="dll_p11"
+fi
 rm -f libcosmian_pkcs11.so
 docker cp "${DOCKER_IMAGE_NAME}":/usr/lib/libcosmian_pkcs11.so .
 

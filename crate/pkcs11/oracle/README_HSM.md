@@ -19,7 +19,7 @@ Links:
   * <https://docs.oracle.com/en/database/oracle/oracle-database/23/rilin/setting-the-oracle-user-environment-variables.html>
   * <https://docs.oracle.com/en/database/oracle/oracle-database/19/asoag/managing-keystores-encryption-keys-in-united-mode.html#GUID-D3045557-FA85-4EA5-A85A-75EAE9D67E13>
   * <https://docs.oracle.com/en/database/oracle/oracle-database/18/refrn/WALLET_ROOT.html>
-
+  * Tracking AES key: <https://thalesdocs.com/ctp/con/cakm/cakm-oracle-tde/latest/admin/tde_tasks/opaque_key_match/index.html>
 - Pull official docker Oracle database: <https://container-registry.oracle.com/ords/f?p=113:4:106545702571334:::4:P4_REPOSITORY,AI_REPOSITORY,AI_REPOSITORY_NAME,P4_REPOSITORY_NAME,P4_EULA_ID,P4_BUSINESS_AREA_ID:1863,1863,Oracle%20Database%20Free,Oracle%20Database%20Free,1,0&cs=3Ti6PWKfgzS30ZJfMaoHY1WKna0Ss_mxMjkSQqTBI7AfugrE1tN9BilNn74Z9ynq_5THQFpwXGPfVnPbkILvCiw>
 - Set the encryption on DB: <https://bryangrenn.blogspot.com/2021/04/migrating-your-tde-wallet-to-oracle-key.html>
 - Example of encryption on DB: <https://blog.capdata.fr/index.php/le-chiffrement-oracle-transparent-data-encryption-sur-oracle-19c/>
