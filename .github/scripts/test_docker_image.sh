@@ -4,9 +4,6 @@
 
 set -ex
 
-# Display env. variables
-env | sort
-
 # Run Oracle database and KMS
 cd crate/pkcs11/oracle
 docker-compose down --remove-orphans
