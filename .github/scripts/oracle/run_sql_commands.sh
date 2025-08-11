@@ -20,7 +20,7 @@ exit
 EOF
   cat config.sql
   docker cp config.sql oracle:/tmp/config.sql
-  docker exec -u oracle oracle bash -c "sqlplus / as sysdba @/tmp/config.sql"
+  docker exec -u oracle -i oracle bash -c "sqlplus / as sysdba @/tmp/config.sql"
   rm config.sql
   sleep 3
 }
