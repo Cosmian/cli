@@ -8,9 +8,9 @@ set -ex
 cd crate/pkcs11/oracle
 docker compose down --remove-orphans
 rm -rf keystore oradata
-docker compose up -d -wait
+docker compose up -d --wait
 cd ../../..
-sleep 180
+sleep 60
 
 # Copy the Cosmian PKCS#11 library to Oracle image
 bash ./github/scripts/oracle/set_hsm.sh
