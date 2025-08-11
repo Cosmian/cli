@@ -15,7 +15,6 @@ services:
       - ./keystore:/opt/oracle/keystore
   kms:
     container_name: kms
-    # image: ghcr.io/cosmian/kms:5.6.2
     image: ghcr.io/cosmian/kms:feat-import_opaque_object
     # image: kms_server_eco
     ports:

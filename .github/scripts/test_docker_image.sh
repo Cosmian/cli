@@ -14,4 +14,4 @@ cd ../../..
 sleep 180
 
 # Copy the Cosmian PKCS#11 library to Oracle image
-bash ./github/scripts/oracle/set_hsm.sh
+bash .github/scripts/oracle/set_hsm.sh
