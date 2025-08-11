@@ -6,7 +6,7 @@ set -e
 # Copy the Cosmian PKCS#11 library from the libpkcs11 Docker container
 #
 rm -f libcosmian_pkcs11.so
-docker cp "${DOCKER_IMAGE_NAME}":/root/cli/target/release/libcosmian_pkcs11.so .
+docker cp "${DOCKER_IMAGE_NAME}":/usr/lib/libcosmian_pkcs11.so .
 
 #
 # Copy the configuration file of the Cosmian PKCS#11 library

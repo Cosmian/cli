@@ -8,7 +8,7 @@ set -ex
 env | sort
 
 # Run Oracle database and KMS
-cd ../../crate/pkcs11/oracle
+cd crate/pkcs11/oracle
 docker-compose down --remove-orphans
 rm -rf keystore oradata
 docker-compose up -d
