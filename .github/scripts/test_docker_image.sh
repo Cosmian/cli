@@ -6,9 +6,9 @@ set -ex
 
 # Run Oracle database and KMS
 cd crate/pkcs11/oracle
-docker-compose down --remove-orphans
+docker compose down --remove-orphans
 rm -rf keystore oradata
-docker-compose up -d
+docker compose up -d -wait
 cd ../../..
 sleep 180
 
