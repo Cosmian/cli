@@ -102,7 +102,7 @@ jobs:
     uses: Cosmian/reusable_workflows/.github/workflows/build_docker_image.yml@develop
     with:
       prefix: ''
-      registry-image: ghcr.io/cosmian/kms
+      registry-image: ghcr.io/cosmian/cli
       platforms: ${{ inputs.platforms }}
       fips: false
 
