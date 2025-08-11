@@ -8,6 +8,7 @@ set -ex
 cd crate/pkcs11/oracle
 docker compose down --remove-orphans
 rm -rf keystore oradata
+mkdir -p keystore oradata
 docker compose up -d --wait
 cd ../../..
 sleep 60
