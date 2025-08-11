@@ -16,7 +16,7 @@ if [ -z "${DOCKER_IMAGE_NAME}" ]; then
 fi
 
 # Run container to make files copy from it
-docker run --rm -d "${DOCKER_IMAGE_NAME}" tail -f /dev/null
+docker run --rm --name "${DOCKER_IMAGE_NAME}" -d "${DOCKER_IMAGE_NAME}" tail -f /dev/null
 sleep 5
 
 if [ -z "${DOCKER_IMAGE_NAME}" ]; then
