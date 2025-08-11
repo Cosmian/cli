@@ -10,6 +10,9 @@ on:
       debug_or_release:
         required: true
         type: string
+      platforms:
+        required: true
+        type: string
 
 jobs:
   cargo-audit:
@@ -87,12 +90,21 @@ jobs:
             --exclude test_kms_server \
             --exclude cosmian_kms_server_database
 
-  build:
+  build: # Build on Ubuntu 22/24, Rocky 8/9, MacOS 13/15 and Windows 22
     uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@develop
     secrets: inherit
     with:
       toolchain: ${{ inputs.toolchain }}
       debug_or_release: ${{ inputs.debug_or_release }}
+
+  docker-image:
+    name: Build docker image
+    uses: Cosmian/reusable_workflows/.github/workflows/build_docker_image.yml@develop
+    with:
+      prefix: ''
+      registry-image: ghcr.io/cosmian/kms
+      platforms: ${{ inputs.platforms }}
+      fips: false
 
   ##############################################################################
   ### Releases
