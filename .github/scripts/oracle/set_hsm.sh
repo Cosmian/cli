@@ -16,13 +16,13 @@ if [ -z "${DOCKER_IMAGE_NAME}" ]; then
 fi
 
 # Run container to make files copy from it
-docker run --rm --name "${DOCKER_IMAGE_NAME}" -d "${DOCKER_IMAGE_NAME}" tail -f /dev/null
+docker run --rm --name dll_p11 -d "${DOCKER_IMAGE_NAME}" tail -f /dev/null
 sleep 5
 
 if [ -z "${DOCKER_IMAGE_NAME}" ]; then
-  docker cp "${DOCKER_IMAGE_NAME}":/data/target/release/libcosmian_pkcs11.so .
+  docker cp dll_p11:/data/target/release/libcosmian_pkcs11.so .
 else
-  docker cp "${DOCKER_IMAGE_NAME}":/usr/lib/libcosmian_pkcs11.so .
+  docker cp dll_p11:/usr/lib/libcosmian_pkcs11.so .
 fi
 
 #
