@@ -3,8 +3,6 @@ FROM rust:1.79.0-buster AS builder
 LABEL version="1.2.0"
 LABEL name="Cosmian CLI and PKCS11 container"
 
-ENV OPENSSL_DIR=/usr/local/openssl
-
 # Add build argument for FIPS mode
 ARG FIPS=false
 

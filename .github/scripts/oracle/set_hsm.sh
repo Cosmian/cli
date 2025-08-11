@@ -10,6 +10,7 @@ set -e
 
 if [ -z "${DOCKER_IMAGE_NAME}" ]; then
   DOCKER_IMAGE_NAME="dll_p11"
+  docker buildx build --progress=plain --platform linux/arm64 -t ${DOCKER_IMAGE_NAME} .
 fi
 rm -f libcosmian_pkcs11.so
 docker cp "${DOCKER_IMAGE_NAME}":/usr/lib/libcosmian_pkcs11.so .
