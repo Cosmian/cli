@@ -10,13 +10,16 @@ set -ex
 
 rm -f libcosmian_pkcs11.so
 
+if [ -z "${DOCKER_IMAGE_NAME}" ]; then
+  DOCKER_IMAGE_NAME="dll_p11"
+  # docker buildx build --progress=plain --platform linux/arm64 -t ${DOCKER_IMAGE_NAME} .
+fi
+
 # Run container to make files copy from it
 docker run --rm -d "${DOCKER_IMAGE_NAME}" tail -f /dev/null
 sleep 5
 
 if [ -z "${DOCKER_IMAGE_NAME}" ]; then
-  DOCKER_IMAGE_NAME="dll_p11"
-  # docker buildx build --progress=plain --platform linux/arm64 -t ${DOCKER_IMAGE_NAME} .
   docker cp "${DOCKER_IMAGE_NAME}":/data/target/release/libcosmian_pkcs11.so .
 else
   docker cp "${DOCKER_IMAGE_NAME}":/usr/lib/libcosmian_pkcs11.so .
