@@ -23,6 +23,7 @@ Links:
 - Pull official docker Oracle database: <https://container-registry.oracle.com/ords/f?p=113:4:106545702571334:::4:P4_REPOSITORY,AI_REPOSITORY,AI_REPOSITORY_NAME,P4_REPOSITORY_NAME,P4_EULA_ID,P4_BUSINESS_AREA_ID:1863,1863,Oracle%20Database%20Free,Oracle%20Database%20Free,1,0&cs=3Ti6PWKfgzS30ZJfMaoHY1WKna0Ss_mxMjkSQqTBI7AfugrE1tN9BilNn74Z9ynq_5THQFpwXGPfVnPbkILvCiw>
 - Set the encryption on DB: <https://bryangrenn.blogspot.com/2021/04/migrating-your-tde-wallet-to-oracle-key.html>
 - Example of encryption on DB: <https://blog.capdata.fr/index.php/le-chiffrement-oracle-transparent-data-encryption-sur-oracle-19c/>
+- <https://medium.com/@pioro1/oracle-tde-with-3rd-party-hsm-ciphertrust-manager-51d43a38c9c8>
 
 - Administration of ASM:
   - <https://docs.oracle.com/en/database/oracle/oracle-database/23/ostmg/admin-asm-diskgroups.html#OSTMG137>
