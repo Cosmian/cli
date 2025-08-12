@@ -303,43 +303,20 @@ pub(crate) async fn kms_import_object_async(
 
     let cryptographic_length = Some(i32::try_from(secret_data_value.len() * 8)?);
 
-    let mut attributes = Attributes {
-        cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
-        cryptographic_length,
-        cryptographic_usage_mask: Some(
-            CryptographicUsageMask::Encrypt
-                | CryptographicUsageMask::Decrypt
-                | CryptographicUsageMask::WrapKey
-                | CryptographicUsageMask::UnwrapKey
-                | CryptographicUsageMask::KeyAgreement,
-        ),
-        cryptographic_parameters: Some(CryptographicParameters {
-            cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
-            block_cipher_mode: Some(BlockCipherMode::CBC),
-            ..Default::default()
-        }),
-        // key_format_type: Some(KeyFormatType::TransparentSymmetricKey), // maybe to remove
-        object_type: Some(ObjectType::SecretData),
-        unique_identifier: Some(unique_identifier.clone()),
-        ..Attributes::default()
-    };
+    let mut attributes = Attributes::default();
     attributes.set_tags(tags.clone())?;
 
     let object = Object::SecretData(SecretData {
-        secret_data_type: SecretDataType::Seed,
+        secret_data_type: SecretDataType::Password,
         key_block: KeyBlock {
-            cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
             cryptographic_length,
-            // key_format_type: KeyFormatType::TransparentSymmetricKey, // maybe raw
             key_format_type: KeyFormatType::Raw,
-            key_compression_type: None,
             key_value: Some(KeyValue::Structure {
-                // key_material: KeyMaterial::TransparentSymmetricKey {
-                //     key: Zeroizing::new(secret_data_value),
-                // },
                 key_material: KeyMaterial::ByteString(Zeroizing::new(secret_data_value)),
                 attributes: Some(attributes.clone()),
             }),
+            key_compression_type: None,
+            cryptographic_algorithm: None,
             key_wrapping_data: None,
         },
     });
