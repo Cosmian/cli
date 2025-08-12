@@ -10,9 +10,6 @@ services:
       ENABLE_ARCHIVELOG: true
       ENABLE_FORCE_LOGGING: true
       COSMIAN_PKCS11_LOGGING_LEVEL: trace
-    volumes:
-      - ./oradata:/opt/oracle/oradata
-      - ./keystore:/opt/oracle/keystore
   kms:
     container_name: kms
     image: ghcr.io/cosmian/kms:feat-import_opaque_object
