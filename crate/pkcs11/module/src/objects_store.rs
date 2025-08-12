@@ -73,6 +73,8 @@ impl ObjectsStore {
                 "Unexpected failure while removing handle from object store".to_owned(),
             )
         })?;
+        // Remove the object from the store
+        self.objects.retain(|_, (_, h)| *h != handle);
         Ok(())
     }
 

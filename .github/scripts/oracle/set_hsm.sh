@@ -1,20 +1,24 @@
 #!/bin/bash
 
-set -e
-
-# docker system prune -f --volumes
-# cd crate/pkcs11/oracle
-# docker-compose down --remove-orphans
-# rm -rf keystore oradata
-# docker-compose up -d
-# cd ../../..
-# sleep 180
-
-rm -f libcosmian_pkcs11.so
-bash .github/scripts/build_libpkcs11.sh
+set -ex
 
 #
 # Copy the Cosmian PKCS#11 library from the libpkcs11 Docker container
+# Manual docker build:
+# docker buildx build --progress=plain --platform linux/arm64 -t dll_p11 .
+#
+
+rm -f libcosmian_pkcs11.so
+if [ -z "${DOCKER_IMAGE_NAME}" ]; then
+  docker cp dll_p11:/data/target/release/libcosmian_pkcs11.so .
+else
+  # Run container to make files copy from it
+  docker run --rm --name dll_p11 -d "${DOCKER_IMAGE_NAME}" tail -f /dev/null
+  sleep 5
+  docker cp dll_p11:/usr/lib/libcosmian_pkcs11.so .
+fi
+
+#
 # Copy the configuration file of the Cosmian PKCS#11 library
 #
 cat <<'EOF' >setup_cosmian_pkcs11.sh
@@ -46,10 +50,10 @@ chmod +x setup_cosmian_pkcs11.sh
 docker cp libcosmian_pkcs11.so oracle:/home/oracle/
 docker cp crate/pkcs11/oracle/cosmian.toml oracle:/home/oracle/
 docker cp setup_cosmian_pkcs11.sh oracle:/home/oracle/
-docker exec -u root -it oracle bash -c "/home/oracle/setup_cosmian_pkcs11.sh"
+docker exec -u root -i oracle bash -c "/home/oracle/setup_cosmian_pkcs11.sh"
 rm setup_cosmian_pkcs11.sh libcosmian_pkcs11.so
 
 #
 # Setup Oracle TDE for HSM
 #
-bash .github/scripts/prepare_oracle_hsm_sql_commands.sh
+bash .github/scripts/oracle/run_sql_commands.sh
