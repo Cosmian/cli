@@ -5,12 +5,17 @@ use cosmian_cli::{
     reexport::cosmian_kms_cli::reexport::{
         cosmian_kmip::{
             self,
-            kmip_0::kmip_types::{BlockCipherMode, CryptographicUsageMask, PaddingMethod},
+            kmip_0::kmip_types::{
+                BlockCipherMode, CryptographicUsageMask, PaddingMethod, RevocationReason,
+                RevocationReasonCode, SecretDataType,
+            },
             kmip_2_1::{
                 kmip_attributes::Attributes,
                 kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
-                kmip_objects::{Object, ObjectType, SymmetricKey},
-                kmip_operations::{Decrypt, Encrypt, GetAttributes, Import, Locate},
+                kmip_objects::{Object, ObjectType, SecretData, SymmetricKey},
+                kmip_operations::{
+                    Decrypt, Destroy, Encrypt, GetAttributes, Import, Locate, Revoke,
+                },
                 kmip_types::{
                     CryptographicAlgorithm, CryptographicParameters, KeyFormatType,
                     RecommendedCurve, UniqueIdentifier,
@@ -83,6 +88,14 @@ pub(crate) async fn get_kms_objects_async(
         key_format_type,
         ..Default::default()
     };
+    if key_ids.is_empty() {
+        trace!(
+            "get_kms_objects_async: no objects found for tags: {:?}",
+            tags
+        );
+        return Ok(vec![]);
+    }
+
     let responses = batch_export_objects(kms_rest_client, key_ids, export_object_params).await?;
     trace!("Found {} objects", responses.len());
 
@@ -266,6 +279,117 @@ pub(crate) async fn kms_import_symmetric_key_async(
     Ok(res)
 }
 
+pub(crate) fn kms_import_object(
+    kms_rest_client: &KmsClient,
+    label: &str,
+    data: &[u8],
+) -> Pkcs11Result<KmsObject> {
+    tokio::runtime::Runtime::new()?.block_on(kms_import_object_async(kms_rest_client, label, data))
+}
+
+pub(crate) async fn kms_import_object_async(
+    kms_rest_client: &KmsClient,
+    label: &str,
+    data: &[u8],
+) -> Pkcs11Result<KmsObject> {
+    debug!(
+        "kms_import_object_async: label: {label}, data (length): {}",
+        data.len()
+    );
+    let tags = vec![label.to_owned()];
+    let unique_identifier = UniqueIdentifier::TextString(label.to_owned());
+
+    let secret_data_value = data.to_vec();
+
+    let cryptographic_length = Some(i32::try_from(secret_data_value.len() * 8)?);
+
+    let mut attributes = Attributes::default();
+    attributes.set_tags(tags.clone())?;
+
+    let object = Object::SecretData(SecretData {
+        secret_data_type: SecretDataType::Password,
+        key_block: KeyBlock {
+            cryptographic_length,
+            key_format_type: KeyFormatType::Raw,
+            key_value: Some(KeyValue::Structure {
+                key_material: KeyMaterial::ByteString(Zeroizing::new(secret_data_value)),
+                attributes: Some(attributes.clone()),
+            }),
+            key_compression_type: None,
+            cryptographic_algorithm: None,
+            key_wrapping_data: None,
+        },
+    });
+
+    let response = kms_rest_client
+        .import(Import {
+            unique_identifier,
+            object_type: ObjectType::SecretData,
+            replace_existing: Some(true),
+            key_wrap_type: None,
+            attributes: attributes.clone(),
+            object: object.clone(),
+        })
+        .await?;
+
+    let res = KmsObject {
+        remote_id: response.unique_identifier.to_string(),
+        object,
+        attributes,
+        other_tags: tags,
+    };
+
+    Ok(res)
+}
+
+pub(crate) fn kms_revoke_object(
+    kms_rest_client: &KmsClient,
+    unique_identifier: &str,
+) -> Pkcs11Result<()> {
+    tokio::runtime::Runtime::new()?
+        .block_on(kms_revoke_object_async(kms_rest_client, unique_identifier))
+}
+
+pub(crate) async fn kms_revoke_object_async(
+    kms_rest_client: &KmsClient,
+    unique_identifier: &str,
+) -> Pkcs11Result<()> {
+    kms_rest_client
+        .revoke(Revoke {
+            unique_identifier: Some(UniqueIdentifier::TextString(unique_identifier.to_owned())),
+            revocation_reason: RevocationReason {
+                revocation_reason_code: RevocationReasonCode::CessationOfOperation,
+                revocation_message: None,
+            },
+            compromise_occurrence_date: None,
+        })
+        .await?;
+
+    Ok(())
+}
+
+pub(crate) fn kms_destroy_object(
+    kms_rest_client: &KmsClient,
+    unique_identifier: &str,
+) -> Pkcs11Result<()> {
+    tokio::runtime::Runtime::new()?
+        .block_on(kms_destroy_object_async(kms_rest_client, unique_identifier))
+}
+
+pub(crate) async fn kms_destroy_object_async(
+    kms_rest_client: &KmsClient,
+    unique_identifier: &str,
+) -> Pkcs11Result<()> {
+    kms_rest_client
+        .destroy(Destroy {
+            unique_identifier: Some(UniqueIdentifier::TextString(unique_identifier.to_owned())),
+            remove: false,
+        })
+        .await?;
+
+    Ok(())
+}
+
 pub(crate) fn kms_encrypt(
     kms_rest_client: &KmsClient,
     encrypt_ctx: &EncryptContext,
@@ -283,6 +407,13 @@ pub(crate) async fn kms_encrypt_async(
         EncryptionAlgorithm::AesCbcPad => CryptographicParameters {
             cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
             block_cipher_mode: Some(BlockCipherMode::CBC),
+            padding_method: Some(PaddingMethod::PKCS5),
+            ..Default::default()
+        },
+        EncryptionAlgorithm::AesCbc => CryptographicParameters {
+            cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
+            block_cipher_mode: Some(BlockCipherMode::CBC),
+            padding_method: Some(PaddingMethod::None),
             ..Default::default()
         },
         EncryptionAlgorithm::RsaPkcs1v15 => CryptographicParameters {
@@ -329,6 +460,13 @@ pub(crate) async fn kms_decrypt_async(
         EncryptionAlgorithm::AesCbcPad => CryptographicParameters {
             cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
             block_cipher_mode: Some(BlockCipherMode::CBC),
+            padding_method: Some(PaddingMethod::PKCS5),
+            ..Default::default()
+        },
+        EncryptionAlgorithm::AesCbc => CryptographicParameters {
+            cryptographic_algorithm: Some(CryptographicAlgorithm::AES),
+            block_cipher_mode: Some(BlockCipherMode::CBC),
+            padding_method: Some(PaddingMethod::None),
             ..Default::default()
         },
         EncryptionAlgorithm::RsaPkcs1v15 => CryptographicParameters {

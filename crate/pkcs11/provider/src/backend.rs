@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
 use cosmian_cli::reexport::cosmian_kms_cli::reexport::{
-    cosmian_kmip::kmip_2_1::{kmip_objects::ObjectType, kmip_types::KeyFormatType},
+    cosmian_kmip::kmip_2_1::{
+        kmip_attributes::Attributes, kmip_objects::ObjectType, kmip_types::KeyFormatType,
+    },
     cosmian_kms_client::KmsClient,
 };
 use cosmian_pkcs11_module::{
@@ -18,7 +20,8 @@ use zeroize::Zeroizing;
 use crate::{
     kms_object::{
         get_kms_object, get_kms_object_attributes, get_kms_objects, key_algorithm_from_attributes,
-        kms_decrypt, kms_encrypt, kms_import_symmetric_key, locate_kms_objects,
+        kms_decrypt, kms_destroy_object, kms_encrypt, kms_import_object, kms_import_symmetric_key,
+        kms_revoke_object, locate_kms_objects,
     },
     pkcs11_certificate::Pkcs11Certificate,
     pkcs11_data_object::Pkcs11DataObject,
@@ -38,6 +41,14 @@ impl CliBackend {
     /// Instantiate a new `CliBackend` using the
     pub(crate) const fn instantiate(kms_rest_client: KmsClient) -> Self {
         Self { kms_rest_client }
+    }
+
+    fn get_key_size_and_algorithm(attributes: &Attributes) -> ModuleResult<(usize, KeyAlgorithm)> {
+        let key_size = usize::try_from(attributes.cryptographic_length.ok_or_else(|| {
+            ModuleError::Cryptography("get_key_size_and_algorithm: missing key size".to_owned())
+        })?)?;
+        let algorithm = key_algorithm_from_attributes(attributes)?;
+        Ok((key_size, algorithm))
     }
 }
 
@@ -158,14 +169,16 @@ impl Backend for CliBackend {
     }
 
     fn find_all_data_objects(&self) -> ModuleResult<Vec<Arc<dyn DataObject>>> {
-        trace!("find_all_data_objects");
+        trace!("find_all_data_objects: entering");
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
             .unwrap_or_else(|_| COSMIAN_PKCS11_DISK_ENCRYPTION_TAG.to_owned());
         let kms_objects = get_kms_objects(
             &self.kms_rest_client,
-            &[disk_encryption_tag, "_kk".to_owned()],
+            &[disk_encryption_tag, "_sd".to_owned()],
             Some(KeyFormatType::Raw),
         )?;
+        trace!("find_all_data_objects: found {} objects", kms_objects.len());
+
         let mut result = Vec::with_capacity(kms_objects.len());
         for dao in kms_objects {
             let data_object: Arc<dyn DataObject> = Arc::new(Pkcs11DataObject::try_from(dao)?);
@@ -219,43 +232,53 @@ impl Backend for CliBackend {
     }
 
     #[expect(clippy::cognitive_complexity)]
-    fn find_all_keys(&self) -> ModuleResult<Vec<Arc<Object>>> {
-        trace!("find_all_keys");
+    fn find_all_objects(&self) -> ModuleResult<Vec<Arc<Object>>> {
+        trace!("find_all_objects: entering");
         let kms_ids = locate_kms_objects(&self.kms_rest_client, &[])?;
         let mut objects = Vec::with_capacity(kms_ids.len());
         for id in kms_ids {
             let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let Some(key_size) = attributes.cryptographic_length else {
-                warn!("find_all_keys: missing key size, skipping {id}");
+            let object = if let Some(object_type) = attributes.object_type {
+                match object_type {
+                    ObjectType::SymmetricKey => {
+                        let (key_size, key_algorithm) =
+                            Self::get_key_size_and_algorithm(&attributes)?;
+                        Object::SymmetricKey(Arc::new(Pkcs11SymmetricKey::new(
+                            id,
+                            key_algorithm,
+                            key_size,
+                        )))
+                    }
+                    ObjectType::PrivateKey => {
+                        let (key_size, key_algorithm) =
+                            Self::get_key_size_and_algorithm(&attributes)?;
+                        Object::PrivateKey(Arc::new(Pkcs11PrivateKey::new(
+                            id,
+                            key_algorithm,
+                            key_size,
+                        )))
+                    }
+                    ObjectType::PublicKey => {
+                        let (_key_size, key_algorithm) =
+                            Self::get_key_size_and_algorithm(&attributes)?;
+                        Object::PublicKey(Arc::new(Pkcs11PublicKey::new(id, key_algorithm)))
+                    }
+                    ObjectType::SecretData => {
+                        Object::DataObject(Arc::new(Pkcs11DataObject::new(id)))
+                    }
+                    other => {
+                        warn!("find_all_objects: unsupported object type: {other}, skipping {id}");
+                        continue;
+                    }
+                }
+            } else {
+                warn!("find_all_objects: missing object type: skipping {id}");
                 continue;
             };
-            let key_size = usize::try_from(key_size)?;
-            let key_algorithm = key_algorithm_from_attributes(&attributes)?;
-            let object =
-                if let Some(object_type) = attributes.object_type {
-                    match object_type {
-                        ObjectType::SymmetricKey => Object::SymmetricKey(Arc::new(
-                            Pkcs11SymmetricKey::new(id, key_algorithm, key_size),
-                        )),
-                        ObjectType::PrivateKey => Object::PrivateKey(Arc::new(
-                            Pkcs11PrivateKey::new(id, key_algorithm, key_size),
-                        )),
-                        ObjectType::PublicKey => {
-                            Object::PublicKey(Arc::new(Pkcs11PublicKey::new(id, key_algorithm)))
-                        }
-                        other => {
-                            warn!("find_all_keys: unsupported object type: {other}, skipping {id}");
-                            continue;
-                        }
-                    }
-                } else {
-                    warn!("find_all_keys: missing object type: skipping {id}");
-                    continue;
-                };
             objects.push(Arc::new(object));
         }
 
-        trace!("find_all_keys: found {} keys", objects.len());
+        trace!("find_all_objects: found {} keys", objects.len());
         Ok(objects)
     }
 
@@ -284,6 +307,20 @@ impl Backend for CliBackend {
         Ok(Arc::new(Pkcs11SymmetricKey::try_from_kms_object(
             kms_object,
         )?))
+    }
+
+    fn create_object(&self, label: &str, data: &[u8]) -> ModuleResult<Arc<dyn DataObject>> {
+        trace!("create_object: {label:?}");
+        let kms_object = kms_import_object(&self.kms_rest_client, label, data)?;
+        Ok(Arc::new(Pkcs11DataObject::try_from_kms_object(kms_object)?))
+    }
+
+    fn revoke_object(&self, remote_id: &str) -> ModuleResult<()> {
+        Ok(kms_revoke_object(&self.kms_rest_client, remote_id)?)
+    }
+
+    fn destroy_object(&self, remote_id: &str) -> ModuleResult<()> {
+        Ok(kms_destroy_object(&self.kms_rest_client, remote_id)?)
     }
 
     fn encrypt(&self, ctx: &EncryptContext, cleartext: Vec<u8>) -> ModuleResult<Vec<u8>> {

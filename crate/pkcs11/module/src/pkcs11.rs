@@ -21,7 +21,6 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use log::debug;
 use pkcs11_sys::{
     CK_ATTRIBUTE_PTR, CK_BBOOL, CK_BYTE_PTR, CK_C_INITIALIZE_ARGS_PTR, CK_FLAGS, CK_FUNCTION_LIST,
     CK_INFO, CK_INFO_PTR, CK_MECHANISM_INFO, CK_MECHANISM_INFO_PTR, CK_MECHANISM_PTR,
@@ -35,7 +34,7 @@ use pkcs11_sys::{
     CKS_RW_USER_FUNCTIONS, CRYPTOKI_VERSION_MAJOR, CRYPTOKI_VERSION_MINOR,
 };
 use rand::RngCore;
-use tracing::{error, info, trace};
+use tracing::{debug, error, info, trace};
 
 use crate::{
     MResultHelper, ModuleError, ModuleResult,
@@ -539,12 +538,33 @@ cryptoki_fn!(
     }
 );
 
-cryptoki_fn_not_supported!(
-    C_CreateObject,
-    hSession: CK_SESSION_HANDLE,
-    pTemplate: CK_ATTRIBUTE_PTR,
-    ulCount: CK_ULONG,
-    phObject: CK_OBJECT_HANDLE_PTR
+cryptoki_fn!(
+    unsafe fn C_CreateObject(
+        hSession: CK_SESSION_HANDLE,
+        pTemplate: CK_ATTRIBUTE_PTR,
+        ulCount: CK_ULONG,
+        phObject: CK_OBJECT_HANDLE_PTR,
+    ) {
+        initialized!();
+        valid_session!(hSession);
+        not_null!(pTemplate, "C_CreateObject: pTemplate");
+        not_null!(phObject, "C_CreateObject: phObject");
+
+        debug!(
+            "C_CreateObject: session: {hSession:?}, pTemplate: {pTemplate:?}, ulCount: \
+             {ulCount:?}, phObject: {phObject:?}"
+        );
+        let attributes = Attributes::try_from((pTemplate, ulCount))
+            .context("C_CreateObject: attributes conversion failed")?;
+
+        sessions::session(hSession, |_session| -> ModuleResult<()> {
+            unsafe {
+                *phObject = Session::create_object(&attributes)?;
+            };
+
+            Ok(())
+        })
+    }
 );
 
 cryptoki_fn_not_supported!(
@@ -556,10 +576,21 @@ cryptoki_fn_not_supported!(
     phNewObject: CK_OBJECT_HANDLE_PTR
 );
 
-cryptoki_fn_not_supported!(
-    C_DestroyObject,
-    hSession: CK_SESSION_HANDLE,
-    hObject: CK_OBJECT_HANDLE
+cryptoki_fn!(
+    unsafe fn C_DestroyObject(hSession: CK_SESSION_HANDLE, hObject: CK_OBJECT_HANDLE) {
+        initialized!();
+        valid_session!(hSession);
+
+        debug!("C_DestroyObject: session: {hSession:?}, hObject: {hObject}");
+
+        sessions::session(hSession, |_session| -> ModuleResult<()> {
+            unsafe {
+                Session::destroy_object(hObject)?;
+            };
+
+            Ok(())
+        })
+    }
 );
 
 cryptoki_fn_not_supported!(
@@ -739,14 +770,13 @@ cryptoki_fn!(
             let parsed_mechanism = unsafe { pMechanism.read() };
             let mechanism = unsafe { parse_mechanism(parsed_mechanism) }?;
             let find_ctx = OBJECTS_STORE.read()?;
-            match find_ctx.get_using_handle(hKey).as_deref() {
+            let object = find_ctx.get_using_handle(hKey);
+            debug!(
+                "C_EncryptInit: session: {hSession:?}, hKey: {hKey:?}, mechanism: {mechanism:?}, \
+                 object: {object:?}",
+            );
+            match object.as_deref() {
                 Some(Object::PublicKey(pk)) => {
-                    debug!(
-                        "C_EncryptInit: session: {:?}, remote_object: {:?}, mechanism: {:?}",
-                        hSession,
-                        &pk.remote_id(),
-                        &mechanism
-                    );
                     session.encrypt_ctx = Some(EncryptContext {
                         remote_object_id: pk.remote_id(),
                         algorithm: mechanism.try_into()?,
@@ -755,20 +785,28 @@ cryptoki_fn!(
                     Ok(())
                 }
                 Some(Object::SymmetricKey(sk)) => {
-                    debug!(
-                        "C_EncryptInit: session: {:?}, remote_object: {:?}, mechanism: {:?}",
-                        hSession,
-                        &sk.remote_id(),
-                        &mechanism
-                    );
                     let iv = match &mechanism {
-                        Mechanism::AesCbcPad { iv } => Some(iv.to_vec()),
+                        Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
                             return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
                         }
                     };
                     session.encrypt_ctx = Some(EncryptContext {
                         remote_object_id: sk.remote_id(),
+                        algorithm: EncryptionAlgorithm::try_from(mechanism)?,
+                        iv,
+                    });
+                    Ok(())
+                }
+                Some(Object::DataObject(data)) => {
+                    let iv = match &mechanism {
+                        Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
+                        mech => {
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                        }
+                    };
+                    session.encrypt_ctx = Some(EncryptContext {
+                        remote_object_id: data.remote_id(),
                         algorithm: EncryptionAlgorithm::try_from(mechanism)?,
                         iv,
                     });
@@ -849,15 +887,13 @@ cryptoki_fn!(
             let parsed_mechanism = unsafe { pMechanism.read() };
             let mechanism = unsafe { parse_mechanism(parsed_mechanism) }?;
             let find_ctx = OBJECTS_STORE.read()?;
-            match find_ctx.get_using_handle(hKey).as_deref() {
+            let object = find_ctx.get_using_handle(hKey);
+            debug!(
+                "C_DecryptInit: session: {hSession:?}, hKey: {hKey:?}, mechanism: {mechanism:?}, \
+                 object: {object:?}",
+            );
+            match object.as_deref() {
                 Some(Object::PrivateKey(sk)) => {
-                    debug!(
-                        "C_DecryptInit[PrivateKey]: session: {:?}, remote_object: {:?}, \
-                         mechanism: {:?}",
-                        hSession,
-                        &sk.remote_id(),
-                        &mechanism
-                    );
                     session.decrypt_ctx = Some(DecryptContext {
                         remote_object_id: sk.remote_id(),
                         algorithm: mechanism.try_into()?,
@@ -866,15 +902,8 @@ cryptoki_fn!(
                     Ok(())
                 }
                 Some(Object::SymmetricKey(sk)) => {
-                    debug!(
-                        "C_DecryptInit[SymmetricKey]: session: {:?}, remote_object: {:?}, \
-                         mechanism: {:?}",
-                        hSession,
-                        &sk.remote_id(),
-                        &mechanism
-                    );
                     let iv = match &mechanism {
-                        Mechanism::AesCbcPad { iv } => Some(iv.to_vec()),
+                        Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
                             return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
                         }
@@ -882,6 +911,20 @@ cryptoki_fn!(
 
                     session.decrypt_ctx = Some(DecryptContext {
                         remote_object_id: sk.remote_id(),
+                        algorithm: mechanism.try_into()?,
+                        iv,
+                    });
+                    Ok(())
+                }
+                Some(Object::DataObject(data)) => {
+                    let iv = match &mechanism {
+                        Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
+                        mech => {
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                        }
+                    };
+                    session.decrypt_ctx = Some(DecryptContext {
+                        remote_object_id: data.remote_id(),
                         algorithm: mechanism.try_into()?,
                         iv,
                     });

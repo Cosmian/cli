@@ -21,9 +21,10 @@ use std::slice;
 
 use pkcs11_sys::{
     CK_MECHANISM, CK_MECHANISM_TYPE, CK_RSA_PKCS_PSS_PARAMS, CKG_MGF1_SHA1, CKG_MGF1_SHA224,
-    CKG_MGF1_SHA256, CKG_MGF1_SHA384, CKG_MGF1_SHA512, CKM_AES_CBC_PAD, CKM_AES_KEY_GEN, CKM_ECDSA,
-    CKM_RSA_PKCS, CKM_RSA_PKCS_PSS, CKM_SHA_1, CKM_SHA1_RSA_PKCS, CKM_SHA224, CKM_SHA256,
-    CKM_SHA256_RSA_PKCS, CKM_SHA384, CKM_SHA384_RSA_PKCS, CKM_SHA512, CKM_SHA512_RSA_PKCS,
+    CKG_MGF1_SHA256, CKG_MGF1_SHA384, CKG_MGF1_SHA512, CKM_AES_CBC, CKM_AES_CBC_PAD,
+    CKM_AES_KEY_GEN, CKM_ECDSA, CKM_RSA_PKCS, CKM_RSA_PKCS_PSS, CKM_SHA_1, CKM_SHA1_RSA_PKCS,
+    CKM_SHA224, CKM_SHA256, CKM_SHA256_RSA_PKCS, CKM_SHA384, CKM_SHA384_RSA_PKCS, CKM_SHA512,
+    CKM_SHA512_RSA_PKCS,
 };
 use tracing::{debug, error};
 
@@ -47,6 +48,9 @@ pub const SUPPORTED_SIGNATURE_MECHANISMS: &[CK_MECHANISM_TYPE] = &[
 #[derive(Debug)]
 pub enum Mechanism {
     AesKeyGen,
+    AesCbc {
+        iv: [u8; AES_IV_SIZE],
+    },
     AesCbcPad {
         iv: [u8; AES_IV_SIZE],
     },
@@ -68,7 +72,7 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, Modu
     debug!("parse_mechanism: {mechanism:?}");
     match mechanism.mechanism {
         CKM_AES_KEY_GEN => Ok(Mechanism::AesKeyGen),
-        CKM_AES_CBC_PAD => {
+        CKM_AES_CBC_PAD | CKM_AES_CBC => {
             let iv_slice = unsafe {
                 slice::from_raw_parts(
                     mechanism.pParameter.cast::<u8>(),
@@ -83,8 +87,12 @@ pub unsafe fn parse_mechanism(mechanism: CK_MECHANISM) -> Result<Mechanism, Modu
             let mut iv = [0_u8; AES_IV_SIZE];
             iv.copy_from_slice(iv_slice);
             debug!("parse_mechanism: iv: {iv:?}");
-            Ok(Mechanism::AesCbcPad { iv })
+            match mechanism.mechanism {
+                CKM_AES_CBC_PAD => Ok(Mechanism::AesCbcPad { iv }),
+                _ => Ok(Mechanism::AesCbc { iv }),
+            }
         }
+
         CKM_ECDSA => Ok(Mechanism::Ecdsa),
         CKM_RSA_PKCS => Ok(Mechanism::RsaPkcs),
         CKM_SHA1_RSA_PKCS => Ok(Mechanism::RsaPkcsSha1),
@@ -153,6 +161,7 @@ impl From<&Mechanism> for CK_MECHANISM_TYPE {
         match mechanism {
             Mechanism::AesKeyGen => CKM_AES_KEY_GEN,
             Mechanism::AesCbcPad { .. } => CKM_AES_CBC_PAD,
+            Mechanism::AesCbc { .. } => CKM_AES_CBC,
             Mechanism::Ecdsa => CKM_ECDSA,
             Mechanism::RsaPkcs => CKM_RSA_PKCS,
             Mechanism::RsaPkcsSha1 => CKM_SHA1_RSA_PKCS,
@@ -196,6 +205,7 @@ impl TryFrom<Mechanism> for EncryptionAlgorithm {
         match mechanism {
             Mechanism::RsaPkcs => Ok(Self::RsaPkcs1v15),
             Mechanism::AesCbcPad { .. } => Ok(Self::AesCbcPad),
+            Mechanism::AesCbc { .. } => Ok(Self::AesCbc),
             x => Err(ModuleError::AlgorithmNotSupported(format!("{x:?}"))),
         }
     }

@@ -84,7 +84,7 @@ pub trait Backend: Send + Sync {
     fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>>;
     fn find_data_object(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>>;
     fn find_all_data_objects(&self) -> ModuleResult<Vec<Arc<dyn DataObject>>>;
-    fn find_all_keys(&self) -> ModuleResult<Vec<Arc<Object>>>;
+    fn find_all_objects(&self) -> ModuleResult<Vec<Arc<Object>>>;
 
     fn generate_key(
         &self,
@@ -93,6 +93,10 @@ pub trait Backend: Send + Sync {
         sensitive: bool,
         label: Option<&str>,
     ) -> ModuleResult<Arc<dyn SymmetricKey>>;
+
+    fn create_object(&self, label: &str, data: &[u8]) -> ModuleResult<Arc<dyn DataObject>>;
+    fn revoke_object(&self, remote_id: &str) -> ModuleResult<()>;
+    fn destroy_object(&self, remote_id: &str) -> ModuleResult<()>;
 
     fn encrypt(&self, ctx: &EncryptContext, cleartext: Vec<u8>) -> ModuleResult<Vec<u8>>;
 

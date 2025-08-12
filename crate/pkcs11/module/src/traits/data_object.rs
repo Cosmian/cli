@@ -5,7 +5,7 @@
 //! `CKO_DATA` object as defined in PKCS#11 2.40 4.5
 //! [PKCS#11 2.40 ~ 4.5](http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/os/pkcs11-base-v2.40-os.html#_Toc416959706)
 
-use std::{ffi::CString, hash::Hash};
+use std::hash::Hash;
 
 use zeroize::{Zeroize, Zeroizing};
 
@@ -15,7 +15,7 @@ pub trait DataObject: Zeroize + Send + Sync {
     /// The value of the object which may be a secret
     fn value(&self) -> Zeroizing<Vec<u8>>;
     /// The application that manages the object
-    fn application(&self) -> CString;
+    fn application(&self) -> Vec<u8>;
     fn data_hash(&self) -> Vec<u8>;
 }
 
