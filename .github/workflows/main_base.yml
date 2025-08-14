@@ -20,45 +20,10 @@ jobs:
         with:
           submodules: recursive
       - uses: EmbarkStudios/cargo-deny-action@v2
-        id: cargo-deny
-        continue-on-error: true
-      
-      - name: Create GitHub issues for RUSTSEC vulnerabilities
-        if: failure()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Check for RUSTSEC advisories and create issues
-          if cargo deny check advisories 2>&1 | grep -q "RUSTSEC-"; then
-            # Extract RUSTSEC IDs from cargo-deny output
-            RUSTSEC_IDS=$(cargo deny check advisories 2>&1 | grep -oE "RUSTSEC-[0-9]{4}-[0-9]{4}" | sort -u)
-            
-            for RUSTSEC_ID in $RUSTSEC_IDS; do
-              # Check if issue already exists
-              if ! gh issue list --search "\"$RUSTSEC_ID\"" --json title | grep -q "$RUSTSEC_ID"; then
-                # Create issue for new RUSTSEC vulnerability
-                gh issue create \
-                  --title "$RUSTSEC_ID: Security vulnerability detected" \
-                  --body "**Vulnerability ID:** $RUSTSEC_ID
-          
-          **Advisory:** https://rustsec.org/advisories/$RUSTSEC_ID
-          
-          **Description:** A security vulnerability was detected by cargo-deny. Please review the advisory and update the affected dependencies.
-          
-          **Solution:** Check the advisory link above for specific upgrade instructions.
-          
-          ---
-          *This issue was automatically created by the security audit workflow.*" \
-                  --label "security"
-                echo "Created issue for $RUSTSEC_ID"
-              else
-                echo "Issue for $RUSTSEC_ID already exists"
-              fi
-            done
-          fi
-          
-          # Re-run cargo-deny to fail the job if vulnerabilities exist
-          cargo deny check advisories
+      - uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          create-issues: true
 
   cargo-lint:
     uses: Cosmian/reusable_workflows/.github/workflows/clippy.yml@develop
