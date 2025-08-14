@@ -65,9 +65,6 @@ docker run -p 6668:6668 --rm --name kms ghcr.io/cosmian/findex-server
    ➜ cosmian kms sym decrypt --tag my-key-file --output-file image2.png image.enc
    ...
    The decrypted file is available at "image2.png"
-
-   ...
-   The decrypted file is available at "image2.png"
    ```
 
 See the [documentation](https://docs.cosmian.com/key_management_system/) for more.
@@ -122,14 +119,6 @@ Use `cargo`:
 cargo build --release
 ```
 
-## Building the User Interface (UI)
-
-Use the script `build_ui.sh` to build the UI:
-
-```sh
-bash .github/scripts/build_ui.sh
-```
-
 ## Running the unit and integration tests
 
 By default, tests are run using `cargo test` which are using the KMS server and Findex server on Docker containers.
@@ -150,7 +139,7 @@ Example: logs can be useful to debug:
 
 ```sh
 RUST_LOG="cosmian_cli=trace,cosmian_findex_client=trace,cosmian_kmip=error,cosmian_kms_rest_client=info" cargo test
-````
+```
 
 Alternatively, when writing a test or running a test from your IDE, the following can be inserted
 at the top of the test:
