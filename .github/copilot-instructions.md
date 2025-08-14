@@ -7,9 +7,10 @@ Always reference these instructions first and fallback to search or bash command
 ## Working Effectively
 
 ### Prerequisites and Environment Setup
-- Install system dependencies:
+- Install system dependencies with OpenSSL 3.2.0:
   ```bash
   sudo apt-get update && sudo apt-get install -y libssl-dev pkg-config docker.io docker-compose-plugin
+  # Ensure OpenSSL 3.2.0 is installed for optimal compatibility
   ```
 - Set required environment variables:
   ```bash
@@ -226,10 +227,10 @@ rustup component add clippy rustfmt
   export OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
   export OPENSSL_INCLUDE_DIR=/usr/include/openssl
   ```
-- The repository expects OpenSSL v3.2.0 but system OpenSSL 3.0.13+ works fine
+- The repository requires OpenSSL v3.2.0 for optimal compatibility
 
 ### Network Connectivity Issues
-- If external OpenSSL download fails (package.cosmian.com), use system OpenSSL
+- If external OpenSSL download fails (package.cosmian.com), ensure OpenSSL 3.2.0 is available
 - Some test dependencies may timeout - increase timeout values accordingly
 - Docker registry access required for Redis container
 - Integration test script has wrong port configurations (19998/16668 vs 9998/6668)
@@ -271,12 +272,12 @@ The CLI supports both KMS operations (key management, encryption/decryption) and
 - **Workspace Structure**: Multi-crate Rust workspace using Cargo workspaces
 - **Git Submodules**: KMS, Findex server, test data, and reusable scripts
 - **Docker Integration**: Redis for tests, KMS/Findex servers for integration testing
-- **Cross-platform**: Supports Linux, macOS, and Windows (with different OpenSSL setups)
+- **Cross-platform**: Supports Linux, macOS, and Windows (requires OpenSSL 3.2.0 setup)
 - **CI/CD**: GitHub Actions with comprehensive build, test, and release pipelines
 
 ### Development Workflow
 1. Clone repository and initialize submodules
-2. Set up OpenSSL environment variables
+2. Set up OpenSSL 3.2.0 environment variables
 3. Use `cargo check` for rapid iteration
 4. Use `cargo test` for comprehensive validation
 5. Use manual end-to-end testing for critical paths
