@@ -12,17 +12,14 @@ on:
         type: string
 
 jobs:
-  cargo-audit:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: EmbarkStudios/cargo-deny-action@v2
-
   cargo-lint:
     uses: Cosmian/reusable_workflows/.github/workflows/clippy.yml@develop
+    with:
+      toolchain: ${{ inputs.toolchain }}
+
+  cargo-deny:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-audit.yml@develop
+    name: Security Audit
     with:
       toolchain: ${{ inputs.toolchain }}
 
@@ -100,7 +97,7 @@ jobs:
   release:
     name: release
     needs:
-      - cargo-audit
+      - cargo-deny
       - cargo-lint
       - build
     uses: Cosmian/reusable_workflows/.github/workflows/push-artifacts.yml@develop
