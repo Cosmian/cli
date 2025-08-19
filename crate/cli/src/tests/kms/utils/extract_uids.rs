@@ -11,6 +11,17 @@ pub(crate) fn extract_uid<'a>(text: &'a str, pattern: &'a str) -> Option<&'a str
         .captures(text)
         .and_then(|cap| cap.name("uid").map(|uid| uid.as_str()))
 }
+/// Extract the certificate ID from a test.
+pub(crate) fn extract_certificate_id(text: &str) -> Option<&str> {
+    let formatted = r"certificate ID:\s*(?P<uid>[a-fA-F0-9\-]+)";
+    let uid_regex = RegexBuilder::new(formatted)
+        .multi_line(true)
+        .build()
+        .unwrap();
+    uid_regex
+        .captures(text)
+        .and_then(|cap| cap.name("uid").map(|uid| uid.as_str()))
+}
 
 /// Extract the private key from a test.
 pub(crate) fn extract_private_key(text: &str) -> Option<&str> {

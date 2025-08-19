@@ -1,211 +1,170 @@
-use std::process::Command;
+use std::{path::PathBuf, process::Command};
 
 use assert_cmd::prelude::*;
+use cosmian_kms_cli::actions::kms::{
+    google::keypairs::create::CreateKeyPairsAction, symmetric::keys::create_key::CreateKeyAction,
+};
+use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server;
-use serde::Deserialize;
 
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
-    error::CosmianError,
+    error::{CosmianError, result::CosmianResult},
     tests::{
         PROG_NAME,
-        kms::{google_cmd::identities::create_gmail_api_conf, utils::recover_cmd_logs},
+        kms::{
+            KMS_SUBCOMMAND,
+            certificates::certify::import_root_and_intermediate,
+            utils::{extract_uids::extract_certificate_id, recover_cmd_logs},
+        },
+        save_kms_cli_config,
     },
 };
 
-#[derive(Deserialize)]
-#[allow(non_snake_case)]
-#[allow(dead_code)]
-struct KaclsKeyMetadata {
-    kaclsUri: String,
-    kaclsData: String,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case)]
-#[allow(dead_code)]
-struct PrivateKeyMetaData {
-    privateKeyMetadataId: String,
-    kaclsKeyMetadata: KaclsKeyMetadata,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case)]
-#[allow(dead_code)]
-struct KeyPairs {
-    keyPairId: String,
-    pem: String,
-    subjectEmailAddresses: Vec<String>,
-    enablementState: String,
-    disableTime: Option<String>,
-    privateKeyMetadata: Vec<PrivateKeyMetaData>,
-}
-#[derive(Deserialize)]
-#[allow(non_snake_case)]
-#[allow(dead_code)]
-struct ListKeyPairsResponse {
-    cseKeyPairs: Vec<KeyPairs>,
-}
-
-fn list_keypairs(cli_conf_path: &str, user_id: &str) -> Result<ListKeyPairsResponse, CosmianError> {
-    // List keypairs
-    let args: Vec<String> = ["list", "--user-id", user_id]
-        .iter()
-        .map(std::string::ToString::to_string)
-        .collect();
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
-    cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
-    cmd.arg(KMS_SUBCOMMAND)
-        .arg("google")
-        .arg("keypairs")
-        .args(args);
-    let output = recover_cmd_logs(&mut cmd);
-    if output.status.success() {
-        let output = std::str::from_utf8(&output.stdout)?;
-        return serde_json::from_str::<ListKeyPairsResponse>(output)
-            .map_err(|e| CosmianError::Default(format!("{e}")))
-    }
-    Err(CosmianError::Default(
-        std::str::from_utf8(&output.stderr)?.to_owned(),
-    ))
-}
-
-fn get_keypairs(
+fn create_keypairs(
     cli_conf_path: &str,
-    user_id: &str,
-    keypair_id: &str,
-) -> Result<KeyPairs, CosmianError> {
-    // Get keypairs
-    let args: Vec<String> = ["get", "--user-id", user_id, keypair_id]
-        .iter()
-        .map(std::string::ToString::to_string)
-        .collect();
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
-    cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
-    cmd.arg(KMS_SUBCOMMAND)
-        .arg("google")
-        .arg("keypairs")
-        .args(args);
-    let output = recover_cmd_logs(&mut cmd);
-    if output.status.success() {
-        let output = std::str::from_utf8(&output.stdout)?;
-        return serde_json::from_str::<KeyPairs>(output)
-            .map_err(|e| CosmianError::Default(format!("{e}")))
-    }
-    Err(CosmianError::Default(
-        std::str::from_utf8(&output.stderr)?.to_owned(),
-    ))
-}
+    action: CreateKeyPairsAction,
+) -> Result<String, CosmianError> {
+    // Create keypairs
+    let mut args: Vec<String> = [
+        "create".to_owned(),
+        "--cse-key-id".to_owned(),
+        action.cse_key_id.clone(),
+        "--subject-name".to_owned(),
+        action.subject_name.clone(),
+    ]
+    .iter()
+    .map(std::string::ToString::to_string)
+    .collect();
 
-fn disable_keypairs(
-    cli_conf_path: &str,
-    user_id: &str,
-    key_pair_id: &str,
-) -> Result<(), CosmianError> {
-    // Disable keypairs
-    let args: Vec<String> = ["disable", "--user-id", user_id, key_pair_id]
-        .iter()
-        .map(std::string::ToString::to_string)
-        .collect();
-    let mut cmd = Command::cargo_bin(PROG_NAME)?;
-    cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
-    cmd.arg(KMS_SUBCOMMAND)
-        .arg("google")
-        .arg("keypairs")
-        .args(args);
-    let output = recover_cmd_logs(&mut cmd);
-    if output.status.success() {
-        return Ok(())
+    if let Some(issuer_private_key_id) = action.issuer_private_key_id {
+        args.push("--issuer-private-key-id".to_string());
+        args.push(issuer_private_key_id);
     }
-    Err(CosmianError::Default(
-        std::str::from_utf8(&output.stderr)?.to_owned(),
-    ))
-}
+    if let Some(rsa_private_key_id) = action.rsa_private_key_id {
+        args.push("--rsa-private-key-id".to_string());
+        args.push(rsa_private_key_id);
+    }
+    if let Some(wrapping_key_id) = action.wrapping_key_id {
+        args.push("--wrapping-key-id".to_string());
+        args.push(wrapping_key_id);
+    }
+    if let Some(leaf_certificate_extensions) = action.leaf_certificate_extensions {
+        args.push("--leaf-certificate-extensions".to_string());
+        args.push(leaf_certificate_extensions.to_str().unwrap().to_string());
+    }
+    if let Some(leaf_certificate_id) = action.leaf_certificate_id {
+        args.push("--leaf-certificate-id".to_string());
+        args.push(leaf_certificate_id);
+    }
+    if let Some(leaf_certificate_pkcs12_file) = action.leaf_certificate_pkcs12_file {
+        args.push("--leaf-certificate-pkcs12-file".to_string());
+        args.push(leaf_certificate_pkcs12_file.to_str().unwrap().to_string());
+    }
+    if let Some(leaf_certificate_pkcs12_password) = action.leaf_certificate_pkcs12_password {
+        args.push("--leaf-certificate-pkcs12-password".to_string());
+        args.push(leaf_certificate_pkcs12_password);
+    }
+    if action.dry_run {
+        args.push("--dry-run".to_string());
+    }
+    if action.sensitive {
+        args.push("--sensitive".to_string());
+    }
 
-fn enable_keypairs(
-    cli_conf_path: &str,
-    user_id: &str,
-    key_pair_id: &str,
-) -> Result<(), CosmianError> {
-    // Enable keypairs
-    let args: Vec<String> = ["enable", "--user-id", user_id, key_pair_id]
-        .iter()
-        .map(std::string::ToString::to_string)
-        .collect();
+    // Finish with user id
+    args.push(action.user_id);
+
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
     cmd.arg(KMS_SUBCOMMAND)
         .arg("google")
-        .arg("keypairs")
+        .arg("key-pairs")
         .args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        let stdout = std::str::from_utf8(&output.stdout)?;
+        let certificate_id = extract_certificate_id(stdout)
+            .ok_or_else(|| {
+                CosmianError::Default("failed extracting the certificate id".to_owned())
+            })?
+            .to_owned();
+
+        // Extract the certificate ID from the output or return a placeholder
+        Ok(certificate_id)
+    } else {
+        Err(CosmianError::Default(
+            std::str::from_utf8(&output.stderr)?.to_owned(),
+        ))
     }
-    Err(CosmianError::Default(
-        std::str::from_utf8(&output.stderr)?.to_owned(),
-    ))
 }
 
 #[tokio::test]
-#[ignore] // This test is ignored because it requires a Gmail test user (not blue nor red users)
-pub(crate) async fn test_google_keypairs() -> Result<(), CosmianError> {
-    // Create a test server
+async fn cli_create_google_key_pair() -> CosmianResult<()> {
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
-    let user_id = "XXX@cosmian.com".to_string();
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
-    // Override the owner client conf path
-    let owner_client_conf_path = create_gmail_api_conf(ctx)?;
+    // Create the Google CSE key
+    let cse_key_id = CreateKeyAction::default()
+        .run(ctx.get_owner_client())
+        .await?;
 
-    // Fetch and list keypairs and compare one of them
-    let listed_keypairs = list_keypairs(&owner_client_conf_path, &user_id)?;
-    assert!(
-        listed_keypairs.cseKeyPairs[0]
-            .subjectEmailAddresses
-            .contains(&user_id)
-    );
-    let enabled_key_pair = listed_keypairs
-        .cseKeyPairs
-        .iter()
-        .find(|&item| item.enablementState == "enabled")
-        .unwrap();
-    let mut fetched_keypair = get_keypairs(
-        &owner_client_conf_path,
-        &user_id,
-        &enabled_key_pair.keyPairId,
-    )?;
-    assert!(fetched_keypair.subjectEmailAddresses.contains(&user_id));
+    // import signers
+    let (_root_id, _intermediate_id, issuer_private_key_id) =
+        import_root_and_intermediate(&owner_client_conf_path)?;
 
-    // Disable keypair
-    assert!(
-        disable_keypairs(
-            &owner_client_conf_path,
-            &user_id,
-            &enabled_key_pair.keyPairId
-        )
-        .is_ok()
-    );
-    fetched_keypair = get_keypairs(
-        &owner_client_conf_path,
-        &user_id,
-        &enabled_key_pair.keyPairId,
-    )?;
-    assert!(fetched_keypair.enablementState == "disabled");
+    // Create key pair without certificate extensions (must fail)
+    let action = CreateKeyPairsAction {
+        user_id: "john.doe@acme.com".to_string(),
+        cse_key_id: cse_key_id.to_string(),
+        issuer_private_key_id: None,
+        subject_name: "CN=John Doe,OU=Org Unit,O=Org Name,L=City,ST=State,C=US".to_string(),
+        rsa_private_key_id: None,
+        sensitive: false,
+        wrapping_key_id: None,
+        leaf_certificate_extensions: None,
+        leaf_certificate_id: None,
+        leaf_certificate_pkcs12_file: None,
+        leaf_certificate_pkcs12_password: None,
+        dry_run: true,
+    };
+    assert!(create_keypairs(&owner_client_conf_path, action.clone()).is_err());
 
-    // Enable keypair
-    assert!(
-        enable_keypairs(
-            &owner_client_conf_path,
-            &user_id,
-            &enabled_key_pair.keyPairId
-        )
-        .is_ok()
-    );
-    fetched_keypair = get_keypairs(
-        &owner_client_conf_path,
-        &user_id,
-        &enabled_key_pair.keyPairId,
-    )?;
-    assert!(fetched_keypair.enablementState == "enabled");
+    // Create key pair with certificate extensions (must succeed)
+    let action = CreateKeyPairsAction {
+        issuer_private_key_id: Some(issuer_private_key_id),
+        leaf_certificate_extensions: Some(PathBuf::from(
+            "../../test_data/certificates/openssl/ext_leaf.cnf",
+        )),
+        ..action
+    };
+    let certificate_1 = create_keypairs(&owner_client_conf_path, action.clone()).unwrap();
+    println!("Created key pair with certificate ID: {certificate_1}");
+
+    // Create key pair with certificate id (must succeed)
+    let action = CreateKeyPairsAction {
+        user_id: "john.williams@acme.com".to_string(),
+        issuer_private_key_id: None,
+        leaf_certificate_extensions: None,
+        leaf_certificate_id: Some(certificate_1),
+        ..action
+    };
+    let _certificate_2 = create_keypairs(&owner_client_conf_path, action.clone()).unwrap();
+
+    // Create key pair using a certificate file (must succeed)
+    let action = CreateKeyPairsAction {
+        user_id: "john.barry@acme.com".to_string(),
+        leaf_certificate_id: None,
+        issuer_private_key_id: None,
+        leaf_certificate_extensions: None,
+        leaf_certificate_pkcs12_file: Some(PathBuf::from(
+            "../../test_data/certificates/csr/leaf.p12",
+        )),
+        leaf_certificate_pkcs12_password: Some("secret".to_owned()),
+        ..action
+    };
+    let _certificate_3 = create_keypairs(&owner_client_conf_path, action).unwrap();
+
     Ok(())
 }
