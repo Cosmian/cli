@@ -21,7 +21,7 @@ if [ "$DEBUG_OR_RELEASE" = "release" ]; then
     cargo build --features non-fips --target "$TARGET" --release
     cargo install --version 0.16.0 cargo-generate-rpm --force
     cargo generate-rpm --target "$TARGET" -p crate/cli
-  elif [ -f /etc/lsb-release ]; then
+  elif [ -f /etc/debian_version ]; then
     cargo install --version 2.4.0 cargo-deb --force
     cargo deb --target "$TARGET" -p cosmian_cli
   fi

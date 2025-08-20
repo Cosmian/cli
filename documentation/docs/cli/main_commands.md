@@ -1564,10 +1564,9 @@ metadata for a user.
 
 `--cse-key-id <CSE_KEY_ID>` CSE key ID to wrap exported user private key
 
-`--issuer-private-key-id [-i] <ISSUER_PRIVATE_KEY_ID>` The issuer private key id
-
 `--subject-name [-s] <SUBJECT_NAME>` When certifying a public key, or generating a keypair,
 the subject name to use.
+For instance: "CN=John Doe,OU=Org Unit,O=Org Name,L=City,ST=State,C=US"
 
 `--rsa-private-key-id [-k] <RSA_PRIVATE_KEY_ID>` The existing private key id of an existing RSA keypair to use (optional - if no ID is provided, a RSA keypair will be created)
 
@@ -1582,9 +1581,31 @@ If the wrapping key is:
 - a RSA key, RSA-OAEP will be used
 - a EC key, ECIES will be used (salsa20poly1305 for X25519)
 
-`--leaf-certificate-extensions [-e] <CERTIFICATE_EXTENSIONS>` Path to a file containing X.509 extensions, defined under a `[v3_ca]` section.
+`--issuer-private-key-id [-i] <ISSUER_PRIVATE_KEY_ID>` The issuer private key id - required when generating a new leaf certificate
+
+`--leaf-certificate-extensions [-e] <LEAF_CERTIFICATE_EXTENSIONS>` Path to a file containing X.509 extensions, defined under a `[v3_ca]` section.
 These extensions will be applied to the generated leaf certificate and must
 comply with Google's S/MIME certificate requirements. For example:
+```text
+[ v3_ca ]
+keyUsage=critical,nonRepudiation,digitalSignature,dataEncipherment,keyEncipherment
+extendedKeyUsage=emailProtection
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer
+subjectAltName=email:john.doe@acme.com
+crlDistributionPoints=URI:https://acme.com/crl.pem
+```
+This parameter is ignored when using an existing leaf certificate.
+
+`--leaf-certificate-id <LEAF_CERTIFICATE_ID>` The ID of an existing leaf certificate in KMS to use instead of generating a new one.
+This certificate must be compatible with the private key being used.
+Cannot be used together with --leaf-certificate-file.
+
+`--leaf-certificate-pkcs12-file <LEAF_CERTIFICATE_PKCS12_FILE>` Path to a local leaf PKCS12 certificate file to use instead of generating a new one.
+This PKCS12 certificate also holds the private key.
+Cannot be used together with --leaf-certificate-id neither --leaf-certificate-extensions.
+
+`--leaf-certificate-pkcs12-password <LEAF_CERTIFICATE_PKCS12_PASSWORD>` The password for the PKCS12 file containing the leaf certificate.
 
 `--dry-run <DRY_RUN>` Dry run mode. If set, the action will not be executed
 

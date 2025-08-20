@@ -81,7 +81,7 @@ pub(crate) fn create_symmetric_key(
 }
 
 #[tokio::test]
-pub(crate) async fn test_create_symmetric_key() -> CosmianResult<()> {
+async fn test_create_symmetric_key() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
