@@ -1,3 +1,14 @@
+=== "Debian 10 - buster"
+
+    Download package and install it:
+
+    ```console title="On local machine"
+    sudo apt update && sudo apt install -y wget
+    wget https://package.cosmian.com/cli/1.2.0/debian10/cosmian-cli_1.2.0-1_amd64.deb
+    sudo apt install ./cosmian-cli_1.2.0-1_amd64.deb
+    cosmian --version
+    ```
+
 === "Ubuntu 22.04"
 
     Download package and install it:
