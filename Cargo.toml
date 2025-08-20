@@ -50,8 +50,8 @@ cosmian_crypto_core = { version = "10.2", default-features = false, features = [
   "ser",
 ] }
 cosmian_findex_cli = { path = "findex-server/crate/cli", version = "0.4.1" }
-cosmian_kms_cli = { path = "kms/crate/cli", version = "5.6.2" }
-test_kms_server = { path = "kms/crate/test_kms_server", version = "5.6.2" }
+cosmian_kms_cli = { path = "kms/crate/cli", version = "5.7.0" }
+test_kms_server = { path = "kms/crate/test_kms_server", version = "5.7.0" }
 cosmian_http_client = "0.2"
 cosmian_logger = "0.2"
 der = { version = "0.7", default-features = false }
