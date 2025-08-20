@@ -12,8 +12,7 @@ services:
       COSMIAN_PKCS11_LOGGING_LEVEL: trace
   kms:
     container_name: kms
-    image: ghcr.io/cosmian/kms:feat-import_opaque_object
-    # image: kms_server_eco
+    image: ghcr.io/cosmian/kms:5.7.0
     ports:
       - 9998:9998
     environment:
