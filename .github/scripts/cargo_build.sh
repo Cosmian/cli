@@ -52,7 +52,7 @@ fi
 
 rustup target add "$TARGET"
 
-if [ -f /etc/debian_version ]; then
+if [ -f /etc/lsb-release ]; then
   bash .github/reusable_scripts/test_utimaco.sh
 fi
 
