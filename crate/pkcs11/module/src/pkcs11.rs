@@ -584,10 +584,7 @@ cryptoki_fn!(
         debug!("C_DestroyObject: session: {hSession:?}, hObject: {hObject}");
 
         sessions::session(hSession, |_session| -> ModuleResult<()> {
-            unsafe {
-                Session::destroy_object(hObject)?;
-            };
-
+            Session::destroy_object(hObject)?;
             Ok(())
         })
     }

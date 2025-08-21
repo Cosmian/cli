@@ -10,8 +10,7 @@ Links:
   - <https://www.ibm.com/docs/en/gklm/4.2.1?topic=setup-enabling-auto-login-oracle-wallet>
 
 - Futurex:
-
-* <https://docs.futurex.com/hsm-integration-guides/appendix-migrate-from-a-software-keystore-to-an-hsm-keystore>
+  - <https://docs.futurex.com/hsm-integration-guides/appendix-migrate-from-a-software-keystore-to-an-hsm-keystore>
 
 - Administration of TDE for Oracle Database:
   * <https://docs.oracle.com/en/database/oracle/oracle-database/23/dbtde/configuring-united-mode2.html#GUID-D3045557-FA85-4EA5-A85A-75EAE9D67E13>

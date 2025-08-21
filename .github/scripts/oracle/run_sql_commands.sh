@@ -47,6 +47,8 @@ display_wallet
 # Following commands have been kept. Could be useful for the software wallet migration.
 #
 
+# run_sql "CREATE TABLE test_tde (something CHAR(32) ENCRYPT);"
+
 # run_sql "ALTER SYSTEM SET WALLET_ROOT='/etc/ORACLE/KEYSTORES/FREE' SCOPE=SPFILE;" "SHUTDOWN IMMEDIATE;" "STARTUP;"
 # run_sql "ALTER SYSTEM SET TDE_CONFIGURATION='KEYSTORE_CONFIGURATION=FILE' SCOPE=BOTH SID='*';" "SHUTDOWN IMMEDIATE;" "STARTUP;"
 # run_sql "ADMINISTER KEY MANAGEMENT CREATE KEYSTORE IDENTIFIED BY sw_keystore_pass;"

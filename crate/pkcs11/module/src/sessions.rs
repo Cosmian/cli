@@ -39,7 +39,19 @@ use crate::{
     traits::{DecryptContext, EncryptContext, KeyAlgorithm, SearchOptions, SignContext, backend},
 };
 
+/// Prefix used to identify Oracle Key Management (KM) encryption keys.
+/// This prefix is typically used in PKCS#11 object labels or attributes to mark
+/// Oracle-specific encryption key material. The full label should start with this
+/// string, followed by the specific key identifier.
+///
+/// From a KMS point of view, it is a `SecretData` object.
 const PREFIX_ORACLE_SECURITY_KM: &str = "ORACLE.SECURITY.KM.ENCRYPTION.";
+/// Prefix used to identify Oracle Transparent Data Encryption (TDE) HSM master keys.
+/// This prefix is used in PKCS#11 object labels or attributes to mark Oracle TDE
+/// HSM master keys. The full label should start with this string, followed by the
+/// master key identifier.
+///
+/// From a KMS point of view, it is a `TransparentSymmetricKey` object.
 const PREFIX_ORACLE_TDE_HSM_MK: &str = "ORACLE.TDE.HSM.MK.";
 
 // "Valid session handles in Cryptoki always have nonzero values."
@@ -81,7 +93,7 @@ impl Session {
     /// to
     /// `ORACLE.TDE.HSM.MK.069F37D091A73D4F13BF2CE921EB2CF080`
     pub(crate) fn map_oracle_tde_security_to_mk(label: &str) -> ModuleResult<String> {
-        debug!("map_oracle_tde_security_to_mk: processing label: {}", label);
+        debug!("map_oracle_tde_security_to_mk: processing label: {label}");
         // check prefix
         if !label.starts_with(PREFIX_ORACLE_SECURITY_KM) {
             // just ignore and return
@@ -307,7 +319,7 @@ impl Session {
         Ok(())
     }
 
-    pub(crate) unsafe fn decrypt(
+    pub(crate) fn decrypt(
         &mut self,
         ciphertext: Vec<u8>,
         pData: CK_BYTE_PTR,
@@ -333,7 +345,7 @@ impl Session {
         Ok(())
     }
 
-    pub(crate) unsafe fn encrypt(
+    pub(crate) fn encrypt(
         &mut self,
         cleartext: Vec<u8>,
         pEncryptedData: CK_BYTE_PTR,
@@ -358,7 +370,7 @@ impl Session {
         Ok(())
     }
 
-    pub(crate) unsafe fn generate_key(
+    pub(crate) fn generate_key(
         mechanism: Mechanism,
         attributes: &Attributes,
     ) -> ModuleResult<CK_OBJECT_HANDLE> {
@@ -391,7 +403,7 @@ impl Session {
         Ok(handle)
     }
 
-    pub(crate) unsafe fn create_object(attributes: &Attributes) -> ModuleResult<CK_OBJECT_HANDLE> {
+    pub(crate) fn create_object(attributes: &Attributes) -> ModuleResult<CK_OBJECT_HANDLE> {
         if attributes.is_empty() {
             return Err(ModuleError::BadArguments(
                 "create_object: empty attributes".to_owned(),
@@ -419,7 +431,7 @@ impl Session {
         Ok(handle)
     }
 
-    pub(crate) unsafe fn destroy_object(handle: CK_OBJECT_HANDLE) -> ModuleResult<()> {
+    pub(crate) fn destroy_object(handle: CK_OBJECT_HANDLE) -> ModuleResult<()> {
         debug!("destroy_object: handle: {handle}");
 
         let mut objects_store = OBJECTS_STORE.write()?;
@@ -553,6 +565,10 @@ mod tests {
             Session::map_oracle_tde_security_to_mk(input).unwrap(),
             input
         );
+
+        // Test empty key ID
+        let input = "ORACLE.SECURITY.KM.ENCRYPTION.";
+        let _ = Session::map_oracle_tde_security_to_mk(input).is_err();
 
         // Test invalid hex after prefix
         let input = "ORACLE.SECURITY.KM.ENCRYPTION.INVALID_HEX";
