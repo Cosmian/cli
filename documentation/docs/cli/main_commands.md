@@ -14,19 +14,28 @@ or contact the Cosmian support team on Discord https://discord.com/invite/7kPMNt
 
 `--kms-url <KMS_URL>` The URL of the KMS
 
-`--kms-accept-invalid-certs <KMS_ACCEPT_INVALID_CERTS>` Allow to connect using a self-signed cert or untrusted cert chain
-
-Possible values:  `"true", "false"`
-
 `--kms-print-json <KMS_PRINT_JSON>` Output the KMS JSON KMIP request and response. This is useful to understand JSON POST requests and responses required to programmatically call the KMS on the `/kmip/2_1` endpoint
 
 Possible values:  `"true", "false"`
 
 `--findex-url <FINDEX_URL>` The URL of the Findex server
 
-`--findex-accept-invalid-certs <FINDEX_ACCEPT_INVALID_CERTS>` Allow to connect using a self-signed cert or untrusted cert chain
+`--accept-invalid-certs <ACCEPT_INVALID_CERTS>` Allow to connect using a self-signed cert or untrusted cert chain
 
 Possible values:  `"true", "false"`
+
+`--proxy-url <PROXY_URL>` The proxy URL:
+
+  - e.g., `https://secure.example` for an HTTP proxy
+  - e.g., `socks5://192.168.1.1:9000` for a SOCKS proxy
+
+`--proxy-basic-auth-username <PROXY_BASIC_AUTH_USERNAME>` Set the Proxy-Authorization header username using Basic auth.
+
+`--proxy-basic-auth-password <PROXY_BASIC_AUTH_PASSWORD>` Set the Proxy-Authorization header password using Basic auth.
+
+`--proxy-custom-auth-header <PROXY_CUSTOM_AUTH_HEADER>` Set the Proxy-Authorization header to a specified value.
+
+`--proxy-exclusion-list <PROXY_EXCLUSION_LIST>` The No Proxy exclusion list to this Proxy
 
 
 ### Subcommands

@@ -1614,7 +1614,7 @@ dependencies = [
  "base64 0.22.1",
  "cosmian_findex 8.0.0",
  "cosmian_findex_structs",
- "cosmian_http_client 0.2.0",
+ "cosmian_http_client",
  "cosmian_kms_cli",
  "cosmian_logger 0.2.0",
  "cosmian_sse_memories",
@@ -1678,29 +1678,8 @@ dependencies = [
 
 [[package]]
 name = "cosmian_http_client"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a5325632d5fa3093c110bdcddb284b6df6e60b321ea7444d663e27a42459e2e"
-dependencies = [
- "actix-web",
- "derive_more 0.99.20",
- "oauth2 4.4.2",
- "reqwest 0.11.27",
- "rustls 0.21.12",
- "serde",
- "serde_json",
- "thiserror 2.0.12",
- "tokio",
- "url",
- "webpki-roots 0.22.6",
- "x509-cert",
-]
-
-[[package]]
-name = "cosmian_http_client"
 version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0be6c5aff7d8d56057bb9f9940824cd578c5ecd50b0acd6aa39b6f3d6567f023"
+source = "git+https://github.com/Cosmian/http_client_server.git?branch=feat%2Fsupport_proxy#066dfa063dfbf5f57fc5629253763a35d1699a40"
 dependencies = [
  "actix-web",
  "derive_more 0.99.20",
@@ -1711,6 +1690,7 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.12",
  "tokio",
+ "tracing",
  "url",
  "webpki-roots 0.22.6",
  "x509-cert",
@@ -1795,7 +1775,7 @@ name = "cosmian_kms_client"
 version = "5.7.0"
 dependencies = [
  "cosmian_crypto_core 10.2.0",
- "cosmian_http_client 0.3.1",
+ "cosmian_http_client",
  "cosmian_kms_client_utils",
  "der",
  "pem",
@@ -3251,7 +3231,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.5.10",
+ "socket2 0.4.10",
  "tokio",
  "tower-service",
  "tracing",

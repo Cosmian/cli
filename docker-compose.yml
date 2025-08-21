@@ -1,6 +1,7 @@
 ---
 services:
   redis:
+    container_name: redis
     image: redis:latest
     ports:
       - 6379:6379
@@ -11,3 +12,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  squid:
+    container_name: squid
+    image: ubuntu/squid:latest
+    ports:
+      - 8080:3128   # expose proxy on localhost:8080
+    volumes:
+      - .github/scripts/squid/squid.conf:/etc/squid/squid.conf:ro
+      - .github/scripts/squid/passwd:/etc/squid/passwd:ro # myuser:mypwd
+      - ./:/var/log/squid
