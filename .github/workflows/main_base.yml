@@ -87,8 +87,8 @@ jobs:
             --exclude test_kms_server \
             --exclude cosmian_kms_server_database
 
-  build: # Build on Ubuntu 22/24, Rocky 8/9, MacOS 13/15 and Windows Server 22
-    uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@develop
+  build:
+    uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@feat/reuse_docker_compose
     secrets: inherit
     with:
       toolchain: ${{ inputs.toolchain }}

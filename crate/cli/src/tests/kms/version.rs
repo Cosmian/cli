@@ -20,9 +20,9 @@ pub(crate) fn server_version(cli_conf_path: &str) -> CosmianResult<String> {
 
     let args = vec![
         "--kms-url".to_owned(),
-        "http://host.docker.internal:9998".to_owned(),
+        std::env::var("KMS_URL").unwrap_or_else(|_| "http://host.docker.internal:9998".to_owned()),
         "--proxy-url".to_owned(),
-        "http://localhost:8080".to_owned(),
+        "http://localhost:8181".to_owned(),
         "--proxy-basic-auth-username".to_owned(),
         "myuser".to_owned(),
         "--proxy-basic-auth-password".to_owned(),

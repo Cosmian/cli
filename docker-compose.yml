@@ -16,7 +16,7 @@ services:
     container_name: squid
     image: ubuntu/squid:latest
     ports:
-      - 8080:3128   # expose proxy on localhost:8080
+      - 8181:3128   # expose proxy on localhost:8181
     volumes:
       - .github/scripts/squid/squid.conf:/etc/squid/squid.conf:ro
       - .github/scripts/squid/passwd:/etc/squid/passwd:ro # myuser:mypwd
