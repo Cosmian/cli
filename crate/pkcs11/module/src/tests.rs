@@ -124,7 +124,7 @@ impl Backend for TestBackend {
         Ok(vec![])
     }
 
-    fn find_all_keys(&self) -> ModuleResult<Vec<Arc<Object>>> {
+    fn find_all_objects(&self) -> ModuleResult<Vec<Arc<Object>>> {
         Ok(vec![])
     }
 
@@ -136,6 +136,18 @@ impl Backend for TestBackend {
         _label: Option<&str>,
     ) -> ModuleResult<Arc<dyn SymmetricKey>> {
         Ok(Arc::new(DummySymKey {}))
+    }
+
+    fn create_object(&self, _label: &str, _data: &[u8]) -> ModuleResult<Arc<dyn DataObject>> {
+        todo!()
+    }
+
+    fn revoke_object(&self, _remote_id: &str) -> ModuleResult<()> {
+        todo!()
+    }
+
+    fn destroy_object(&self, _remote_id: &str) -> ModuleResult<()> {
+        todo!()
     }
 
     fn encrypt(&self, _encrypt_ctx: &EncryptContext, cleartext: Vec<u8>) -> ModuleResult<Vec<u8>> {

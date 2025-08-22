@@ -41,7 +41,7 @@ repos:
     rev: v1.31.1
     hooks:
       - id: typos
-        exclude: documentation/docs/images|crate/pkcs11/oracle/README.md
+        exclude: documentation/docs/images|crate/pkcs11/oracle/README_HSM.md|crate/pkcs11/documentation/veracrypt_ckms.svg|documentation/docs/pkcs11/images
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
@@ -72,6 +72,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
+        exclude: documentation/docs/pkcs11/images/veracrypt_ckms.svg
       - id: check-ast
       - id: check-byte-order-marker
       - id: check-builtin-literals

@@ -26,7 +26,7 @@ use pkcs11_sys::{
     CK_BYTE_PTR, CK_FLAGS, CK_OBJECT_CLASS, CK_OBJECT_HANDLE, CK_SESSION_HANDLE, CK_ULONG,
     CK_ULONG_PTR,
 };
-use tracing::debug;
+use tracing::{debug, trace, warn};
 
 use crate::{
     MResultHelper, ModuleError, ModuleResult,
@@ -38,6 +38,21 @@ use crate::{
     objects_store::OBJECTS_STORE,
     traits::{DecryptContext, EncryptContext, KeyAlgorithm, SearchOptions, SignContext, backend},
 };
+
+/// Prefix used to identify Oracle Key Management (KM) encryption keys.
+/// This prefix is typically used in PKCS#11 object labels or attributes to mark
+/// Oracle-specific encryption key material. The full label should start with this
+/// string, followed by the specific key identifier.
+///
+/// From a KMS point of view, it is a `SecretData` object.
+const PREFIX_ORACLE_SECURITY_KM: &str = "ORACLE.SECURITY.KM.ENCRYPTION.";
+/// Prefix used to identify Oracle Transparent Data Encryption (TDE) HSM master keys.
+/// This prefix is used in PKCS#11 object labels or attributes to mark Oracle TDE
+/// HSM master keys. The full label should start with this string, followed by the
+/// master key identifier.
+///
+/// From a KMS point of view, it is a `TransparentSymmetricKey` object.
+const PREFIX_ORACLE_TDE_HSM_MK: &str = "ORACLE.TDE.HSM.MK.";
 
 // "Valid session handles in Cryptoki always have nonzero values."
 #[cfg(not(target_os = "windows"))]
@@ -72,14 +87,37 @@ impl Session {
         Ok(handle)
     }
 
+    /// Conversion example:
+    /// Map
+    /// `ORACLE.SECURITY.KM.ENCRYPTION.30363946333744303931413733443446313342463243453932314542324346303830`
+    /// to
+    /// `ORACLE.TDE.HSM.MK.069F37D091A73D4F13BF2CE921EB2CF080`
+    pub(crate) fn map_oracle_tde_security_to_mk(label: &str) -> ModuleResult<String> {
+        debug!("map_oracle_tde_security_to_mk: processing label: {label}");
+        // check prefix
+        if !label.starts_with(PREFIX_ORACLE_SECURITY_KM) {
+            // just ignore and return
+            return Ok(label.to_owned());
+        }
+        // Extract the ID portion after the prefix
+        let key_id_hex = label
+            .strip_prefix(PREFIX_ORACLE_SECURITY_KM)
+            .ok_or_else(|| ModuleError::BadArguments(format!("Invalid label format: {label}")))?;
+        let key_id_bytes = hex::decode(key_id_hex).map_err(|e| {
+            ModuleError::BadArguments(format!("Invalid hex encoding: {key_id_hex}. Error: {e}"))
+        })?;
+        let key_id = String::from_utf8_lossy(&key_id_bytes).to_string();
+        Ok(format!("{PREFIX_ORACLE_TDE_HSM_MK}{key_id}"))
+    }
+
     pub(crate) fn load_find_context(&mut self, attributes: &Attributes) -> ModuleResult<()> {
         if attributes.is_empty() {
             return Err(ModuleError::BadArguments(
                 "load_find_context: empty attributes".to_owned(),
             ));
         }
-        // Find all keys, all certificates
-        for object in backend().find_all_keys()? {
+        // Find all objects
+        for object in backend().find_all_objects()? {
             self.update_find_objects_context(object)?;
         }
 
@@ -88,27 +126,30 @@ impl Session {
             self.load_find_context_by_class(attributes, search_class)
         } else {
             let label = attributes.get_label()?;
+            let label = Session::map_oracle_tde_security_to_mk(&label)?;
             let find_ctx = OBJECTS_STORE.read()?;
             debug!(
                 "load_find_context: loading for label: {label:?} and attributes: {attributes:?}"
             );
             debug!("load_find_context: display current store: {find_ctx}");
-            let (object, handle) = find_ctx.get_using_id(&label).ok_or_else(|| {
-                ModuleError::BadArguments(format!(
-                    "load_find_context: failed to get id from label: {label}"
-                ))
-            })?;
-            debug!(
-                "load_find_context: search by id: {label} -> handle: {} -> object: {}: {}",
-                handle,
-                object.name(),
-                object.remote_id()
-            );
-            self.clear_find_objects_ctx();
-            self.add_to_find_objects_ctx(handle);
+            if let Some((object, handle)) = find_ctx.get_using_id(&label) {
+                debug!(
+                    "load_find_context: search by id: {label} -> handle: {} -> object: {}: {}",
+                    handle,
+                    object.name(),
+                    object.remote_id()
+                );
+                self.clear_find_objects_ctx();
+                self.add_to_find_objects_ctx(handle);
+            } else {
+                warn!("load_find_context: id {label} not found in store");
+                self.clear_find_objects_ctx();
+                return Ok(());
+            }
             Ok(())
         }?;
 
+        trace!("load_find_context succeeded");
         Ok(())
     }
 
@@ -278,7 +319,7 @@ impl Session {
         Ok(())
     }
 
-    pub(crate) unsafe fn decrypt(
+    pub(crate) fn decrypt(
         &mut self,
         ciphertext: Vec<u8>,
         pData: CK_BYTE_PTR,
@@ -304,7 +345,7 @@ impl Session {
         Ok(())
     }
 
-    pub(crate) unsafe fn encrypt(
+    pub(crate) fn encrypt(
         &mut self,
         cleartext: Vec<u8>,
         pEncryptedData: CK_BYTE_PTR,
@@ -329,7 +370,7 @@ impl Session {
         Ok(())
     }
 
-    pub(crate) unsafe fn generate_key(
+    pub(crate) fn generate_key(
         mechanism: Mechanism,
         attributes: &Attributes,
     ) -> ModuleResult<CK_OBJECT_HANDLE> {
@@ -360,6 +401,52 @@ impl Session {
 
         debug!("generate_key: generated key with handle: {handle}");
         Ok(handle)
+    }
+
+    pub(crate) fn create_object(attributes: &Attributes) -> ModuleResult<CK_OBJECT_HANDLE> {
+        if attributes.is_empty() {
+            return Err(ModuleError::BadArguments(
+                "create_object: empty attributes".to_owned(),
+            ));
+        }
+
+        debug!("create_object: attributes: {attributes:?}");
+
+        let mut objects_store = OBJECTS_STORE.write()?;
+        let class = attributes.get_class()?;
+        trace!("create_object: class: {class:?}");
+        let label = attributes.get_label()?;
+        let value = attributes.get_value()?;
+        let object = match class {
+            pkcs11_sys::CKO_DATA => backend().create_object(&label, &value)?,
+            o => {
+                trace!("create_object: Object not supported: {o}");
+                return Err(ModuleError::Todo(format!("Object not supported: {o}")));
+            }
+        };
+
+        let handle = objects_store.upsert(Arc::new(Object::DataObject(object)));
+
+        debug!("create_object: created object with handle: {handle}");
+        Ok(handle)
+    }
+
+    pub(crate) fn destroy_object(handle: CK_OBJECT_HANDLE) -> ModuleResult<()> {
+        debug!("destroy_object: handle: {handle}");
+
+        let mut objects_store = OBJECTS_STORE.write()?;
+        match objects_store.get_using_handle(handle) {
+            Some(object) => {
+                backend().revoke_object(&object.remote_id())?;
+                backend().destroy_object(&object.remote_id())?;
+            }
+            None => return Err(ModuleError::ObjectHandleInvalid(handle)),
+        }
+
+        objects_store.remove_by_handle(handle)?;
+        debug!("destroy_object: handle: {handle}");
+
+        Ok(())
     }
 }
 
@@ -447,4 +534,56 @@ pub(crate) fn close_all() -> ModuleResult<()> {
         .context("failed locking the sessions map")?
         .clear();
     Ok(())
+}
+
+#[allow(clippy::unwrap_used)]
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_map_oracle_tde_security_to_mk() {
+        // Test valid conversion
+        let input = "ORACLE.SECURITY.KM.ENCRYPTION.\
+                     30363946333744303931413733443446313342463243453932314542324346303830";
+        let expected = "ORACLE.TDE.HSM.MK.069F37D091A73D4F13BF2CE921EB2CF080";
+        assert_eq!(
+            Session::map_oracle_tde_security_to_mk(input).unwrap(),
+            expected
+        );
+
+        // Test non-oracle label
+        let input = "some.other.label";
+        assert_eq!(
+            Session::map_oracle_tde_security_to_mk(input).unwrap(),
+            input
+        );
+
+        // Test empty label
+        let input = "";
+        assert_eq!(
+            Session::map_oracle_tde_security_to_mk(input).unwrap(),
+            input
+        );
+
+        // Test empty key ID
+        let input = "ORACLE.SECURITY.KM.ENCRYPTION.";
+        let _ = Session::map_oracle_tde_security_to_mk(input).is_err();
+
+        // Test invalid hex after prefix
+        let input = "ORACLE.SECURITY.KM.ENCRYPTION.INVALID_HEX";
+        Session::map_oracle_tde_security_to_mk(input).unwrap_err();
+
+        // Test partial prefix
+        let input = "ORACLE.SECURITY.KM";
+        assert_eq!(
+            Session::map_oracle_tde_security_to_mk(input).unwrap(),
+            input
+        );
+
+        // Test case with odd length hex
+        let input = "ORACLE.SECURITY.KM.ENCRYPTION.\
+                     30363946333744303931413733443446313342463243453932314542324346303";
+        Session::map_oracle_tde_security_to_mk(input).unwrap_err();
+    }
 }

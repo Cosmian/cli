@@ -29,6 +29,7 @@ SED "s/$OLD_VERSION/$NEW_VERSION/g" crate/pkcs11/provider/Cargo.toml
 SED "s/$OLD_VERSION/$NEW_VERSION/g" Dockerfile
 SED "s/$OLD_VERSION/$NEW_VERSION/g" documentation/docs/index.md
 SED "s/$OLD_VERSION/$NEW_VERSION/g" documentation/docs/installation.md
+SED "s/$OLD_VERSION/$NEW_VERSION/g" documentation/docs/pkcs11/oracle/tde.md
 
 cargo build
 git cliff -u -p CHANGELOG.md -t "$NEW_VERSION"

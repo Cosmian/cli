@@ -18,7 +18,7 @@
 // limitations under the License.
 
 use core::ops::Deref;
-use std::{ffi::CString, slice};
+use std::slice;
 
 use pkcs11_sys::{
     CK_ATTRIBUTE, CK_ATTRIBUTE_PTR, CK_ATTRIBUTE_TYPE, CK_BBOOL, CK_CERTIFICATE_CATEGORY,
@@ -26,10 +26,11 @@ use pkcs11_sys::{
     CKA_ALWAYS_AUTHENTICATE, CKA_ALWAYS_SENSITIVE, CKA_APPLICATION, CKA_CERTIFICATE_CATEGORY,
     CKA_CERTIFICATE_TYPE, CKA_CLASS, CKA_COEFFICIENT, CKA_DECRYPT, CKA_EC_PARAMS, CKA_EC_POINT,
     CKA_ENCRYPT, CKA_EXPONENT_1, CKA_EXPONENT_2, CKA_EXTRACTABLE, CKA_ID, CKA_ISSUER, CKA_KEY_TYPE,
-    CKA_LABEL, CKA_MODULUS, CKA_MODULUS_BITS, CKA_NEVER_EXTRACTABLE, CKA_PRIME_1, CKA_PRIME_2,
-    CKA_PRIVATE, CKA_PRIVATE_EXPONENT, CKA_PROFILE_ID, CKA_PUBLIC_EXPONENT, CKA_SENSITIVE,
-    CKA_SERIAL_NUMBER, CKA_SIGN, CKA_SIGN_RECOVER, CKA_SUBJECT, CKA_TOKEN, CKA_TRUSTED, CKA_UNWRAP,
-    CKA_VALUE, CKA_VALUE_LEN, CKA_VERIFY, CKA_VERIFY_RECOVER, CKA_WRAP, CKC_X_509,
+    CKA_LABEL, CKA_MODIFIABLE, CKA_MODULUS, CKA_MODULUS_BITS, CKA_NEVER_EXTRACTABLE, CKA_PRIME_1,
+    CKA_PRIME_2, CKA_PRIVATE, CKA_PRIVATE_EXPONENT, CKA_PROFILE_ID, CKA_PUBLIC_EXPONENT,
+    CKA_SENSITIVE, CKA_SERIAL_NUMBER, CKA_SIGN, CKA_SIGN_RECOVER, CKA_SUBJECT, CKA_TOKEN,
+    CKA_TRUSTED, CKA_UNWRAP, CKA_VALUE, CKA_VALUE_LEN, CKA_VERIFY, CKA_VERIFY_RECOVER, CKA_WRAP,
+    CKC_X_509,
 };
 use strum_macros::Display;
 use tracing::trace;
@@ -59,6 +60,7 @@ pub enum AttributeType {
     Label,
     Modulus,
     ModulusBits,
+    Modifiable,
     NeverExtractable,
     Prime1,
     Prime2,
@@ -126,6 +128,7 @@ impl TryFrom<CK_ATTRIBUTE_TYPE> for AttributeType {
             CKA_VERIFY => Ok(Self::Verify),
             CKA_VERIFY_RECOVER => Ok(Self::VerifyRecover),
             CKA_WRAP => Ok(Self::Wrap),
+            CKA_MODIFIABLE => Ok(Self::Modifiable),
             _ => Err(ModuleError::AttributeTypeInvalid(type_)),
         }
     }
@@ -135,7 +138,7 @@ impl TryFrom<CK_ATTRIBUTE_TYPE> for AttributeType {
 pub enum Attribute {
     AlwaysAuthenticate(bool),
     AlwaysSensitive(bool),
-    Application(CString),
+    Application(Vec<u8>),
     CertificateCategory(CK_CERTIFICATE_CATEGORY),
     CertificateType(CK_CERTIFICATE_TYPE),
     Class(CK_OBJECT_CLASS),
@@ -153,6 +156,7 @@ pub enum Attribute {
     KeyType(CK_KEY_TYPE),
     Label(String),
     Modulus(Vec<u8>),
+    Modifiable(Vec<u8>),
     ModulusBits(CK_ULONG),
     NeverExtractable(bool),
     Prime1(Vec<u8>),
@@ -198,6 +202,7 @@ impl Attribute {
             Self::Issuer(_) => AttributeType::Issuer,
             Self::KeyType(_) => AttributeType::KeyType,
             Self::Label(_) => AttributeType::Label,
+            Self::Modifiable(_) => AttributeType::Modifiable,
             Self::Modulus(_) => AttributeType::Modulus,
             Self::ModulusBits(_) => AttributeType::ModulusBits,
             Self::NeverExtractable(_) => AttributeType::NeverExtractable,
@@ -258,6 +263,7 @@ impl Attribute {
             | Self::Exponent2(bytes)
             | Self::Issuer(bytes)
             | Self::Modulus(bytes)
+            | Self::Modifiable(bytes)
             | Self::Prime1(bytes)
             | Self::Prime2(bytes)
             | Self::PrivateExponent(bytes)
@@ -265,8 +271,8 @@ impl Attribute {
             | Self::SerialNumber(bytes)
             | Self::Subject(bytes)
             | Self::Id(bytes)
-            | Self::Value(bytes) => bytes.clone(),
-            Self::Application(c_string) => c_string.as_bytes().to_vec(),
+            | Self::Value(bytes)
+            | Self::Application(bytes) => bytes.clone(),
             Self::Label(string) => string.as_bytes().to_vec(),
         }
     }
@@ -276,10 +282,11 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
     type Error = ModuleError;
 
     fn try_from(attribute: CK_ATTRIBUTE) -> ModuleResult<Self> {
-        trace!("Parsing attribute: {:?}", attribute);
+        trace!("Attribute::try_from: parsing attribute: {:?}", attribute);
         let attr_type = AttributeType::try_from(attribute.type_)?;
+        trace!("Attribute::try_from: type: {attr_type:?}");
         let val = if attribute.ulValueLen > 0 {
-            not_null!(attribute.pValue, "Attribute::TryFrom: attribute.pValue");
+            not_null!(attribute.pValue, "Attribute::try_from: attribute.pValue");
             unsafe {
                 std::slice::from_raw_parts(
                     attribute.pValue as *const u8,
@@ -289,15 +296,14 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
         } else {
             &[]
         };
+        trace!("Attribute::try_from: value: {val:?}");
 
         let attr = match attr_type {
             AttributeType::AlwaysAuthenticate => {
                 Ok(Self::AlwaysAuthenticate(try_u8_into_bool(val)?))
             }
             AttributeType::AlwaysSensitive => Ok(Self::AlwaysSensitive(try_u8_into_bool(val)?)),
-            AttributeType::Application => {
-                Ok(Self::Application(CString::from_vec_with_nul(val.to_vec())?))
-            }
+            AttributeType::Application => Ok(Self::Application(val.to_vec())),
             AttributeType::CertificateCategory => Ok(Self::CertificateCategory(
                 CK_CERTIFICATE_CATEGORY::from_ne_bytes(val.try_into()?),
             )),
@@ -322,6 +328,7 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
             }
             AttributeType::Label => Ok(Self::Label(String::from_utf8(val.to_vec())?)),
             AttributeType::Modulus => Ok(Self::Modulus(val.to_vec())),
+            AttributeType::Modifiable => Ok(Self::Modifiable(val.to_vec())),
             AttributeType::ModulusBits => {
                 Ok(Self::ModulusBits(CK_ULONG::from_ne_bytes(val.try_into()?)))
             }
@@ -349,7 +356,10 @@ impl TryFrom<CK_ATTRIBUTE> for Attribute {
             AttributeType::Wrap => Ok(Self::Wrap(try_u8_into_bool(val)?)),
         };
 
-        trace!("Attribute {:?} => {:?}", attribute, attr);
+        trace!(
+            "Attribute::try_from: attribute parsed: {:?} => {:?}",
+            attribute, attr
+        );
         attr
     }
 }
@@ -384,6 +394,8 @@ impl Attributes {
     get_attribute!(get_class, AttributeType::Class, Class, CK_OBJECT_CLASS);
 
     get_attribute!(get_label, AttributeType::Label, Label, String);
+
+    get_attribute!(get_value, AttributeType::Value, Value, Vec<u8>);
 
     get_attribute!(get_value_len, AttributeType::ValueLen, ValueLen, CK_ULONG);
 
@@ -429,13 +441,15 @@ impl TryFrom<(CK_ATTRIBUTE_PTR, CK_ULONG)> for Attributes {
     fn try_from(
         (attributes_ptr, attributes_len): (CK_ATTRIBUTE_PTR, CK_ULONG),
     ) -> ModuleResult<Self> {
-        not_null!(attributes_ptr, "Attributes::TryFrom: attributes_ptr");
-        let template: Self =
-            unsafe { slice::from_raw_parts(attributes_ptr, usize::try_from(attributes_len)?) }
-                .iter()
-                .map(|attr| (*attr).try_into())
-                .collect::<ModuleResult<Vec<Attribute>>>()?
-                .into();
+        not_null!(attributes_ptr, "Attributes::try_from: attributes_ptr");
+        let attributes_usize_len = usize::try_from(attributes_len)?;
+        let mut attributes = Vec::with_capacity(attributes_usize_len);
+        let slice = unsafe { slice::from_raw_parts(attributes_ptr, attributes_usize_len) };
+        for attr in slice {
+            trace!("Attributes::try_from: parsing single attribute: {attr:?}");
+            attributes.push((*attr).try_into()?);
+        }
+        let template: Self = attributes.into();
         Ok(template)
     }
 }
