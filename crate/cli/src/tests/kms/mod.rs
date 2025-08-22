@@ -14,5 +14,6 @@ mod secret_data;
 mod shared;
 mod symmetric;
 pub(crate) mod utils;
+mod version;
 
 const KMS_SUBCOMMAND: &str = "kms";

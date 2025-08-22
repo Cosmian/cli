@@ -32,62 +32,16 @@ jobs:
       toolchain: ${{ inputs.toolchain }}
 
   cargo-publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+    uses: ./.github/workflows/cargo_publish.yml
+    secrets:
+      token: ${{ secrets.CRATES_IO }}
 
-      - name: Publishing - dry run
-        run: |
-          cargo +nightly publish --dry-run --workspace -Z package-workspace \
-            --exclude cosmian_findex_cli \
-            --exclude cosmian_findex_client \
-            --exclude cosmian_findex_structs \
-            --exclude cosmian_findex_server \
-            --exclude test_findex_server \
-            --exclude cosmian_kms_access \
-            --exclude cosmian_kms_cli \
-            --exclude cosmian_kms_client_utils \
-            --exclude cosmian_kms_crypto \
-            --exclude cosmian_kms_base_hsm \
-            --exclude cosmian_kms_proteccio \
-            --exclude cosmian_kms_utimaco \
-            --exclude cosmian_kms_softhsm2 \
-            --exclude cosmian_kms_interfaces \
-            --exclude cosmian_kms_kmip \
-            --exclude cosmian_kms_kmip-derive \
-            --exclude cosmian_kms_client \
-            --exclude cosmian_kms_server \
-            --exclude test_kms_server \
-            --exclude cosmian_kms_server_database
+  forward-proxy:
+    uses: ./.github/workflows/forward_proxy.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
 
-      - name: Publishing
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          cargo +nightly publish --workspace -Z package-workspace --token ${{ secrets.CRATES_IO }} \
-            --exclude cosmian_findex_cli \
-            --exclude cosmian_findex_client \
-            --exclude cosmian_findex_structs \
-            --exclude cosmian_findex_server \
-            --exclude test_findex_server \
-            --exclude cosmian_kms_access \
-            --exclude cosmian_kms_cli \
-            --exclude cosmian_kms_client_utils \
-            --exclude cosmian_kms_crypto \
-            --exclude cosmian_kms_base_hsm \
-            --exclude cosmian_kms_proteccio \
-            --exclude cosmian_kms_utimaco \
-            --exclude cosmian_kms_softhsm2 \
-            --exclude cosmian_kms_interfaces \
-            --exclude cosmian_kms_kmip \
-            --exclude cosmian_kms_kmip-derive \
-            --exclude cosmian_kms_client \
-            --exclude cosmian_kms_server \
-            --exclude test_kms_server \
-            --exclude cosmian_kms_server_database
-
-  build: # Build on Ubuntu 22/24, Rocky 8/9, MacOS 13/15 and Windows Server 22
+  build:
     uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@develop
     secrets: inherit
     with:
@@ -109,8 +63,10 @@ jobs:
   release:
     name: release
     needs:
-      - cargo-deny
       - cargo-lint
+      - cargo-deny
+      - cargo-machete
+      - forward-proxy
       - build
     uses: Cosmian/reusable_workflows/.github/workflows/push-artifacts.yml@develop
     with:
