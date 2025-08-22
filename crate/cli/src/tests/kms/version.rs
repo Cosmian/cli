@@ -3,7 +3,7 @@ use std::process::Command;
 use assert_cmd::prelude::*;
 use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server;
-use tracing::error;
+use tracing::{error, info};
 
 use super::KMS_SUBCOMMAND;
 use crate::{
@@ -19,7 +19,7 @@ pub(crate) fn server_version(cli_conf_path: &str, kms_url: &str) -> CosmianResul
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
-    // export KMS_URL=http://host.docker.internal:9998
+    // for local test use: export KMS_URL=http://host.docker.internal:9998
     let args = vec![
         "--kms-url".to_owned(),
         kms_url.to_owned(),
@@ -64,6 +64,7 @@ pub(crate) async fn test_server_version_using_forward_proxy() -> CosmianResult<(
             ));
         }
 
+        info!("Running test_server_version_using_forward_proxy with KMS_URL: {kms_url}");
         server_version(&owner_client_conf_path, &kms_url)?;
     }
 

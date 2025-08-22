@@ -40,6 +40,7 @@ jobs:
           sudo cp .github/scripts/squid/passwd /etc/squid/
           sudo cp .github/scripts/squid/squid.conf /etc/squid/
           sudo systemctl restart squid
+          sudo journalctl -u squid --no-pager -f &
           sleep 5
           curl http://localhost:8888
           curl -v -x http://localhost:8888 -U myuser:mypwd http://example.org
@@ -47,4 +48,12 @@ jobs:
       - name: Forward proxy test
         run: |
           cargo +${{ inputs.toolchain }} build -p cosmian_cli
-          cargo +${{ inputs.toolchain }} test --workspace --lib -- --nocapture --ignored test_server_version
+
+          # Get the local IP address
+          LOCAL_IP=$(hostname -I | awk '{print $1}')
+          echo "Local IP address: $LOCAL_IP"
+
+          # Export the KMS_URL environment variable
+          export KMS_URL=http://$LOCAL_IP:9998
+
+          cargo +${{ inputs.toolchain }} test --workspace --lib -- --nocapture --ignored test_server_version_using_forward_proxy
