@@ -43,5 +43,5 @@ jobs:
 
       - name: Forward proxy test
         run: |
-          cargo +${{ inputs.toolchain }} build --workspace --lib
+          cargo +${{ inputs.toolchain }} build -p cosmian_cli
           cargo +${{ inputs.toolchain }} test --workspace --lib -- --nocapture --ignored test_server_version
