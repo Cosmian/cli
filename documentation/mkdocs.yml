@@ -58,5 +58,12 @@ nav:
       - Examples: configuration.md
   - Usage:
       - Usage: usage.md
+      - PKCS#11 Usage:
+          - Disk Encryption:
+              - Veracrypt: ./pkcs11/veracrypt.md
+              - LUKS: ./pkcs11/luks.md
+              - Cryhod: ./pkcs11/cryhod.md
+          - Oracle:
+              - Oracle Database Transparent Data Encryption (TDE): ./pkcs11/oracle/tde.md
       - KMS access rights: authorization.md
   - User manual: cli/main_commands.md
