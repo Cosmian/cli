@@ -40,6 +40,9 @@ jobs:
           sudo cp .github/scripts/squid/passwd /etc/squid/
           sudo cp .github/scripts/squid/squid.conf /etc/squid/
           sudo systemctl restart squid
+          sleep 5
+          curl http://localhost:8888
+          curl -v -x http://localhost:8888 -U myuser:mypwd http://example.org
 
       - name: Forward proxy test
         run: |
