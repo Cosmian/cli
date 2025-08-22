@@ -1436,6 +1436,7 @@ dependencies = [
  "openssl",
  "predicates",
  "regex",
+ "reqwest 0.11.27",
  "serde",
  "serde_json",
  "strum",

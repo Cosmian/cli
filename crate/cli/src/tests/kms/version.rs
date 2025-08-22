@@ -3,6 +3,7 @@ use std::process::Command;
 use assert_cmd::prelude::*;
 use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server;
+use tracing::error;
 
 use super::KMS_SUBCOMMAND;
 use crate::{
@@ -14,14 +15,14 @@ use crate::{
 const SUB_COMMAND: &str = "server-version";
 
 /// Request server-version
-pub(crate) fn server_version(cli_conf_path: &str) -> CosmianResult<String> {
+pub(crate) fn server_version(cli_conf_path: &str, kms_url: &str) -> CosmianResult<String> {
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     // export KMS_URL=http://host.docker.internal:9998
     let args = vec![
         "--kms-url".to_owned(),
-        std::env::var("KMS_URL").unwrap_or_else(|_| "http://localhost:9998".to_owned()),
+        kms_url.to_owned(),
         "--proxy-url".to_owned(),
         "http://localhost:8888".to_owned(),
         "--proxy-basic-auth-username".to_owned(),
@@ -52,7 +53,18 @@ pub(crate) async fn test_server_version_using_forward_proxy() -> CosmianResult<(
 
     // Only run this test in GitHub Actions environment
     if std::env::var("GITHUB_ACTIONS").is_ok() {
-        server_version(&owner_client_conf_path)?;
+        // Check that KMS server is reachable before running the test
+        let kms_url =
+            std::env::var("KMS_URL").unwrap_or_else(|_| "http://localhost:9998".to_owned());
+        let response = reqwest::get(&kms_url).await;
+        if response.is_err() {
+            error!("KMS server at {} is not reachable", kms_url);
+            return Err(CosmianError::Default(
+                "KMS server is not reachable".to_string(),
+            ));
+        }
+
+        server_version(&owner_client_conf_path, &kms_url)?;
     }
 
     Ok(())
