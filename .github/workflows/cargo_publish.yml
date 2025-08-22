@@ -1,0 +1,65 @@
+---
+name: cargo publish
+
+on:
+  workflow_call:
+    secrets:
+      token:
+        required: true
+
+jobs:
+  cargo-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Publishing - dry run
+        run: |
+          cargo +nightly-2025-03-31 publish --dry-run --workspace -Z package-workspace \
+            --exclude cosmian_findex_cli \
+            --exclude cosmian_findex_client \
+            --exclude cosmian_findex_structs \
+            --exclude cosmian_findex_server \
+            --exclude test_findex_server \
+            --exclude cosmian_kms_access \
+            --exclude cosmian_kms_cli \
+            --exclude cosmian_kms_client_utils \
+            --exclude cosmian_kms_crypto \
+            --exclude cosmian_kms_base_hsm \
+            --exclude cosmian_kms_proteccio \
+            --exclude cosmian_kms_utimaco \
+            --exclude cosmian_kms_softhsm2 \
+            --exclude cosmian_kms_interfaces \
+            --exclude cosmian_kms_kmip \
+            --exclude cosmian_kms_kmip-derive \
+            --exclude cosmian_kms_client \
+            --exclude cosmian_kms_server \
+            --exclude test_kms_server \
+            --exclude cosmian_kms_server_database
+
+      - name: Publishing
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cargo +nightly-2025-03-31 publish --workspace -Z package-workspace --token ${{ secrets.token }} \
+            --exclude cosmian_findex_cli \
+            --exclude cosmian_findex_client \
+            --exclude cosmian_findex_structs \
+            --exclude cosmian_findex_server \
+            --exclude test_findex_server \
+            --exclude cosmian_kms_access \
+            --exclude cosmian_kms_cli \
+            --exclude cosmian_kms_client_utils \
+            --exclude cosmian_kms_crypto \
+            --exclude cosmian_kms_base_hsm \
+            --exclude cosmian_kms_proteccio \
+            --exclude cosmian_kms_utimaco \
+            --exclude cosmian_kms_softhsm2 \
+            --exclude cosmian_kms_interfaces \
+            --exclude cosmian_kms_kmip \
+            --exclude cosmian_kms_kmip-derive \
+            --exclude cosmian_kms_client \
+            --exclude cosmian_kms_server \
+            --exclude test_kms_server \
+            --exclude cosmian_kms_server_database

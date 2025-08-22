@@ -1,0 +1,46 @@
+---
+name: forward proxy
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        required: true
+        type: string
+
+env:
+  OPENSSL_DIR: /usr/local/openssl
+
+jobs:
+  forward-proxy:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ inputs.toolchain }}
+          components: rustfmt, clippy
+
+      - name: Local OpenSSL Install
+        run: |
+          sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
+          sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
+          sudo chown -R $USER ${{ env.OPENSSL_DIR }}
+          bash .github/reusable_scripts/get_openssl_binaries.sh
+        env:
+          OS_NAME: ubuntu_22_04
+
+      - name: Prerequisites
+        run: |
+          set -ex
+          sudo apt install squid
+          sudo cp .github/scripts/squid/passwd /etc/squid/
+          sudo cp .github/scripts/squid/squid.conf /etc/squid/
+          sudo systemctl restart squid
+
+      - name: Forward proxy test
+        run: |
+          cargo +{{ inputs.toolchain }} test --workspace --lib -- --nocapture test_server_version

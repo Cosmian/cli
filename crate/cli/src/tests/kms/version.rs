@@ -18,11 +18,12 @@ pub(crate) fn server_version(cli_conf_path: &str) -> CosmianResult<String> {
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
+    // export KMS_URL=http://host.docker.internal:9998
     let args = vec![
         "--kms-url".to_owned(),
-        std::env::var("KMS_URL").unwrap_or_else(|_| "http://host.docker.internal:9998".to_owned()),
+        std::env::var("KMS_URL").unwrap_or_else(|_| "http://localhost:9998".to_owned()),
         "--proxy-url".to_owned(),
-        "http://localhost:8181".to_owned(),
+        "http://localhost:8888".to_owned(),
         "--proxy-basic-auth-username".to_owned(),
         "myuser".to_owned(),
         "--proxy-basic-auth-password".to_owned(),
@@ -48,7 +49,10 @@ pub(crate) async fn test_server_version_using_forward_proxy() -> CosmianResult<(
     let ctx = start_default_test_kms_server().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
-    server_version(&owner_client_conf_path)?;
+    // Only run this test in GitHub Actions environment
+    if std::env::var("GITHUB_ACTIONS").is_ok() {
+        server_version(&owner_client_conf_path)?;
+    }
 
     Ok(())
 }
