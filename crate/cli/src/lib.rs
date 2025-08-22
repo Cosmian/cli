@@ -31,6 +31,7 @@ pub mod actions;
 pub mod commands;
 pub mod config;
 pub mod error;
+pub mod proxy_config;
 
 pub use commands::{Cli, CliCommands, cosmian_main};
 

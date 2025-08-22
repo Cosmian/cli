@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2025-08-22
+
+### 🚀 Features
+
+- Add support for Oracle TDE with direct HSM/KMS connection (#89)
+- *(Google CSE)* Consume KMS Google Key pair action (#100)
+- Support HTTP forward proxy (#102)
+- Create comprehensive .github/copilot-instructions.md with validated build procedures and OpenSSL 3.2.0 requirements (#94)
+
+### 🐛 Bug Fixes
+
+- RUSTSEC-2025-0047: Update slab dependency from 0.4.10 to 0.4.11 (#92)
+- README.md: remove UI section and correct formatting issues (#96)
+
+### ⚙️ Miscellaneous Tasks
+
+- Fix publish step
+- Skip debug pipeline on tags
+- Fix audit GitHub action (#99)
+
 ## [1.2.0] - 2025-08-08
 
 ### 🚀 Features

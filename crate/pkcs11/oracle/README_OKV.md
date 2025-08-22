@@ -275,10 +275,10 @@ docker exec -it oracle sqlplus C##u1/pwd1@FREE
 
 ```sql
 connect test_db
-create table infos_employes (prenom varchar2(40),  nom varchar2(40),
+create table infos_employees (prenom varchar2(40),  nom varchar2(40),
   address varchar2(40) encrypt using 'AES256',
-  code_postal number(6) encrypt using 'AES256');
-insert into infos_employes values ('Emmanuel','Rami','19 rue Crebillon Nantes','44000');
+  postal_code number(6) encrypt using 'AES256');
+insert into infos_employees values ('Emmanuel','Rami','19 rue Crebillon Nantes','44000');
 ```
 
 Check the encryption on columns:
@@ -291,7 +291,7 @@ select * from dba_encrypted_columns;
 Check in trace that columns are encrypted:
 
 ```sql
-select rowid from infos_employes where NOM='Rami';
+select rowid from infos_employees where NOM='Rami';
 select DBMS_ROWID.ROWID_BLOCK_NUMBER('AAARriAAAAAAAMNAAA') "Block number" from DUAL;
 select DBMS_ROWID.ROWID_BLOCK_NUMBER('AAARq2AAAAAAAMLAAA') "Block number" from DUAL;
 alter system dump datafile 7 block 781;
@@ -328,11 +328,11 @@ Compare with clear table:
 
 ```sql
 connect C##u1
-create table infos_societes (nom varchar2(40),
-  raison varchar2(40),
+create table infos_societies (nom varchar2(40),
+  reason varchar2(40),
   address varchar2(40),
-  code_postal number(6) );
-insert into infos_societes values ('Capdata','SA','9 rue de la porte de Buc Versailles','78000');
+  postal_code number(6) );
+insert into infos_societies values ('Capdata','SA','9 rue de la porte de Buc Versailles','78000');
 select rowid from infos_societes where NOM='Capdata';
 select DBMS_ROWID.ROWID_BLOCK_NUMBER('AAARruAAAAAAAMWAAA') "Block number" from DUAL;
 alter system dump datafile 7 block 790;

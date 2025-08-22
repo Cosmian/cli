@@ -1,7 +1,7 @@
 FROM rust:1.79.0-buster AS builder
 
-LABEL version="1.2.0"
-LABEL name="Cosmian PKCS11 library container"
+LABEL version="1.3.0"
+LABEL name="Cosmian CLI and PKCS11 container"
 
 ENV OPENSSL_DIR=/usr/local/openssl
 
@@ -10,19 +10,19 @@ ARG FIPS=false
 
 WORKDIR /root
 
-COPY . /root/kms
+COPY . /root/cli
 
-WORKDIR /root/kms
+WORKDIR /root/cli
 
 ARG TARGETPLATFORM
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then export ARCHITECTURE=x86_64; elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then export ARCHITECTURE=arm; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then export ARCHITECTURE=arm64; else export ARCHITECTURE=x86_64; fi \
-  && bash /root/reusable_scripts/.github/scripts/get_openssl_binaries.sh
+  && bash /root/cli/.github/reusable_scripts/get_openssl_binaries.sh
 
 # Conditional cargo build based on FIPS argument
 RUN if [ "$FIPS" = "true" ]; then \
-  cargo build -p cosmian_pkcs11 --release --no-default-features --features="fips"; \
+  cargo build -p cosmian_cli -p cosmian_pkcs11 --release --no-default-features --features="fips"; \
   else \
-  cargo build -p cosmian_pkcs11 --release --no-default-features; \
+  cargo build -p cosmian_cli -p cosmian_pkcs11 --release --no-default-features; \
   fi
 
 #
@@ -30,4 +30,5 @@ RUN if [ "$FIPS" = "true" ]; then \
 #
 FROM debian:buster-slim AS kms-server
 
-COPY --from=builder /root/kms/target/release/libcosmian_pkcs11.so        /usr/bin/
+COPY --from=builder /root/cli/target/release/cosmian                  /usr/bin/
+COPY --from=builder /root/cli/target/release/libcosmian_pkcs11.so     /usr/lib/

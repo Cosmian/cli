@@ -10,19 +10,19 @@ on:
       debug_or_release:
         required: true
         type: string
+      platforms:
+        required: true
+        type: string
 
 jobs:
-  cargo-audit:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: EmbarkStudios/cargo-deny-action@v2
-
   cargo-lint:
     uses: Cosmian/reusable_workflows/.github/workflows/clippy.yml@develop
+    with:
+      toolchain: ${{ inputs.toolchain }}
+
+  cargo-deny:
+    uses: Cosmian/reusable_workflows/.github/workflows/cargo-audit.yml@develop
+    name: Security Audit
     with:
       toolchain: ${{ inputs.toolchain }}
 
@@ -32,63 +32,14 @@ jobs:
       toolchain: ${{ inputs.toolchain }}
 
   cargo-publish:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump context for debug
-        uses: crazy-max/ghaction-dump-context@v1
+    uses: ./.github/workflows/cargo_publish.yml
+    secrets:
+      token: ${{ secrets.CRATES_IO }}
 
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Publishing - dry run
-        run: |
-          cargo +nightly publish --dry-run --workspace -Z package-workspace \
-            --exclude cosmian_findex_cli \
-            --exclude cosmian_findex_client \
-            --exclude cosmian_findex_structs \
-            --exclude cosmian_findex_server \
-            --exclude test_findex_server \
-            --exclude cosmian_kms_access \
-            --exclude cosmian_kms_cli \
-            --exclude cosmian_kms_client_utils \
-            --exclude cosmian_kms_crypto \
-            --exclude cosmian_kms_base_hsm \
-            --exclude cosmian_kms_proteccio \
-            --exclude cosmian_kms_utimaco \
-            --exclude cosmian_kms_softhsm2 \
-            --exclude cosmian_kms_interfaces \
-            --exclude cosmian_kms_kmip \
-            --exclude cosmian_kms_kmip-derive \
-            --exclude cosmian_kms_client \
-            --exclude cosmian_kms_server \
-            --exclude test_kms_server \
-            --exclude cosmian_kms_server_database
-
-      - name: Publishing
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          cargo +nightly publish --workspace -Z package-workspace --token ${{ secrets.token }} \
-            --exclude cosmian_findex_cli \
-            --exclude cosmian_findex_client \
-            --exclude cosmian_findex_structs \
-            --exclude cosmian_findex_server \
-            --exclude test_findex_server \
-            --exclude cosmian_kms_access \
-            --exclude cosmian_kms_cli \
-            --exclude cosmian_kms_client_utils \
-            --exclude cosmian_kms_crypto \
-            --exclude cosmian_kms_base_hsm \
-            --exclude cosmian_kms_proteccio \
-            --exclude cosmian_kms_utimaco \
-            --exclude cosmian_kms_softhsm2 \
-            --exclude cosmian_kms_interfaces \
-            --exclude cosmian_kms_kmip \
-            --exclude cosmian_kms_kmip-derive \
-            --exclude cosmian_kms_client \
-            --exclude cosmian_kms_server \
-            --exclude test_kms_server \
-            --exclude cosmian_kms_server_database
+  forward-proxy:
+    uses: ./.github/workflows/forward_proxy.yml
+    with:
+      toolchain: ${{ inputs.toolchain }}
 
   build:
     uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@develop
@@ -97,14 +48,25 @@ jobs:
       toolchain: ${{ inputs.toolchain }}
       debug_or_release: ${{ inputs.debug_or_release }}
 
+  docker-image:
+    name: Build docker image
+    uses: Cosmian/reusable_workflows/.github/workflows/build_docker_image.yml@develop
+    with:
+      prefix: ''
+      registry-image: ghcr.io/cosmian/cli
+      platforms: ${{ inputs.platforms }}
+      fips: false
+
   ##############################################################################
   ### Releases
   ##############################################################################
   release:
     name: release
     needs:
-      - cargo-audit
       - cargo-lint
+      - cargo-deny
+      - cargo-machete
+      - forward-proxy
       - build
     uses: Cosmian/reusable_workflows/.github/workflows/push-artifacts.yml@develop
     with:

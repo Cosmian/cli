@@ -1,6 +1,6 @@
 [package]
 name = "cosmian_cli"
-version = "1.2.0"
+version = "1.3.0"
 authors.workspace = true
 categories = ["security"]
 edition.workspace = true
@@ -31,7 +31,6 @@ non-fips = [
   "cosmian_kms_cli/non-fips",
   "test_kms_server/non-fips",
 ]
-default = ["non-fips"]
 
 [dependencies]
 base64 = { workspace = true }
@@ -67,6 +66,7 @@ assert_cmd = "2.0"
 openssl = { workspace = true }
 predicates = "3.1"
 regex = { version = "1.11", default-features = false }
+reqwest.workspace = true
 tempfile = "3.20"
 test_kms_server = { workspace = true }
 x509-parser = { workspace = true, features = ["verify"] }

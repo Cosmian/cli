@@ -14,19 +14,28 @@ or contact the Cosmian support team on Discord https://discord.com/invite/7kPMNt
 
 `--kms-url <KMS_URL>` The URL of the KMS
 
-`--kms-accept-invalid-certs <KMS_ACCEPT_INVALID_CERTS>` Allow to connect using a self-signed cert or untrusted cert chain
-
-Possible values:  `"true", "false"`
-
 `--kms-print-json <KMS_PRINT_JSON>` Output the KMS JSON KMIP request and response. This is useful to understand JSON POST requests and responses required to programmatically call the KMS on the `/kmip/2_1` endpoint
 
 Possible values:  `"true", "false"`
 
 `--findex-url <FINDEX_URL>` The URL of the Findex server
 
-`--findex-accept-invalid-certs <FINDEX_ACCEPT_INVALID_CERTS>` Allow to connect using a self-signed cert or untrusted cert chain
+`--accept-invalid-certs <ACCEPT_INVALID_CERTS>` Allow to connect using a self-signed cert or untrusted cert chain
 
 Possible values:  `"true", "false"`
+
+`--proxy-url <PROXY_URL>` The proxy URL:
+
+  - e.g., `https://secure.example` for an HTTP proxy
+  - e.g., `socks5://192.168.1.1:9000` for a SOCKS proxy
+
+`--proxy-basic-auth-username <PROXY_BASIC_AUTH_USERNAME>` Set the Proxy-Authorization header username using Basic auth.
+
+`--proxy-basic-auth-password <PROXY_BASIC_AUTH_PASSWORD>` Set the Proxy-Authorization header password using Basic auth.
+
+`--proxy-custom-auth-header <PROXY_CUSTOM_AUTH_HEADER>` Set the Proxy-Authorization header to a specified value.
+
+`--proxy-exclusion-list <PROXY_EXCLUSION_LIST>` The No Proxy exclusion list to this Proxy
 
 
 ### Subcommands
@@ -1564,10 +1573,9 @@ metadata for a user.
 
 `--cse-key-id <CSE_KEY_ID>` CSE key ID to wrap exported user private key
 
-`--issuer-private-key-id [-i] <ISSUER_PRIVATE_KEY_ID>` The issuer private key id
-
 `--subject-name [-s] <SUBJECT_NAME>` When certifying a public key, or generating a keypair,
 the subject name to use.
+For instance: "CN=John Doe,OU=Org Unit,O=Org Name,L=City,ST=State,C=US"
 
 `--rsa-private-key-id [-k] <RSA_PRIVATE_KEY_ID>` The existing private key id of an existing RSA keypair to use (optional - if no ID is provided, a RSA keypair will be created)
 
@@ -1582,9 +1590,31 @@ If the wrapping key is:
 - a RSA key, RSA-OAEP will be used
 - a EC key, ECIES will be used (salsa20poly1305 for X25519)
 
-`--leaf-certificate-extensions [-e] <CERTIFICATE_EXTENSIONS>` Path to a file containing X.509 extensions, defined under a `[v3_ca]` section.
+`--issuer-private-key-id [-i] <ISSUER_PRIVATE_KEY_ID>` The issuer private key id - required when generating a new leaf certificate
+
+`--leaf-certificate-extensions [-e] <LEAF_CERTIFICATE_EXTENSIONS>` Path to a file containing X.509 extensions, defined under a `[v3_ca]` section.
 These extensions will be applied to the generated leaf certificate and must
 comply with Google's S/MIME certificate requirements. For example:
+```text
+[ v3_ca ]
+keyUsage=critical,nonRepudiation,digitalSignature,dataEncipherment,keyEncipherment
+extendedKeyUsage=emailProtection
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer
+subjectAltName=email:john.doe@acme.com
+crlDistributionPoints=URI:https://acme.com/crl.pem
+```
+This parameter is ignored when using an existing leaf certificate.
+
+`--leaf-certificate-id <LEAF_CERTIFICATE_ID>` The ID of an existing leaf certificate in KMS to use instead of generating a new one.
+This certificate must be compatible with the private key being used.
+Cannot be used together with --leaf-certificate-file.
+
+`--leaf-certificate-pkcs12-file <LEAF_CERTIFICATE_PKCS12_FILE>` Path to a local leaf PKCS12 certificate file to use instead of generating a new one.
+This PKCS12 certificate also holds the private key.
+Cannot be used together with --leaf-certificate-id neither --leaf-certificate-extensions.
+
+`--leaf-certificate-pkcs12-password <LEAF_CERTIFICATE_PKCS12_PASSWORD>` The password for the PKCS12 file containing the leaf certificate.
 
 `--dry-run <DRY_RUN>` Dry run mode. If set, the action will not be executed
 

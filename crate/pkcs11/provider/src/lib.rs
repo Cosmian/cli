@@ -77,7 +77,8 @@ pub unsafe extern "C" fn C_GetFunctionList(pp_function_list: CK_FUNCTION_LIST_PT
     initialize_logging("cosmian-pkcs11", Level::from_str(&debug_level).ok(), None);
     // Instantiate a backend with a kms client using the `cosmian.toml` file in the local default directory.
     register_backend(Box::new(backend::CliBackend::instantiate(
-        get_kms_client().expect("failed getting the KMS client from the current configuration"),
+        get_kms_client()
+            .expect("failed instantiating the KMS client from the current configuration"),
     )));
     unsafe {
         // Update the function list with this PKCS#11 entry function
