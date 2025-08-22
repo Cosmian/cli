@@ -43,6 +43,7 @@ pub(crate) fn server_version(cli_conf_path: &str) -> CosmianResult<String> {
     ))
 }
 
+#[ignore = "reason: needs a running squid proxy"]
 #[tokio::test]
 pub(crate) async fn test_server_version_using_forward_proxy() -> CosmianResult<()> {
     log_init(None);
