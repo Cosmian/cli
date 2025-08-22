@@ -42,7 +42,7 @@ jobs:
       toolchain: ${{ inputs.toolchain }}
 
   build:
-    uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@feat/reuse_docker_compose
+    uses: Cosmian/reusable_workflows/.github/workflows/build_all.yml@develop
     secrets: inherit
     with:
       toolchain: ${{ inputs.toolchain }}
