@@ -15,6 +15,11 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2025-03-31
+          components: rustfmt, clippy
+
       - name: Publishing - dry run
         run: |
           cargo +nightly-2025-03-31 publish --dry-run --workspace -Z package-workspace \
