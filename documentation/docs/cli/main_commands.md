@@ -1176,7 +1176,7 @@ Create an elliptic curve key pair
 ### Arguments
 `--curve [-c] <CURVE>` The elliptic curve
 
-Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "x25519", "ed25519", "x448", "ed448"` [default: `"nist-p256"`]
+Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "x25519", "ed25519", "x448", "ed448", "secp256k1", "secp224k1"` [default: `"nist-p256"`]
 
 `--tag [-t] <TAG>` The tag to associate with the master key pair. To specify multiple tags, use the option multiple times
 

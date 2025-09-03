@@ -159,7 +159,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         PORT + 3,
         AuthenticationOptions {
             use_https: true,
-            use_client_cert: true,
+            use_known_ca_list: true,
             ..Default::default()
         },
         None,
@@ -181,7 +181,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
-            use_client_cert: true,
+            use_known_ca_list: true,
             api_token_id: None,
             api_token: None,
             do_not_send_client_certificate: true,
@@ -207,7 +207,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         AuthenticationOptions {
             use_jwt_token: false,
             use_https: true,
-            use_client_cert: true,
+            use_known_ca_list: true,
             api_token_id: Some(api_token_id.clone()),
             api_token: Some(api_token.clone()),
             do_not_send_client_certificate: true,
@@ -270,7 +270,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         PORT + 8,
         AuthenticationOptions {
             use_https: true,
-            use_client_cert: true,
+            use_known_ca_list: true,
             do_not_send_client_certificate: true,
             ..Default::default()
         },
@@ -351,7 +351,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         PORT + 12,
         AuthenticationOptions {
             use_https: true,
-            use_client_cert: true,
+            use_known_ca_list: true,
             api_token_id: Some("my_bad_token_id".to_string()),
             api_token: Some("my_bad_token".to_string()),
             ..Default::default()
@@ -376,7 +376,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
-            use_client_cert: true,
+            use_known_ca_list: true,
             api_token_id: Some("my_bad_token_id".to_string()),
             api_token: Some("my_bad_token".to_string()),
             ..Default::default()
