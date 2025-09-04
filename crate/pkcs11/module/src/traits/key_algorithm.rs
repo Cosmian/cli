@@ -16,6 +16,8 @@ pub enum KeyAlgorithm {
     X25519,
     X448,
     Ed448,
+    Secp224k1,
+    Secp256k1,
 }
 
 impl KeyAlgorithm {
@@ -25,6 +27,8 @@ impl KeyAlgorithm {
             Self::Aes256 => CKK_AES,
             Self::Rsa => CKK_RSA,
             Self::EccP256
+            | Self::Secp224k1
+            | Self::Secp256k1
             | Self::EccP384
             | Self::EccP521
             | Self::Ed448
@@ -50,6 +54,8 @@ impl KeyAlgorithm {
                 | Self::Ed25519
                 | Self::X448
                 | Self::X25519
+                | Self::Secp224k1
+                | Self::Secp256k1
         )
     }
 
@@ -65,6 +71,8 @@ impl KeyAlgorithm {
             Self::X25519 => "1.3.101.110",
             Self::X448 => "1.3.101.111",
             Self::Ed448 => "1.3.101.113",
+            Self::Secp224k1 => "1.3.132.0.32",
+            Self::Secp256k1 => "1.3.132.0.33",
         }
     }
 
@@ -84,6 +92,8 @@ impl KeyAlgorithm {
             "1.3.101.110" => Some(Self::X25519),
             "1.3.101.111" => Some(Self::X448),
             "1.3.101.113" => Some(Self::Ed448),
+            "1.3.132.0.32" => Some(Self::Secp224k1),
+            "1.3.132.0.33" => Some(Self::Secp256k1),
             _ => None,
         }
     }

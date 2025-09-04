@@ -13,10 +13,43 @@ Links:
 - Example of encryption on DB: <https://blog.capdata.fr/index.php/le-chiffrement-oracle-transparent-data-encryption-sur-oracle-19c/>
 
 Install OVK 21.10
+  Warning:
+    Storage must be at least 256Gb
+  Network
+    IP 192.168.1.211 (arbitrary)
+    Gateway 192.168.1.254
+    DNS1 192.168.1.17
+    -> This file /etc/sysconfig/network-scripts/ifcfg-enp0s3 will be overwritten.
 Build libcosmian_pkcs11.so on debian-buster where glibc 2.28 is equal to OVK RHEL system.
 
-Relax SSH and create `cosmian` user in `support` group.
-Add `cosmian` user to sudo's users. (cosmian ALL=(ALL) NOPASSWD: ALL)
+Create `cosmian` user in `support` group.
+  sudo useradd -m -g support cosmian
+  sudo passwd cosmian # Password: Toto123Toto123,
+Add `cosmian` user to sudo's users. (visudo + `cosmian ALL=(ALL) NOPASSWD: ALL`)
+Relax SSH:
+  On SSH server:
+    vi /etc/ssh/sshd_config
+      ClientAliveInterval 0
+    systemctl restart sshd
+  On SSH client:
+    ssh-copy-id -i ~/.ssh/id_rsa.pub cosmian@192.168.1.211
+    # SSH config:
+    # Host okv
+    #     HostName 192.168.1.211
+    #     User cosmian
+    #     IdentityFile ~/.ssh/id_rsa
+Open SSH server port 22
+  iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+  iptables -L -v -n --line-numbers # identify REJECT rule
+  iptables -D INPUT 15
+  services iptables save
+  OR delete REJECT-line manually in file /etc/sysconfig/iptables.save
+
+Installation configuration:
+  Admin user:
+    login: KEY
+    password: e.SdGe4c+ebFPCu.
+    recovery_password: e.SdGe4c+ebFPCu
 
 ```sh
 scp libcosmian_pkcs11.so /usr/local/okv/hsm/generic/

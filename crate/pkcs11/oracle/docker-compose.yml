@@ -17,3 +17,5 @@ services:
       - 9998:9998
     environment:
       RUST_LOG: cosmian_kms_server=trace
+    volumes:
+      - ./cosmian-kms:/cosmian-kms
