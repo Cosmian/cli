@@ -1509,7 +1509,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_cli"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "assert_cmd",
  "base64 0.22.1",
@@ -1533,7 +1533,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_client"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "base64 0.22.1",
  "cosmian_findex 8.0.0",
@@ -1553,7 +1553,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_server"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1589,7 +1589,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_structs"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.2.0",
@@ -1623,7 +1623,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kmip"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "base64 0.22.1",
  "bitflags 2.9.1",
@@ -1643,7 +1643,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_access"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1651,7 +1651,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_base_hsm"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
@@ -1666,7 +1666,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_cli"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1697,7 +1697,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "cosmian_crypto_core 10.2.0",
  "cosmian_http_client",
@@ -1713,7 +1713,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client_utils"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1732,7 +1732,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_crypto"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -1755,7 +1755,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_interfaces"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
@@ -1769,7 +1769,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -1817,7 +1817,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server_database"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "async-trait",
  "cloudproof_findex",
@@ -3589,7 +3589,7 @@ dependencies = [
 
 [[package]]
 name = "kmip-derive"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "quote",
  "syn",
@@ -4614,7 +4614,7 @@ dependencies = [
 
 [[package]]
 name = "proteccio_pkcs11_loader"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -5625,7 +5625,7 @@ dependencies = [
 
 [[package]]
 name = "softhsm2_pkcs11_loader"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -6022,7 +6022,7 @@ dependencies = [
 
 [[package]]
 name = "test_kms_server"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "actix-server",
  "cosmian_kms_client",
@@ -6667,7 +6667,7 @@ checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
 
 [[package]]
 name = "utimaco_pkcs11_loader"
-version = "5.7.1"
+version = "5.8.1"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",

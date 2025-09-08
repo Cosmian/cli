@@ -8,6 +8,8 @@ if [ -z "${DOCKER_IMAGE_NAME}" ]; then
 else
   # Run container to make files copy from it
   # export DOCKER_IMAGE_NAME=ghcr.io/cosmian/cli:1.3.0
+  docker buildx build --progress=plain --platform linux/amd64 -t dll_p11 .
+  export DOCKER_IMAGE_NAME=dll_p11
   docker stop dll_p11 || true
   docker run --platform linux/amd64 --rm --name dll_p11 -d "${DOCKER_IMAGE_NAME}" tail -f /dev/null
   sleep 5

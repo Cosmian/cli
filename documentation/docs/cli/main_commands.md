@@ -496,7 +496,7 @@ Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der"
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
-`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate to use to wrap this key before export
+`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
 `--allow-revoked [-i] <ALLOW_REVOKED>` Allow exporting revoked and destroyed keys.
 The user must be the owner of the key.
@@ -505,10 +505,12 @@ Destroyed keys have their key material removed.
 Possible values:  `"true", "false"` [default: `"false"`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
-By default, the algorithm used is
+The possible wrapping algorithms are
 
-- `NISTKeyWrap` for symmetric keys (a.k.a. RFC 5649)
-- `RsaOaep` for RSA keys
+ - using a symmetric KEK: `nist-key-wrap` (default - a.k.a RFC 5649) and `aes-gcm`
+ - using an RSA KEK: `rsa-oaep` (default - CKM-RSA-OAEP), `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
+
+   and `rsa-pkcs-v15` (CKM-RSA v1.5)
 
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
@@ -1229,7 +1231,7 @@ Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der"
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
-`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate to use to wrap this key before export
+`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
 `--allow-revoked [-i] <ALLOW_REVOKED>` Allow exporting revoked and destroyed keys.
 The user must be the owner of the key.
@@ -1238,10 +1240,12 @@ Destroyed keys have their key material removed.
 Possible values:  `"true", "false"` [default: `"false"`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
-By default, the algorithm used is
+The possible wrapping algorithms are
 
-- `NISTKeyWrap` for symmetric keys (a.k.a. RFC 5649)
-- `RsaOaep` for RSA keys
+ - using a symmetric KEK: `nist-key-wrap` (default - a.k.a RFC 5649) and `aes-gcm`
+ - using an RSA KEK: `rsa-oaep` (default - CKM-RSA-OAEP), `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
+
+   and `rsa-pkcs-v15` (CKM-RSA v1.5)
 
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
@@ -1947,7 +1951,7 @@ Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der"
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
-`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate to use to wrap this key before export
+`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
 `--allow-revoked [-i] <ALLOW_REVOKED>` Allow exporting revoked and destroyed keys.
 The user must be the owner of the key.
@@ -1956,10 +1960,12 @@ Destroyed keys have their key material removed.
 Possible values:  `"true", "false"` [default: `"false"`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
-By default, the algorithm used is
+The possible wrapping algorithms are
 
-- `NISTKeyWrap` for symmetric keys (a.k.a. RFC 5649)
-- `RsaOaep` for RSA keys
+ - using a symmetric KEK: `nist-key-wrap` (default - a.k.a RFC 5649) and `aes-gcm`
+ - using an RSA KEK: `rsa-oaep` (default - CKM-RSA-OAEP), `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
+
+   and `rsa-pkcs-v15` (CKM-RSA v1.5)
 
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
@@ -2303,7 +2309,7 @@ Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der"
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
-`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate to use to wrap this key before export
+`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
 `--allow-revoked [-i] <ALLOW_REVOKED>` Allow exporting revoked and destroyed keys.
 The user must be the owner of the key.
@@ -2312,10 +2318,12 @@ Destroyed keys have their key material removed.
 Possible values:  `"true", "false"` [default: `"false"`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
-By default, the algorithm used is
+The possible wrapping algorithms are
 
-- `NISTKeyWrap` for symmetric keys (a.k.a. RFC 5649)
-- `RsaOaep` for RSA keys
+ - using a symmetric KEK: `nist-key-wrap` (default - a.k.a RFC 5649) and `aes-gcm`
+ - using an RSA KEK: `rsa-oaep` (default - CKM-RSA-OAEP), `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
+
+   and `rsa-pkcs-v15` (CKM-RSA v1.5)
 
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
@@ -2614,7 +2622,7 @@ Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der"
 
 Possible values:  `"true", "false"` [default: `"false"`]
 
-`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate to use to wrap this key before export
+`--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
 `--allow-revoked [-i] <ALLOW_REVOKED>` Allow exporting revoked and destroyed keys.
 The user must be the owner of the key.
@@ -2623,10 +2631,12 @@ Destroyed keys have their key material removed.
 Possible values:  `"true", "false"` [default: `"false"`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
-By default, the algorithm used is
+The possible wrapping algorithms are
 
-- `NISTKeyWrap` for symmetric keys (a.k.a. RFC 5649)
-- `RsaOaep` for RSA keys
+ - using a symmetric KEK: `nist-key-wrap` (default - a.k.a RFC 5649) and `aes-gcm`
+ - using an RSA KEK: `rsa-oaep` (default - CKM-RSA-OAEP), `rsa-aes-key-wrap` (CKM-RSA-AES-KEY-WRP)
+
+   and `rsa-pkcs-v15` (CKM-RSA v1.5)
 
 `--authenticated-additional-data [-d] <AUTHENTICATED_ADDITIONAL_DATA>` Authenticated encryption additional data Only available for AES GCM wrapping
 
