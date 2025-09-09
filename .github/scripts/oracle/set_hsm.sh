@@ -10,13 +10,11 @@ set -ex
 
 rm -f libcosmian_pkcs11.so
 if [ -z "${DOCKER_IMAGE_NAME}" ]; then
-  docker cp dll_p11:/data/target/release/libcosmian_pkcs11.so .
-else
-  # Run container to make files copy from it
-  docker run --rm --name dll_p11 -d "${DOCKER_IMAGE_NAME}" tail -f /dev/null
-  sleep 5
-  docker cp dll_p11:/usr/lib/libcosmian_pkcs11.so .
+    # Run container to make files copy from it
+    docker run --rm --name dll_p11 -d "${DOCKER_IMAGE_NAME}" tail -f /dev/null
+    sleep 5
 fi
+docker cp "${DOCKER_IMAGE_NAME}":/usr/lib/libcosmian_pkcs11.so .
 
 #
 # Copy the configuration file of the Cosmian PKCS#11 library

@@ -43,7 +43,7 @@ Open SSH server port 22
   iptables -L -v -n --line-numbers # identify REJECT rule
   iptables -D INPUT 15
   iptables-save > /etc/sysconfig/iptables
-  services iptables save
+  service iptables save
   OR delete REJECT-line manually in file /etc/sysconfig/iptables.save
 
 Installation configuration:
