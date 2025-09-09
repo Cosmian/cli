@@ -13,7 +13,7 @@ Cosmian provides two deployment modes for Oracle TDE integration:
 
 For enhanced security, **Hardware Security Modules (HSM)** can be integrated with Oracle Key Vault to provide additional protection for these `wallets`. This configuration establishes a [Root-of-Trust (RoT)](https://docs.oracle.com/en/database/oracle/key-vault/18.5/okvhm/getting-started-hsm.html#GUID-DADA7E20-82E2-40C9-A63A-4A159EBD5F09): when an HSM is deployed with Oracle Key Vault, the RoT remains in the HSM. The HSM RoT protects the Transparent Data Encryption (TDE) wallet password, which protects the TDE master key, which in turn protects all the encryption keys, certificates, and other security artifacts managed by the Oracle Key Vault server. Note that the HSM in this RoT usage scenario does not store any customer encryption keys. The customer keys are stored and managed directly by the Oracle Key Vault server.
 
-Using HSM as a RoT  is intended to mitigate attempts to recover keys from an Oracle Key Vault server which has been started in an unauthorized environment.
+Using HSM as a RoT is intended to mitigate attempts to recover keys from an Oracle Key Vault server which has been started in an unauthorized environment.
 Physical loss of an Oracle Key Vault server from a facility is one example of such a scenario.
 
 When an **Oracle Key Vault server** is HSM-enabled, Oracle Key Vault contacts the HSM every five minutes (or whatever you have set the monitoring interval to) to ensure that the Root of Trust key is available and the TDE wallet password can be decrypted.
@@ -63,7 +63,7 @@ For Oracle Database OS, the PKCS#11 library is available here: [cosmian-pkcs11](
 - Copy the configuration of the PKCS#11 provider library to `/usr/local/okv/hsm/generic/cosmian.toml`
 - Override the OKV generic HSM configuration files:
 
-    - `/usr/local/okv/hsm/generic/okv_hsm_env`
+  - `/usr/local/okv/hsm/generic/okv_hsm_env`
 
     ```bash
     COSMIAN_PKCS11_LOGGING_LEVEL="trace"
@@ -71,14 +71,14 @@ For Oracle Database OS, the PKCS#11 library is available here: [cosmian-pkcs11](
     COSMIAN_PKCS11_LOGGING_FOLDER="/var/okv/log/hsm"
     ```
 
-    - `/usr/local/okv/hsm/generic/okv_hsm_conf`
+  - `/usr/local/okv/hsm/generic/okv_hsm_conf`
 
     ```bash
     # Oracle Key Vault HSM vendor configuration file
     # Lines must be shorter than 4096 characters.
 
     # The vendor name, to be displayed on the HSM page on the management console.
-    VENDOR_NAME="cosmian"
+    VENDOR_NAME="Cosmian"
 
     # The location of the PKCS#11 library. This file must be preserved on upgrade.
     PKCS11_LIB_LOC="/usr/local/okv/hsm/generic/libcosmian_pkcs11.so"
@@ -92,10 +92,8 @@ For Oracle Database OS, the PKCS#11 library is available here: [cosmian-pkcs11](
     PRESERVED_FILES=""
     ```
 
-Then you can follow the official [HSM-Enabling in a Standalone Oracle Key Vault Deployment](https://docs.oracle.com/en/database/oracle/key-vault/21.10/okvhm/configuring-hsm-oracle-key-vault1.html#GUID-5645696A-3F19-4CF9-AE79-105569529182).
-
-- At this point, a symmetric key labeled `OKV 18.1 HSM Root Key` has been create in KMS server
-- Create an endpoint with an associated `wallet`
+- At this point, the symmetric key labeled `OKV 18.1 HSM Root Key` has been created in KMS server by Oracle Key Vault.
+- Then you can follow the official [HSM-Enabling in a Standalone Oracle Key Vault Deployment](https://docs.oracle.com/en/database/oracle/key-vault/21.10/okvhm/configuring-hsm-oracle-key-vault1.html#GUID-5645696A-3F19-4CF9-AE79-105569529182).
 
 ## Mode 2: Direct HSM Integration
 

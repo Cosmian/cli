@@ -15,3 +15,4 @@ node_modules/
 **/cosmian-kms/sqlite-data*
 **/sqlite-data.db*
 *.log
+libcosmian_pkcs11.so

@@ -13,10 +13,44 @@ Links:
 - Example of encryption on DB: <https://blog.capdata.fr/index.php/le-chiffrement-oracle-transparent-data-encryption-sur-oracle-19c/>
 
 Install OVK 21.10
+  Warning:
+    Storage must be at least 256Gb
+  Network
+    IP 192.168.1.211 (arbitrary)
+    Gateway 192.168.1.254
+    DNS1 192.168.1.17
+    -> This file /etc/sysconfig/network-scripts/ifcfg-enp0s3 will be overwritten.
 Build libcosmian_pkcs11.so on debian-buster where glibc 2.28 is equal to OVK RHEL system.
 
-Relax SSH and create `cosmian` user in `support` group.
-Add `cosmian` user to sudo's users. (cosmian ALL=(ALL) NOPASSWD: ALL)
+Create `cosmian` user in `support` group.
+  sudo useradd -m -g support cosmian
+  sudo passwd cosmian # Password: Toto123Toto123,
+Add `cosmian` user to sudo's users. (visudo + `cosmian ALL=(ALL) NOPASSWD: ALL`)
+Relax SSH:
+  On SSH server:
+    vi /etc/ssh/sshd_config
+      ClientAliveInterval 0
+    systemctl restart sshd
+  On SSH client:
+    ssh-copy-id -i ~/.ssh/id_rsa.pub cosmian@192.168.1.211
+    # SSH config:
+    # Host okv
+    #     HostName 192.168.1.211
+    #     User cosmian
+    #     IdentityFile ~/.ssh/id_rsa
+Open SSH server port 22
+  iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+  iptables -L -v -n --line-numbers # identify REJECT rule
+  iptables -D INPUT 15
+  iptables-save > /etc/sysconfig/iptables
+  service iptables save
+  OR delete REJECT-line manually in file /etc/sysconfig/iptables.save
+
+Installation configuration:
+  Admin user:
+    login: KEY
+    password: e.SdGe4c+ebFPCu.
+    recovery_password: e.SdGe4c+ebFPCu
 
 ```sh
 scp libcosmian_pkcs11.so /usr/local/okv/hsm/generic/
@@ -190,7 +224,7 @@ ALTER SYSTEM SET TDE_CONFIGURATION="KEYSTORE_CONFIGURATION=OKV" SCOPE=SPFILE SID
 ```
 
 Install okvclient.jar and extract okvclient.
-ENDPOINT_1: enrollment token: ZsSx63DTrudGOiJq
+ENDPOINT_1: enrollment token: 9VG8zmrqbgugUhlX
 
 ```sh
 cd /opt/oracle/keystore
@@ -211,7 +245,7 @@ chown -R oracle:oinstall /etc/ORACLE/KEYSTORES/FREE
 ```
 
 ```sql
-ADMINISTER KEY MANAGEMENT CREATE KEYSTORE IDENTIFIED BY ZsSx63DTrudGOiJq;
+ADMINISTER KEY MANAGEMENT CREATE KEYSTORE IDENTIFIED BY "9VG8zmrqbgugUhlX";
 ```
 
 Open the keystore: make sure okvclient is in the correct path given by WALLET_ROOT
@@ -222,15 +256,15 @@ cp -r /opt/oracle/keystore/* /etc/ORACLE/KEYSTORES/FREE/okv/
 ```
 
 ```sql
-ADMINISTER KEY MANAGEMENT SET KEYSTORE OPEN IDENTIFIED BY ZsSx63DTrudGOiJq;
+ADMINISTER KEY MANAGEMENT SET KEYSTORE OPEN IDENTIFIED BY 9VG8zmrqbgugUhlX;
 # Verify a keystore is open
 column name format a40
 SELECT STATUS FROM V$ENCRYPTION_WALLET;
 select WRL_TYPE,WRL_PARAMETER,STATUS,WALLET_TYPE,WALLET_ORDER,FULLY_BACKED_UP from v$encryption_wallet;
 # Eventually, set auto-login when TDE_CONFIGURATION=OKV|FILE
-ADMINISTER KEY MANAGEMENT CREATE AUTO_LOGIN KEYSTORE FROM KEYSTORE IDENTIFIED BY ZsSx63DTrudGOiJq;
+ADMINISTER KEY MANAGEMENT CREATE AUTO_LOGIN KEYSTORE FROM KEYSTORE IDENTIFIED BY 9VG8zmrqbgugUhlX;
 # Create the master key
-ADMINISTER KEY MANAGEMENT SET KEY IDENTIFIED BY ZsSx63DTrudGOiJq WITH BACKUP;
+ADMINISTER KEY MANAGEMENT SET KEY IDENTIFIED BY 9VG8zmrqbgugUhlX WITH BACKUP;
 # Check keystore:
 select KEY_ID,KEYSTORE_TYPE,CREATOR_DBNAME,ACTIVATION_TIME,KEY_USE,ORIGIN from v$encryption_keys;
 ```
@@ -238,19 +272,19 @@ select KEY_ID,KEYSTORE_TYPE,CREATOR_DBNAME,ACTIVATION_TIME,KEY_USE,ORIGIN from v
 For information:
 
 ```sql
-ADMINISTER KEY MANAGEMENT SET KEYSTORE CLOSE IDENTIFIED BY ZsSx63DTrudGOiJq;
+ADMINISTER KEY MANAGEMENT SET KEYSTORE CLOSE IDENTIFIED BY 9VG8zmrqbgugUhlX;
 ```
 
 ```sql
 administer key management use key '068EDC928F2D5C05F2F723D73045B10618' by <okv-pwd> | external store;
-administer key management use key '06E8C385D1DFC54F25BF929386ADA93E59' IDENTIFIED by ZsSx63DTrudGOiJq | external store;
+administer key management use key '06E8C385D1DFC54F25BF929386ADA93E59' IDENTIFIED by 9VG8zmrqbgugUhlX | external store;
 
 ```
 
 Check the created PKCS12 wallet:
 
 ```sh
-openssl pkcs12 -in /etc/ORACLE/KEYSTORES/FREE/tde/ewallet.p12 -passin pass:"ZsSx63DTrudGOiJq" -info -nodes
+openssl pkcs12 -in /etc/ORACLE/KEYSTORES/FREE/tde/ewallet.p12 -passin pass:"9VG8zmrqbgugUhlX" -info -nodes
 ````
 
 Create a database:

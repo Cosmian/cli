@@ -28,7 +28,7 @@ RUN if [ "$FIPS" = "true" ]; then \
 #
 # KMS server
 #
-FROM debian:buster-slim AS kms-server
+FROM debian:buster-slim AS cli
 
 COPY --from=builder /root/cli/target/release/cosmian                  /usr/bin/
 COPY --from=builder /root/cli/target/release/libcosmian_pkcs11.so     /usr/lib/

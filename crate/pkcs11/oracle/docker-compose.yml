@@ -12,8 +12,10 @@ services:
       COSMIAN_PKCS11_LOGGING_LEVEL: trace
   kms:
     container_name: kms
-    image: ghcr.io/cosmian/kms:5.7.0
+    image: ghcr.io/cosmian/kms:5.8.1
     ports:
       - 9998:9998
     environment:
       RUST_LOG: cosmian_kms_server=trace
+    volumes:
+      - ./cosmian-kms:/cosmian-kms
