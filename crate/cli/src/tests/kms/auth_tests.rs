@@ -65,7 +65,7 @@ fn create_api_token(owner_client_conf_path: &str) -> CosmianResult<(String, Stri
     let api_token = base64::engine::general_purpose::STANDARD.encode(
         read_object_from_json_ttlv_file(&tmp_path.join("api_token"))?
             .key_block()?
-            .symmetric_key_bytes()?,
+            .key_bytes()?,
     );
     trace!("API token created: {api_token}");
     Ok((api_token_id, api_token))
