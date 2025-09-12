@@ -1627,6 +1627,7 @@ version = "5.8.1"
 dependencies = [
  "base64 0.22.1",
  "bitflags 2.9.1",
+ "cosmian_logger 0.5.2",
  "hex",
  "kmip-derive",
  "leb128",
@@ -1655,12 +1656,12 @@ version = "5.8.1"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
+ "cosmian_logger 0.5.2",
  "libloading",
  "lru",
  "pkcs11-sys",
  "rand 0.9.1",
  "thiserror 2.0.12",
- "tracing",
  "zeroize",
 ]
 
@@ -1674,7 +1675,7 @@ dependencies = [
  "cosmian_kmip",
  "cosmian_kms_client",
  "cosmian_kms_crypto",
- "cosmian_logger 0.3.1",
+ "cosmian_logger 0.5.2",
  "der",
  "hex",
  "jwt-simple",
@@ -1688,7 +1689,6 @@ dependencies = [
  "thiserror 2.0.12",
  "time",
  "tokio",
- "tracing",
  "url",
  "uuid",
  "x509-cert",
@@ -1702,12 +1702,12 @@ dependencies = [
  "cosmian_crypto_core 10.2.0",
  "cosmian_http_client",
  "cosmian_kms_client_utils",
+ "cosmian_logger 0.5.2",
  "der",
  "pem",
  "serde",
  "serde_json",
  "thiserror 2.0.12",
- "tracing",
  "url",
 ]
 
@@ -1720,13 +1720,13 @@ dependencies = [
  "cosmian_config_utils 0.3.1",
  "cosmian_kmip",
  "cosmian_kms_access",
+ "cosmian_logger 0.5.2",
  "pem",
  "serde",
  "serde_json",
  "strum",
  "thiserror 2.0.12",
  "time",
- "tracing",
  "zeroize",
 ]
 
@@ -1740,6 +1740,7 @@ dependencies = [
  "cosmian_cover_crypt",
  "cosmian_crypto_core 10.2.0",
  "cosmian_kmip",
+ "cosmian_logger 0.5.2",
  "hex",
  "num-bigint-dig",
  "openssl",
@@ -1759,11 +1760,11 @@ version = "5.8.1"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
+ "cosmian_logger 0.5.2",
  "num-bigint-dig",
  "serde",
  "serde_json",
  "thiserror 2.0.12",
- "tracing",
  "zeroize",
 ]
 
@@ -1787,12 +1788,11 @@ dependencies = [
  "clap",
  "cosmian_kms_access",
  "cosmian_kms_server_database",
- "cosmian_logger 0.3.1",
+ "cosmian_logger 0.5.2",
  "dotenvy",
  "futures",
  "hex",
  "jsonwebtoken",
- "log",
  "num-bigint-dig",
  "openidconnect",
  "openssl",
@@ -1824,6 +1824,7 @@ dependencies = [
  "cosmian_kmip",
  "cosmian_kms_crypto",
  "cosmian_kms_interfaces",
+ "cosmian_logger 0.5.2",
  "hex",
  "lru",
  "num-bigint-dig",
@@ -1835,7 +1836,6 @@ dependencies = [
  "sqlx",
  "thiserror 2.0.12",
  "tokio",
- "tracing",
  "url",
  "uuid",
  "version-compare",
@@ -1865,9 +1865,9 @@ dependencies = [
 
 [[package]]
 name = "cosmian_logger"
-version = "0.3.1"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2c887d6087c95c041dd1c23628844c610f0b177b13fb3f4a51f71532c75298a"
+checksum = "98864d9217aae1780e8186e9689986694cead89fb08606e0b9c5757f7bdd48f9"
 dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
@@ -1876,11 +1876,8 @@ dependencies = [
  "opentelemetry_sdk",
  "syslog-tracing",
  "thiserror 2.0.12",
- "tokio",
- "tonic",
  "tracing",
  "tracing-appender",
- "tracing-core",
  "tracing-opentelemetry",
  "tracing-subscriber",
 ]
@@ -6027,10 +6024,10 @@ dependencies = [
  "actix-server",
  "cosmian_kms_client",
  "cosmian_kms_server",
+ "cosmian_logger 0.5.2",
  "serde_json",
  "tempfile",
  "tokio",
- "tracing",
 ]
 
 [[package]]
