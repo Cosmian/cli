@@ -1509,7 +1509,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_cli"
-version = "0.4.3"
+version = "0.4.5"
 dependencies = [
  "assert_cmd",
  "base64 0.22.1",
@@ -1533,7 +1533,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_client"
-version = "0.4.3"
+version = "0.4.5"
 dependencies = [
  "base64 0.22.1",
  "cosmian_findex 8.0.0",
@@ -1553,7 +1553,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_server"
-version = "0.4.3"
+version = "0.4.5"
 dependencies = [
  "actix-cors",
  "actix-identity",
@@ -1589,7 +1589,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_findex_structs"
-version = "0.4.3"
+version = "0.4.5"
 dependencies = [
  "base64 0.22.1",
  "cosmian_crypto_core 10.2.0",
@@ -1623,7 +1623,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kmip"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "base64 0.22.1",
  "bitflags 2.9.1",
@@ -1644,7 +1644,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_access"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "cosmian_kmip",
  "serde",
@@ -1652,7 +1652,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_base_hsm"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
@@ -1662,12 +1662,13 @@ dependencies = [
  "pkcs11-sys",
  "rand 0.9.1",
  "thiserror 2.0.12",
+ "uuid",
  "zeroize",
 ]
 
 [[package]]
 name = "cosmian_kms_cli"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1697,7 +1698,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "cosmian_crypto_core 10.2.0",
  "cosmian_http_client",
@@ -1713,7 +1714,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_client_utils"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1732,7 +1733,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_crypto"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "aes-gcm-siv",
  "argon2",
@@ -1748,7 +1749,6 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.12",
- "tracing",
  "uuid",
  "x509-parser",
  "zeroize",
@@ -1756,7 +1756,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_interfaces"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "async-trait",
  "cosmian_kmip",
@@ -1770,7 +1770,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -1801,6 +1801,7 @@ dependencies = [
  "reqwest 0.11.27",
  "serde",
  "serde_json",
+ "smartcardhsm_pkcs11_loader",
  "softhsm2_pkcs11_loader",
  "strum",
  "thiserror 2.0.12",
@@ -1817,7 +1818,7 @@ dependencies = [
 
 [[package]]
 name = "cosmian_kms_server_database"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "async-trait",
  "cloudproof_findex",
@@ -3586,7 +3587,7 @@ dependencies = [
 
 [[package]]
 name = "kmip-derive"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "quote",
  "syn",
@@ -4611,7 +4612,7 @@ dependencies = [
 
 [[package]]
 name = "proteccio_pkcs11_loader"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -5574,6 +5575,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "smartcardhsm_pkcs11_loader"
+version = "5.9.0"
+dependencies = [
+ "cosmian_kms_base_hsm",
+ "cosmian_kms_interfaces",
+ "libloading",
+ "pkcs11-sys",
+ "uuid",
+]
+
+[[package]]
 name = "smol"
 version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5622,7 +5634,7 @@ dependencies = [
 
 [[package]]
 name = "softhsm2_pkcs11_loader"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
@@ -6019,7 +6031,7 @@ dependencies = [
 
 [[package]]
 name = "test_kms_server"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "actix-server",
  "cosmian_kms_client",
@@ -6664,7 +6676,7 @@ checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
 
 [[package]]
 name = "utimaco_pkcs11_loader"
-version = "5.8.1"
+version = "5.9.0"
 dependencies = [
  "cosmian_kms_base_hsm",
  "cosmian_kms_interfaces",
