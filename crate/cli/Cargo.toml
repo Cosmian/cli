@@ -26,6 +26,7 @@ test = false
 doctest = false
 
 [features]
+default = ["non-fips"]
 non-fips = [
   "cosmian_findex_cli/non-fips",
   "cosmian_kms_cli/non-fips",
