@@ -190,7 +190,7 @@ pub(crate) fn password_wrap_import_test(
     } else if sub_command == "cc" {
         object.key_block()?.covercrypt_key_bytes()?
     } else {
-        object.key_block()?.symmetric_key_bytes()?
+        object.key_block()?.key_bytes()?
     };
 
     //wrap and unwrap using a password
@@ -234,7 +234,7 @@ pub(crate) fn password_wrap_import_test(
             } else if sub_command == "cc" {
                 unwrapped_object.key_block()?.covercrypt_key_bytes()?
             } else {
-                unwrapped_object.key_block()?.symmetric_key_bytes()?
+                unwrapped_object.key_block()?.key_bytes()?
             },
             key_bytes
         );
@@ -286,7 +286,7 @@ pub(crate) fn password_wrap_import_test(
             } else if sub_command == "cc" {
                 unwrapped_object.key_block()?.covercrypt_key_bytes()?
             } else {
-                unwrapped_object.key_block()?.symmetric_key_bytes()?
+                unwrapped_object.key_block()?.key_bytes()?
             },
             key_bytes
         );

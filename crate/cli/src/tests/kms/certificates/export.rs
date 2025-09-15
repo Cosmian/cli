@@ -51,7 +51,7 @@ async fn test_import_export_p12_25519() {
     log_init(option_env!("RUST_LOG"));
     //load the PKCS#12 file
     let p12_bytes =
-        include_bytes!("../../../../../../test_data/certificates/another_p12/server.p12");
+        include_bytes!("../../../../../../test_data/certificates/another_p12/ed25519.p12");
     // Create a test server
     let ctx = start_default_test_kms_server().await;
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
@@ -63,7 +63,7 @@ async fn test_import_export_p12_25519() {
     let imported_p12_sk = import_certificate(ImportCertificateInput {
         cli_conf_path: &owner_client_conf_path,
         sub_command: "certificates",
-        key_file: "../../test_data/certificates/another_p12/server.p12",
+        key_file: "../../test_data/certificates/another_p12/ed25519.p12",
         format: &CertificateInputFormat::Pkcs12,
         pkcs12_password: Some("secret"),
         certificate_id: Some(Uuid::new_v4().to_string()),

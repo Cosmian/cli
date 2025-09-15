@@ -79,11 +79,10 @@ const PORT: u16 = DEFAULT_KMS_SERVER_PORT + 10; // +10 since there are other KMS
 #[allow(clippy::large_stack_frames)]
 #[tokio::test]
 pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
-    // log_init(Some("error,cosmian_kms_server=info,cosmian_cli=info"));
-    log_init(option_env!("RUST_LOG"));
+    log_init(None);
 
     // delete the temp db dir holding `sqlite-data-auth-tests/kms.db`
-    let _e = fs::remove_dir_all(PathBuf::from("./cosmian-kms")).await;
+    let _e = fs::remove_dir_all(PathBuf::from(format!("/tmp/kms_test_workspace_{PORT}"))).await;
 
     // plaintext no auth
     info!("==> Testing server with no auth");
@@ -203,7 +202,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     );
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 5,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: false,
             use_https: true,
@@ -226,7 +225,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("==> Testing server with both JWT and API token auth - User sends the API token only");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 6,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -287,7 +286,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("==> Testing server with API token auth - missing token (should fail)");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 9,
+        PORT,
         AuthenticationOptions {
             use_https: true,
             api_token_id: Some(api_token_id.clone()),
@@ -327,7 +326,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("==> Testing server with bad API token auth but JWT auth used at first");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 11,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -348,7 +347,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     info!("==> Testing server with bad API token auth but cert auth used at first");
     let ctx = start_test_server_with_options(
         default_db_config.clone(),
-        PORT + 12,
+        PORT,
         AuthenticationOptions {
             use_https: true,
             use_known_ca_list: true,
@@ -372,7 +371,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     );
     let ctx = start_test_server_with_options(
         default_db_config,
-        PORT + 13,
+        PORT,
         AuthenticationOptions {
             use_jwt_token: true,
             use_https: true,
@@ -391,6 +390,7 @@ pub(crate) async fn test_kms_all_authentications() -> CosmianResult<()> {
     ctx.stop_server().await?;
 
     // delete the temp db dir
-    let _e = fs::remove_dir_all(PathBuf::from("./cosmian-kms")).await;
+    let _e = fs::remove_dir_all(PathBuf::from(format!("/tmp/kms_test_workspace_{PORT}"))).await;
+
     Ok(())
 }
