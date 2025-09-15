@@ -37,7 +37,7 @@ impl Pkcs11SymmetricKey {
                 .object
                 .key_block()
                 .map_err(|e| ModuleError::Cryptography(e.to_string()))?
-                .symmetric_key_bytes()
+                .key_bytes()
                 .map_err(|e| ModuleError::Cryptography(e.to_string()))?,
         ));
         let key_size =
