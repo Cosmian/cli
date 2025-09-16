@@ -1,6 +1,6 @@
 [package]
 name = "cosmian_cli"
-version = "1.3.0"
+version = "1.4.0"
 authors.workspace = true
 categories = ["security"]
 edition.workspace = true
@@ -26,6 +26,7 @@ test = false
 doctest = false
 
 [features]
+default = ["non-fips"]
 non-fips = [
   "cosmian_findex_cli/non-fips",
   "cosmian_kms_cli/non-fips",

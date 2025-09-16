@@ -76,14 +76,19 @@ pub trait Backend: Send + Sync {
 
     fn find_certificate(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn Certificate>>>;
     fn find_all_certificates(&self) -> ModuleResult<Vec<Arc<dyn Certificate>>>;
+
     fn find_private_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PrivateKey>>;
-    fn find_public_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>>;
     fn find_all_private_keys(&self) -> ModuleResult<Vec<Arc<dyn PrivateKey>>>;
+
+    fn find_public_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>>;
     fn find_all_public_keys(&self) -> ModuleResult<Vec<Arc<dyn PublicKey>>>;
+
     fn find_symmetric_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn SymmetricKey>>;
     fn find_all_symmetric_keys(&self) -> ModuleResult<Vec<Arc<dyn SymmetricKey>>>;
+
     fn find_data_object(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>>;
     fn find_all_data_objects(&self) -> ModuleResult<Vec<Arc<dyn DataObject>>>;
+
     fn find_all_objects(&self) -> ModuleResult<Vec<Arc<Object>>>;
 
     fn generate_key(

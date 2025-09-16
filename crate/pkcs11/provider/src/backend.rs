@@ -50,6 +50,122 @@ impl CliBackend {
         let algorithm = key_algorithm_from_attributes(attributes)?;
         Ok((key_size, algorithm))
     }
+
+    /// Helper function to create a private key from an ID
+    fn create_private_key_from_id(&self, id: &str) -> Option<Arc<dyn PrivateKey>> {
+        let attributes = get_kms_object_attributes(&self.kms_rest_client, id).ok()?;
+        let (key_size, algorithm) = match Self::get_key_size_and_algorithm(&attributes) {
+            Ok(result) => result,
+            Err(e) => {
+                warn!(
+                    "create_private_key_from_id: unsupported key/algorithm for PrivateKey {id}: \
+                     {e}, skipping"
+                );
+                return None;
+            }
+        };
+        Some(Arc::new(Pkcs11PrivateKey::new(
+            id.to_owned(),
+            algorithm,
+            key_size,
+        )))
+    }
+
+    /// Helper function to create a symmetric key from an ID
+    fn create_symmetric_key_from_id(&self, id: &str) -> Option<Arc<dyn SymmetricKey>> {
+        let attributes = get_kms_object_attributes(&self.kms_rest_client, id).ok()?;
+        let (key_size, algorithm) = match Self::get_key_size_and_algorithm(&attributes) {
+            Ok(result) => result,
+            Err(e) => {
+                warn!(
+                    "create_symmetric_key_from_id: unsupported key/algorithm for SymmetricKey \
+                     {id}: {e}, skipping"
+                );
+                return None;
+            }
+        };
+        Some(Arc::new(Pkcs11SymmetricKey::new(
+            id.to_owned(),
+            algorithm,
+            key_size,
+        )))
+    }
+
+    /// Helper function to create an object from ID and attributes
+    fn create_object_from_attributes(id: &str, attributes: &Attributes) -> Option<Object> {
+        let object_type = attributes.object_type?;
+        match object_type {
+            ObjectType::SymmetricKey => Self::create_symmetric_key_object(id, attributes),
+            ObjectType::PrivateKey => Self::create_private_key_object(id, attributes),
+            ObjectType::PublicKey => Self::create_public_key_object(id, attributes),
+            ObjectType::SecretData => Some(Object::DataObject(Arc::new(Pkcs11DataObject::new(
+                id.to_owned(),
+            )))),
+            other => {
+                warn!(
+                    "create_object_from_attributes: unsupported object type: {other}, skipping \
+                     {id}"
+                );
+                None
+            }
+        }
+    }
+
+    /// Helper to create symmetric key object
+    fn create_symmetric_key_object(id: &str, attributes: &Attributes) -> Option<Object> {
+        let (key_size, key_algorithm) = match Self::get_key_size_and_algorithm(attributes) {
+            Ok(result) => result,
+            Err(e) => {
+                warn!(
+                    "create_symmetric_key_object: unsupported key/algorithm for SymmetricKey \
+                     {id}: {e}, skipping"
+                );
+                return None;
+            }
+        };
+        Some(Object::SymmetricKey(Arc::new(Pkcs11SymmetricKey::new(
+            id.to_owned(),
+            key_algorithm,
+            key_size,
+        ))))
+    }
+
+    /// Helper to create private key object
+    fn create_private_key_object(id: &str, attributes: &Attributes) -> Option<Object> {
+        let (key_size, key_algorithm) = match Self::get_key_size_and_algorithm(attributes) {
+            Ok(result) => result,
+            Err(e) => {
+                warn!(
+                    "create_private_key_object: unsupported key/algorithm for PrivateKey {id}: \
+                     {e}, skipping"
+                );
+                return None;
+            }
+        };
+        Some(Object::PrivateKey(Arc::new(Pkcs11PrivateKey::new(
+            id.to_owned(),
+            key_algorithm,
+            key_size,
+        ))))
+    }
+
+    /// Helper to create public key object
+    fn create_public_key_object(id: &str, attributes: &Attributes) -> Option<Object> {
+        let (_key_size, key_algorithm) = match Self::get_key_size_and_algorithm(attributes) {
+            Ok(result) => result,
+            Err(e) => {
+                warn!(
+                    "create_public_key_object: unsupported key/algorithm for PublicKey {id}: {e}, \
+                     skipping"
+                );
+                return None;
+            }
+        };
+        Some(Object::PublicKey(Arc::new(Pkcs11PublicKey::new(
+            id.to_owned(),
+            key_algorithm,
+        ))))
+    }
 }
 
 impl Backend for CliBackend {
@@ -126,13 +242,6 @@ impl Backend for CliBackend {
         Ok(Arc::new(Pkcs11PrivateKey::try_from_kms_object(kms_object)?))
     }
 
-    fn find_public_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>> {
-        trace!("find_public_key: {:?}", query);
-        Err(ModuleError::Backend(Box::new(pkcs11_error!(
-            "find_public_key: not implemented"
-        ))))
-    }
-
     fn find_all_private_keys(&self) -> ModuleResult<Vec<Arc<dyn PrivateKey>>> {
         trace!("find_all_private_keys");
         let disk_encryption_tag = std::env::var("COSMIAN_PKCS11_DISK_ENCRYPTION_TAG")
@@ -143,29 +252,24 @@ impl Backend for CliBackend {
             &[disk_encryption_tag, "_sk".to_owned()],
         )?;
         for id in ids {
-            let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let key_size = usize::try_from(attributes.cryptographic_length.ok_or(
-                ModuleError::Cryptography("find_all_private_keys: missing key size".to_owned()),
-            )?)?;
-            let sk: Arc<dyn PrivateKey> = Arc::new(Pkcs11PrivateKey::new(
-                id,
-                key_algorithm_from_attributes(&attributes)?,
-                key_size,
-            ));
-            private_keys.push(sk);
+            if let Some(private_key) = self.create_private_key_from_id(&id) {
+                private_keys.push(private_key);
+            }
         }
 
         Ok(private_keys)
     }
 
+    fn find_public_key(&self, query: SearchOptions) -> ModuleResult<Arc<dyn PublicKey>> {
+        trace!("find_public_key: {:?}", query);
+        Err(ModuleError::Backend(Box::new(pkcs11_error!(
+            "find_public_key: not implemented"
+        ))))
+    }
+
     fn find_all_public_keys(&self) -> ModuleResult<Vec<Arc<dyn PublicKey>>> {
         warn!("find_all_public_keys not implemented");
         Ok(vec![])
-    }
-
-    fn find_data_object(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>> {
-        warn!("find_data_object: {:?}, not implemented", query);
-        Ok(None)
     }
 
     fn find_all_data_objects(&self) -> ModuleResult<Vec<Arc<dyn DataObject>>> {
@@ -213,69 +317,30 @@ impl Backend for CliBackend {
         let kms_ids = locate_kms_objects(&self.kms_rest_client, &["_kk".to_owned()])?;
         let mut symmetric_keys = Vec::with_capacity(kms_ids.len());
 
-        kms_ids.into_iter().try_for_each(|id| -> ModuleResult<_> {
-            let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let key_size = usize::try_from(attributes.cryptographic_length.ok_or(
-                ModuleError::Cryptography("find_all_symmetric_keys: missing key size".to_owned()),
-            )?)?;
-
-            let sk: Arc<dyn SymmetricKey> = Arc::new(Pkcs11SymmetricKey::new(
-                id,
-                key_algorithm_from_attributes(&attributes)?,
-                key_size,
-            ));
-            symmetric_keys.push(sk);
-            Ok(())
-        })?;
+        for id in kms_ids {
+            if let Some(symmetric_key) = self.create_symmetric_key_from_id(&id) {
+                symmetric_keys.push(symmetric_key);
+            }
+        }
 
         Ok(symmetric_keys)
     }
 
-    #[expect(clippy::cognitive_complexity)]
+    fn find_data_object(&self, query: SearchOptions) -> ModuleResult<Option<Arc<dyn DataObject>>> {
+        warn!("find_data_object: {:?}, not implemented", query);
+        Ok(None)
+    }
+
     fn find_all_objects(&self) -> ModuleResult<Vec<Arc<Object>>> {
         trace!("find_all_objects: entering");
         let kms_ids = locate_kms_objects(&self.kms_rest_client, &[])?;
         let mut objects = Vec::with_capacity(kms_ids.len());
         for id in kms_ids {
-            let attributes = get_kms_object_attributes(&self.kms_rest_client, &id)?;
-            let object = if let Some(object_type) = attributes.object_type {
-                match object_type {
-                    ObjectType::SymmetricKey => {
-                        let (key_size, key_algorithm) =
-                            Self::get_key_size_and_algorithm(&attributes)?;
-                        Object::SymmetricKey(Arc::new(Pkcs11SymmetricKey::new(
-                            id,
-                            key_algorithm,
-                            key_size,
-                        )))
-                    }
-                    ObjectType::PrivateKey => {
-                        let (key_size, key_algorithm) =
-                            Self::get_key_size_and_algorithm(&attributes)?;
-                        Object::PrivateKey(Arc::new(Pkcs11PrivateKey::new(
-                            id,
-                            key_algorithm,
-                            key_size,
-                        )))
-                    }
-                    ObjectType::PublicKey => {
-                        let (_key_size, key_algorithm) =
-                            Self::get_key_size_and_algorithm(&attributes)?;
-                        Object::PublicKey(Arc::new(Pkcs11PublicKey::new(id, key_algorithm)))
-                    }
-                    ObjectType::SecretData => {
-                        Object::DataObject(Arc::new(Pkcs11DataObject::new(id)))
-                    }
-                    other => {
-                        warn!("find_all_objects: unsupported object type: {other}, skipping {id}");
-                        continue;
-                    }
+            if let Ok(attributes) = get_kms_object_attributes(&self.kms_rest_client, &id) {
+                if let Some(object) = Self::create_object_from_attributes(&id, &attributes) {
+                    objects.push(Arc::new(object));
                 }
-            } else {
-                warn!("find_all_objects: missing object type: skipping {id}");
-                continue;
-            };
-            objects.push(Arc::new(object));
+            }
         }
 
         trace!("find_all_objects: found {} keys", objects.len());

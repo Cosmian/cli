@@ -536,11 +536,12 @@ pub(crate) fn key_algorithm_from_attributes(attributes: &Attributes) -> Pkcs11Re
                 RecommendedCurve::CURVEED448 => KeyAlgorithm::Ed448,
                 RecommendedCurve::CURVE25519 => KeyAlgorithm::X25519,
                 RecommendedCurve::CURVEED25519 => KeyAlgorithm::Ed25519,
+                RecommendedCurve::SECP224K1 => KeyAlgorithm::Secp224k1,
+                RecommendedCurve::SECP256K1 => KeyAlgorithm::Secp256k1,
                 _ => {
-                    error!("Unsupported curve for EC key");
-                    return Err(Pkcs11Error::Default(
-                        "unsupported curve for EC key".to_owned(),
-                    ));
+                    return Err(Pkcs11Error::Default(format!(
+                        "unsupported curve for EC key: {curve}"
+                    )));
                 }
             }
         }

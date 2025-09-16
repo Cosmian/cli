@@ -200,6 +200,8 @@ impl Object {
                             .ok()
                     }
                     KeyAlgorithm::EccP256
+                    | KeyAlgorithm::Secp224k1
+                    | KeyAlgorithm::Secp256k1
                     | KeyAlgorithm::Aes256
                     | KeyAlgorithm::EccP384
                     | KeyAlgorithm::EccP521

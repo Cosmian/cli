@@ -2,7 +2,7 @@
 services:
   oracle:
     container_name: oracle
-    image: container-registry.oracle.com/database/free:latest
+    image: container-registry.oracle.com/database/free:23.9.0.0-lite
     ports:
       - 1521:1521
     environment:
@@ -12,8 +12,10 @@ services:
       COSMIAN_PKCS11_LOGGING_LEVEL: trace
   kms:
     container_name: kms
-    image: ghcr.io/cosmian/kms:5.7.0
+    image: ghcr.io/cosmian/kms:5.8.1
     ports:
       - 9998:9998
     environment:
       RUST_LOG: cosmian_kms_server=trace
+    volumes:
+      - ./cosmian-kms:/cosmian-kms

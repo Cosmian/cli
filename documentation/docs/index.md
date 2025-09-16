@@ -27,7 +27,7 @@ By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic
 !!! info "Download cosmian"
 
     Please download the latest versions for your Operating System from
-    the [Cosmian public packages repository](https://package.cosmian.com/cli/1.3.0/)
+    the [Cosmian public packages repository](https://package.cosmian.com/cli/1.4.0/)
     See below for installation instructions.
 
 ## Version correspondence
@@ -38,6 +38,7 @@ By leveraging Cosmian CLI, users can seamlessly integrate advanced cryptographic
 
 | CLI version | KMS version      | Findex server version |
 | ----------- | ---------------- | --------------------- |
+| 1.4.0       | 5.9.*            | 0.4.*                 |
 | 1.3.0       | 5.7.*            | 0.4.*                 |
 | 1.2.0       | 5.6.*            | 0.4.*                 |
 | 1.1.0       | 5.6.*            | 0.3.0                 |
