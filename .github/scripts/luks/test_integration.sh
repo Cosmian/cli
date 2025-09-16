@@ -75,18 +75,6 @@ check_ubuntu_version() {
     fi
 }
 
-# Check if systemd-cryptenroll supports p11-kit
-check_systemd_p11kit_support() {
-    log "Checking systemd-cryptenroll p11-kit support..."
-    if systemd-cryptenroll --help | grep -q "+P11KIT"; then
-        log "systemd-cryptenroll has p11-kit support - proceeding"
-    else
-        error "systemd-cryptenroll does not have p11-kit support"
-        systemd-cryptenroll --version
-        exit 1
-    fi
-}
-
 # Install required packages
 check_packages() {
     log "Verifying package installation..."
@@ -284,7 +272,6 @@ main() {
     log "=================================================="
 
     check_ubuntu_version
-    check_systemd_p11kit_support
     check_packages
     setup_pkcs11_config
     setup_kms_config

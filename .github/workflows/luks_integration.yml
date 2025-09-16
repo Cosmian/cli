@@ -108,7 +108,7 @@ jobs:
       - name: Verify systemd-cryptenroll p11-kit support
         run: |
           systemd-cryptenroll --version
-          if ! systemd-cryptenroll --help | grep -q "+P11KIT"; then
+          if ! systemd-cryptenroll --version | grep -q "+P11KIT"; then
             echo "ERROR: systemd-cryptenroll does not have p11-kit support"
             exit 1
           fi
