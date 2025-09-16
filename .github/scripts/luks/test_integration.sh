@@ -113,7 +113,6 @@ EOF
     sudo cp ./libcosmian_pkcs11.so /usr/local/lib/
     sudo chmod 755 /usr/local/lib/libcosmian_pkcs11.so
     sudo chown -R "$USER": /var/log
-    sudo chmod 755 /var/log/cosmian-pkcs11.log
 
     # Create module configuration
     sudo tee /etc/pkcs11/modules/cosmian_pkcs11.module > /dev/null <<EOF
