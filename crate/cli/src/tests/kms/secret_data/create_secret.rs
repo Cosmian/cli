@@ -1,6 +1,14 @@
-use std::{collections::HashSet, process::Command};
+use std::process::Command;
 
 use assert_cmd::prelude::*;
+use cosmian_kms_cli::{
+    actions::kms::{
+        secret_data::create_secret::CreateSecretDataAction,
+        symmetric::keys::create_key::CreateKeyAction,
+    },
+    reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
+};
+use cosmian_logger::info;
 use test_kms_server::start_default_test_kms_server;
 
 use crate::{
@@ -10,38 +18,40 @@ use crate::{
         PROG_NAME,
         kms::{
             KMS_SUBCOMMAND,
+            symmetric::create_key::create_symmetric_key,
             utils::{extract_uids::extract_unique_identifier, recover_cmd_logs},
         },
         save_kms_cli_config,
     },
 };
 
-#[derive(Default)]
-pub(crate) struct SecretDataOptions {
-    pub(crate) tags: HashSet<String>,
-    pub(crate) sensitive: bool,
-    pub(crate) key_id: Option<String>,
-}
-
 pub(crate) fn create_secret_data(
     cli_conf_path: &str,
-    options: &SecretDataOptions,
+    action: &CreateSecretDataAction,
 ) -> CosmianResult<String> {
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
     let mut args = vec!["secret-data", "create"];
 
+    if let Some(secret_value) = action.secret_value.as_ref() {
+        args.push("--value");
+        args.push(secret_value);
+    }
     // add tags
-    for tag in &options.tags {
+    for tag in &action.tags {
         args.push("--tag");
         args.push(tag);
     }
-    if options.sensitive {
+    if action.sensitive {
         args.push("--sensitive");
     }
-    if let Some(key_id) = options.key_id.as_ref() {
-        args.push(key_id);
+    if let Some(wrapping_key_id) = action.wrapping_key_id.as_ref() {
+        args.push("--wrapping-key-id");
+        args.push(wrapping_key_id);
+    }
+    if let Some(secret_id) = action.secret_id.as_ref() {
+        args.push(secret_id);
     }
     cmd.arg(KMS_SUBCOMMAND).args(args);
 
@@ -67,20 +77,57 @@ pub(crate) async fn test_secret_data() -> CosmianResult<()> {
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
     create_secret_data(
         &owner_client_conf_path,
-        &SecretDataOptions {
-            tags: HashSet::from_iter(vec!["tag1".to_owned(), "tag2".to_owned()]),
+        &CreateSecretDataAction {
+            tags: vec!["tag1".to_owned(), "tag2".to_owned()],
             ..Default::default()
         },
     )?;
 
     let created_id = create_secret_data(
         &owner_client_conf_path,
-        &SecretDataOptions {
-            key_id: Some("secret_id".to_owned()),
-            tags: HashSet::from_iter(vec!["tag1".to_owned(), "tag2".to_owned()]),
+        &CreateSecretDataAction {
+            secret_id: Some("secret_id".to_owned()),
+            tags: vec!["tag1".to_owned(), "tag2".to_owned()],
             ..Default::default()
         },
     )?;
     assert_eq!(created_id, "secret_id".to_owned());
+    Ok(())
+}
+
+#[tokio::test]
+pub(crate) async fn test_secret_data_with_wrapping() -> CosmianResult<()> {
+    let ctx = start_default_test_kms_server().await;
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
+
+    // First create a symmetric key for wrapping
+    let wrapping_key_id = create_symmetric_key(
+        &owner_client_conf_path,
+        CreateKeyAction {
+            number_of_bits: Some(256),
+            algorithm: SymmetricAlgorithm::Aes,
+            tags: vec!["wrapping_key_tag".to_owned()],
+            ..Default::default()
+        },
+    )?;
+
+    // Now create a SecretData object with the wrapping key
+    let secret_data_id = create_secret_data(
+        &owner_client_conf_path,
+        &CreateSecretDataAction {
+            secret_id: Some("wrapped_secret_data".to_owned()),
+            tags: vec!["wrapped_secret".to_owned()],
+            wrapping_key_id: Some(wrapping_key_id),
+            ..Default::default()
+        },
+    )?;
+
+    assert_eq!(secret_data_id, "wrapped_secret_data".to_owned());
+
+    // Verify that the secret data was created successfully
+    // The fact that create_secret_data returned successfully means
+    // the server accepted the wrapping_key_id parameter and processed it
+    info!("Successfully created SecretData with wrapping key: {secret_data_id}");
+
     Ok(())
 }

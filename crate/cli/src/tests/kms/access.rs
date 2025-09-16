@@ -177,7 +177,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
 
     // the owner should have access
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
         key_file: "/tmp/output.json".to_owned(),
@@ -196,7 +196,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
     // the user should not be able to export
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: user_client_conf_path.to_string(),
+            cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
             key_id: key_id.clone(),
             key_file: "/tmp/output.json".to_owned(),
@@ -233,7 +233,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
     // the user should still not be able to export
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: user_client_conf_path.to_string(),
+            cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
             key_id: key_id.clone(),
             key_file: "/tmp/output.json".to_owned(),
@@ -267,7 +267,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
     // switch to user
     // the user should now be able to export
     export_key(ExportKeyParams {
-        cli_conf_path: user_client_conf_path.to_string(),
+        cli_conf_path: user_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
         key_file: "/tmp/output.json".to_owned(),
@@ -386,7 +386,7 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
     // switch to user
     // the user should now be able to export
     export_key(ExportKeyParams {
-        cli_conf_path: user_client_conf_path.to_string(),
+        cli_conf_path: user_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
         key_file: "/tmp/output.json".to_owned(),
@@ -561,7 +561,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
 
     // the owner should have access
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
         key_file: "/tmp/output.json".to_owned(),
@@ -580,7 +580,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
     // the user should not be able to export
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: user_client_conf_path.to_string(),
+            cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
             key_id: key_id.clone(),
             key_file: "/tmp/output.json".to_owned(),
@@ -613,7 +613,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
     // the user should still not be able to export
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: user_client_conf_path.to_string(),
+            cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
             key_id: key_id.clone(),
             key_file: "/tmp/output.json".to_owned(),
@@ -642,7 +642,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
     // switch to user
     // the user should now be able to export
     export_key(ExportKeyParams {
-        cli_conf_path: user_client_conf_path.to_string(),
+        cli_conf_path: user_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
         key_file: "/tmp/output.json".to_owned(),

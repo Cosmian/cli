@@ -137,7 +137,7 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
     let public_key_path = format!("{}", tmp_path.join("public_key.json").display());
 
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "cc".to_owned(),
         key_id: master_public_key_id.clone(),
         key_file: public_key_path.clone(),
@@ -147,7 +147,7 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
     // reimporting the same key  with the same id should fail
     assert!(
         import_key(ImportKeyParams {
-            cli_conf_path: owner_client_conf_path.to_string(),
+            cli_conf_path: owner_client_conf_path.clone(),
             sub_command: "cc".to_string(),
             key_file: public_key_path.clone(),
             key_id: Some(master_public_key_id.clone()),

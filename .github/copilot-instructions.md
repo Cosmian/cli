@@ -256,7 +256,7 @@ rustup component add clippy rustfmt
 ### Configuration Files
 
 - Cargo workspace: `Cargo.toml`
-- Rust toolchain: `rust-toolchain.toml` (nightly-2025-03-31)
+- Rust toolchain: `rust-toolchain.toml` (nightly-2025-09-15)
 - Formatting config: `.rustfmt.toml`
 - Docker services: `docker-compose.yml`
 

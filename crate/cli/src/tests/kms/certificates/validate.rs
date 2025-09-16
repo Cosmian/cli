@@ -83,7 +83,7 @@ async fn import_revoked_certificate_encrypt(curve_name: &str) -> CosmianResult<(
 }
 
 #[tokio::test]
-#[ignore]
+#[ignore = "To be fixed"]
 async fn test_import_revoked_certificate_encrypt_prime256() -> CosmianResult<()> {
     import_revoked_certificate_encrypt("prime256v1").await
 }

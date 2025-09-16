@@ -126,7 +126,7 @@ impl Session {
             self.load_find_context_by_class(attributes, search_class)
         } else {
             let label = attributes.get_label()?;
-            let label = Session::map_oracle_tde_security_to_mk(&label)?;
+            let label = Self::map_oracle_tde_security_to_mk(&label)?;
             let find_ctx = OBJECTS_STORE.read()?;
             debug!(
                 "load_find_context: loading for label: {label:?} and attributes: {attributes:?}"

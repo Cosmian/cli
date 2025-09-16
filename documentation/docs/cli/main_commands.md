@@ -426,11 +426,11 @@ A size of 1 does not use the `BulkData` API
 
 `--wrapped-key [-w] <WRAPPED_KEY>` Use a wrapped key (by a 4096 RSA key) to encrypt the symmetric key
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--verbose [-v] <VERBOSE>` Display batch results details
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 
 
@@ -502,7 +502,7 @@ IDs.
 
 `--sensitive <SENSITIVE>` Sensitive: if set, the private key will not be exportable
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
 If the wrapping key is:
@@ -533,7 +533,7 @@ Create a new user secret key for an access policy, and index it under some
 
 `--sensitive <SENSITIVE>` Sensitive: if set, the key will not be exportable
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
 If the wrapping key is:
@@ -572,11 +572,11 @@ Export a key or secret data from the KMS
       - wrapped keys
       - secret data
 
-Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `json-ttlv`]
 
 `--unwrap [-u] <UNWRAP>` Unwrap the key if it is wrapped before export
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
@@ -584,7 +584,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 The user must be the owner of the key.
 Destroyed keys have their key material removed.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
 The possible wrapping algorithms are
@@ -618,7 +618,7 @@ Import a secret data or a key in the KMS.
 
 `--key-format [-f] <KEY_FORMAT>` The format of the key
 
-Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `json-ttlv`]
 
 `--public-key-id [-p] <PUBLIC_KEY_ID>` For a private key: the corresponding KMS public key ID, if any
 
@@ -628,11 +628,11 @@ Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8
 
 `--unwrap [-u] <UNWRAP>` In the case of a JSON TTLV key, unwrap the key if it is wrapped before storing it
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--replace [-r] <REPLACE_EXISTING>` Replace an existing key under the same ID
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--tag [-t] <TAG>` The tag to associate with the key. To specify multiple tags, use the option multiple times
 
@@ -733,7 +733,7 @@ If not specified, the key will be destroyed
 but its metadata will still be available in the database.
 Please note that the KMIP specification does not support the removal of objects.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 
 
@@ -826,7 +826,7 @@ Add an attribute to the access structure of an existing private master key.
 
 `--hybridized <HYBRIDIZED>` Hybridize this qualified attribute
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--key-id [-k] <SECRET_KEY_ID>` The master secret key unique identifier stored in the KMS. If not specified, tags should be specified
 
@@ -989,7 +989,7 @@ Issue or renew a X509 certificate
 
 `--certificate-signing-request-format [-f] <CERTIFICATE_SIGNING_REQUEST_FORMAT>` The format of the certificate signing request
 
-Possible values:  `"pem", "der"` [default: `"pem"`]
+Possible values:  `"pem", "der"` [default: `pem`]
 
 `--public-key-id-to-certify [-p] <PUBLIC_KEY_ID_TO_CERTIFY>` The id of a public key to certify
 
@@ -1004,7 +1004,7 @@ the subject name to use.
 
 `--algorithm [-a] <ALGORITHM>` The algorithm to use for the keypair generation
 
-Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "ed25519", "ed448", "rsa1024", "rsa2048", "rsa3072", "rsa4096"` [default: `"rsa4096"`]
+Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "ed25519", "ed448", "rsa1024", "rsa2048", "rsa3072", "rsa4096"` [default: `rsa4096`]
 
 `--issuer-private-key-id [-k] <ISSUER_PRIVATE_KEY_ID>` The unique identifier of the private key of the issuer. A certificate must be linked to that private key if no issuer certificate id is provided
 
@@ -1095,7 +1095,7 @@ To specify multiple tags, use the option multiple times.
 
 `--format [-f] <OUTPUT_FORMAT>` Export the certificate in the selected format
 
-Possible values:  `"json-ttlv", "pem", "pkcs12", "pkcs12-legacy", "pkcs7"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "pem", "pkcs12", "pkcs12-legacy", "pkcs7"` [default: `json-ttlv`]
 
 `--pkcs12-password [-p] <PKCS12_PASSWORD>` Password to use to protect the PKCS#12 file
 
@@ -1103,7 +1103,7 @@ Possible values:  `"json-ttlv", "pem", "pkcs12", "pkcs12-legacy", "pkcs7"` [defa
 The user must be the owner of the certificate.
 Destroyed objects have their key material removed.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 
 
@@ -1131,7 +1131,7 @@ When importing a PKCS12, the unique id will be that of the private key.
 
 `--format [-f] <INPUT_FORMAT>` Import the certificate in the selected format
 
-Possible values:  `"json-ttlv", "pem", "der", "chain", "pkcs12", "ccadb"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "pem", "der", "chain", "pkcs12", "ccadb"` [default: `json-ttlv`]
 
 `--private-key-id [-k] <PRIVATE_KEY_ID>` The corresponding private key id if any. Ignored for PKCS12 and CCADB formats
 
@@ -1143,7 +1143,7 @@ Possible values:  `"json-ttlv", "pem", "der", "chain", "pkcs12", "ccadb"` [defau
 
 `--replace [-r] <REPLACE_EXISTING>` Replace an existing certificate under the same id
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--tag [-t] <TAG>` The tag to associate with the certificate. To specify multiple tags, use the option multiple times
 
@@ -1189,7 +1189,7 @@ If not specified, the certificate will be destroyed
 but its metadata will still be available in the database.
 Please note that the KMIP specification does not support the removal of objects.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 
 
@@ -1263,7 +1263,7 @@ Create an elliptic curve key pair
 ### Arguments
 `--curve [-c] <CURVE>` The elliptic curve
 
-Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "x25519", "ed25519", "x448", "ed448", "secp256k1", "secp224k1"` [default: `"nist-p256"`]
+Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p521", "x25519", "ed25519", "x448", "ed448", "secp256k1", "secp224k1"` [default: `nist-p256`]
 
 `--tag [-t] <TAG>` The tag to associate with the master key pair. To specify multiple tags, use the option multiple times
 
@@ -1271,7 +1271,7 @@ Possible values:  `"nist-p192", "nist-p224", "nist-p256", "nist-p384", "nist-p52
 
 `--sensitive <SENSITIVE>` Sensitive: if set, the key will not be exportable
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
 If the wrapping key is:
@@ -1310,11 +1310,11 @@ Export a key or secret data from the KMS
       - wrapped keys
       - secret data
 
-Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `json-ttlv`]
 
 `--unwrap [-u] <UNWRAP>` Unwrap the key if it is wrapped before export
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
@@ -1322,7 +1322,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 The user must be the owner of the key.
 Destroyed keys have their key material removed.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
 The possible wrapping algorithms are
@@ -1356,7 +1356,7 @@ Import a secret data or a key in the KMS.
 
 `--key-format [-f] <KEY_FORMAT>` The format of the key
 
-Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `json-ttlv`]
 
 `--public-key-id [-p] <PUBLIC_KEY_ID>` For a private key: the corresponding KMS public key ID, if any
 
@@ -1366,11 +1366,11 @@ Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8
 
 `--unwrap [-u] <UNWRAP>` In the case of a JSON TTLV key, unwrap the key if it is wrapped before storing it
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--replace [-r] <REPLACE_EXISTING>` Replace an existing key under the same ID
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--tag [-t] <TAG>` The tag to associate with the key. To specify multiple tags, use the option multiple times
 
@@ -1471,7 +1471,7 @@ If not specified, the key will be destroyed
 but its metadata will still be available in the database.
 Please note that the KMIP specification does not support the removal of objects.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 
 
@@ -1673,7 +1673,7 @@ For instance: "CN=John Doe,OU=Org Unit,O=Org Name,L=City,ST=State,C=US"
 
 `--sensitive <SENSITIVE>` Sensitive: if set, the key will not be exportable
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
 If the wrapping key is:
@@ -1710,7 +1710,7 @@ Cannot be used together with --leaf-certificate-id neither --leaf-certificate-ex
 
 `--dry-run <DRY_RUN>` Dry run mode. If set, the action will not be executed
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 
 
@@ -1994,7 +1994,7 @@ Create a new RSA key pair
 
 `--sensitive <SENSITIVE>` Sensitive: if set, the private key will not be exportable
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap the keypair with.
 If the wrapping key is:
@@ -2033,11 +2033,11 @@ Export a key or secret data from the KMS
       - wrapped keys
       - secret data
 
-Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `json-ttlv`]
 
 `--unwrap [-u] <UNWRAP>` Unwrap the key if it is wrapped before export
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
@@ -2045,7 +2045,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 The user must be the owner of the key.
 Destroyed keys have their key material removed.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
 The possible wrapping algorithms are
@@ -2079,7 +2079,7 @@ Import a secret data or a key in the KMS.
 
 `--key-format [-f] <KEY_FORMAT>` The format of the key
 
-Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `json-ttlv`]
 
 `--public-key-id [-p] <PUBLIC_KEY_ID>` For a private key: the corresponding KMS public key ID, if any
 
@@ -2089,11 +2089,11 @@ Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8
 
 `--unwrap [-u] <UNWRAP>` In the case of a JSON TTLV key, unwrap the key if it is wrapped before storing it
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--replace [-r] <REPLACE_EXISTING>` Replace an existing key under the same ID
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--tag [-t] <TAG>` The tag to associate with the key. To specify multiple tags, use the option multiple times
 
@@ -2194,7 +2194,7 @@ If not specified, the key will be destroyed
 but its metadata will still be available in the database.
 Please note that the KMIP specification does not support the removal of objects.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 
 
@@ -2221,11 +2221,11 @@ Encrypt a file with the given public key using either
 
 `--encryption-algorithm [-e] <ENCRYPTION_ALGORITHM>` The encryption algorithm
 
-Possible values:  `"ckm-rsa-pkcs", "ckm-rsa-pkcs-oaep", "ckm-rsa-aes-key-wrap"` [default: `"ckm-rsa-pkcs-oaep"`]
+Possible values:  `"ckm-rsa-pkcs", "ckm-rsa-pkcs-oaep", "ckm-rsa-aes-key-wrap"` [default: `ckm-rsa-pkcs-oaep`]
 
 `--hashing-algorithm [-s] <HASH_FN>` The hashing algorithm
 
-Possible values:  `"sha1", "sha224", "sha256", "sha384", "sha512", "sha3-224", "sha3-256", "sha3-384", "sha3-512"` [default: `"sha256"`]
+Possible values:  `"sha1", "sha224", "sha256", "sha384", "sha512", "sha3-224", "sha3-256", "sha3-384", "sha3-512"` [default: `sha256`]
 
 `--output-file [-o] <OUTPUT_FILE>` The encrypted output file path
 
@@ -2253,11 +2253,11 @@ Decrypt a file with the given private key using either
 
 `--encryption-algorithm [-e] <ENCRYPTION_ALGORITHM>` The encryption algorithm
 
-Possible values:  `"ckm-rsa-pkcs", "ckm-rsa-pkcs-oaep", "ckm-rsa-aes-key-wrap"` [default: `"ckm-rsa-pkcs-oaep"`]
+Possible values:  `"ckm-rsa-pkcs", "ckm-rsa-pkcs-oaep", "ckm-rsa-aes-key-wrap"` [default: `ckm-rsa-pkcs-oaep`]
 
 `--hashing-algorithm [-s] <HASH_FN>` The hashing algorithm (for OAEP and AES key wrap)
 
-Possible values:  `"sha1", "sha224", "sha256", "sha384", "sha512", "sha3-224", "sha3-256", "sha3-384", "sha3-512"` [default: `"sha256"`]
+Possible values:  `"sha1", "sha224", "sha256", "sha384", "sha512", "sha3-224", "sha3-256", "sha3-384", "sha3-512"` [default: `sha256`]
 
 `--output-file [-o] <OUTPUT_FILE>` The encrypted output file path
 
@@ -2334,7 +2334,7 @@ Create a new symmetric key
 
 `--algorithm [-a] <ALGORITHM>` The algorithm
 
-Possible values:  `"chacha20", "aes", "sha3", "shake"` [default: `"aes"`]
+Possible values:  `"chacha20", "aes", "sha3", "shake"` [default: `aes`]
 
 `--tag [-t] <TAG>` The tag to associate with the key. To specify multiple tags, use the option multiple times
 
@@ -2342,7 +2342,7 @@ Possible values:  `"chacha20", "aes", "sha3", "shake"` [default: `"aes"`]
 
 `--sensitive <SENSITIVE>` Sensitive: if set, the key will not be exportable
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap this new key with.
 If the wrapping key is:
@@ -2394,11 +2394,11 @@ Export a key or secret data from the KMS
       - wrapped keys
       - secret data
 
-Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `json-ttlv`]
 
 `--unwrap [-u] <UNWRAP>` Unwrap the key if it is wrapped before export
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
@@ -2406,7 +2406,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 The user must be the owner of the key.
 Destroyed keys have their key material removed.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
 The possible wrapping algorithms are
@@ -2440,7 +2440,7 @@ Import a secret data or a key in the KMS.
 
 `--key-format [-f] <KEY_FORMAT>` The format of the key
 
-Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `json-ttlv`]
 
 `--public-key-id [-p] <PUBLIC_KEY_ID>` For a private key: the corresponding KMS public key ID, if any
 
@@ -2450,11 +2450,11 @@ Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8
 
 `--unwrap [-u] <UNWRAP>` In the case of a JSON TTLV key, unwrap the key if it is wrapped before storing it
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--replace [-r] <REPLACE_EXISTING>` Replace an existing key under the same ID
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--tag [-t] <TAG>` The tag to associate with the key. To specify multiple tags, use the option multiple times
 
@@ -2555,7 +2555,7 @@ If not specified, the key will be destroyed
 but its metadata will still be available in the database.
 Please note that the KMIP specification does not support the removal of objects.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 
 
@@ -2576,7 +2576,7 @@ Encrypt a file using a symmetric cipher
 
 `--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm. If not specified, `aes-gcm` is used
 
-Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gcm-siv"` [default: `"aes-gcm"`]
+Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gcm-siv"` [default: `aes-gcm`]
 
 `--key-encryption-algorithm [-e] <KEY_ENCRYPTION_ALGORITHM>` The optional key encryption algorithm used to encrypt the data encryption key.
 
@@ -2611,7 +2611,7 @@ Decrypt a file using a symmetric key.
 `--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm.
 If not specified, aes-gcm is used.
 
-Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gcm-siv"` [default: `"aes-gcm"`]
+Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gcm-siv"` [default: `aes-gcm`]
 
 `--key-encryption-algorithm [-e] <KEY_ENCRYPTION_ALGORITHM>` The optional key encryption algorithm used to decrypt the data encryption key.
 
@@ -2663,7 +2663,7 @@ Create a new secret data
 
 `--type <SECRET_TYPE>` The type of secret data. Defaults to a randomly generated Seed. To use a Password type, you must provide both this and a valid secret value
 
-Possible values:  `"password", "seed"` [default: `"seed"`]
+Possible values:  `"password", "seed"` [default: `seed`]
 
 `--tag [-t] <TAG>` The tag to associate with the secret data. To specify multiple tags, use the option multiple times
 
@@ -2671,7 +2671,7 @@ Possible values:  `"password", "seed"` [default: `"seed"`]
 
 `--sensitive <SENSITIVE>` Sensitive: if set, the secret will not be exportable
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-key-id [-w] <WRAPPING_KEY_ID>` The key encryption key (KEK) used to wrap this new secret data with.
 If the wrapping key is:
@@ -2710,11 +2710,11 @@ Export a key or secret data from the KMS
       - wrapped keys
       - secret data
 
-Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "sec1-pem", "sec1-der", "pkcs1-pem", "pkcs1-der", "pkcs8-pem", "pkcs8-der", "base64", "raw"` [default: `json-ttlv`]
 
 `--unwrap [-u] <UNWRAP>` Unwrap the key if it is wrapped before export
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrap-key-id [-w] <WRAP_KEY_ID>` The id of the key/certificate (a.k.a. Key Encryption Key - KEK) to use to wrap this key before export
 
@@ -2722,7 +2722,7 @@ Possible values:  `"true", "false"` [default: `"false"`]
 The user must be the owner of the key.
 Destroyed keys have their key material removed.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--wrapping-algorithm [-m] <WRAPPING_ALGORITHM>` Wrapping algorithm to use when exporting the key
 The possible wrapping algorithms are
@@ -2756,7 +2756,7 @@ Import a secret data or a key in the KMS.
 
 `--key-format [-f] <KEY_FORMAT>` The format of the key
 
-Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `"json-ttlv"`]
+Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8-priv", "pkcs8-pub", "aes", "chacha20"` [default: `json-ttlv`]
 
 `--public-key-id [-p] <PUBLIC_KEY_ID>` For a private key: the corresponding KMS public key ID, if any
 
@@ -2766,11 +2766,11 @@ Possible values:  `"json-ttlv", "pem", "sec1", "pkcs1-priv", "pkcs1-pub", "pkcs8
 
 `--unwrap [-u] <UNWRAP>` In the case of a JSON TTLV key, unwrap the key if it is wrapped before storing it
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--replace [-r] <REPLACE_EXISTING>` Replace an existing key under the same ID
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 `--tag [-t] <TAG>` The tag to associate with the key. To specify multiple tags, use the option multiple times
 
@@ -2871,7 +2871,7 @@ If not specified, the key will be destroyed
 but its metadata will still be available in the database.
 Please note that the KMIP specification does not support the removal of objects.
 
-Possible values:  `"true", "false"` [default: `"false"`]
+Possible values:  `"true", "false"` [default: `false`]
 
 
 
@@ -2958,7 +2958,7 @@ Encrypt entries and index the corresponding database UUIDs with the Findex.
 
 `--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm. If not specified, aes-gcm is used
 
-Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gcm-siv"` [default: `"aes-gcm"`]
+Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gcm-siv"` [default: `aes-gcm`]
 
 `--nonce [-n] <NONCE>` Optional nonce/IV (or tweak for XTS) as a hex string. If not provided, a random value is generated
 
@@ -3016,7 +3016,7 @@ Search keywords and decrypt the content of corresponding UUIDs.
 
 `--data-encryption-algorithm [-d] <DATA_ENCRYPTION_ALGORITHM>` The data encryption algorithm. If not specified, aes-gcm is used
 
-Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gcm-siv"` [default: `"aes-gcm"`]
+Possible values:  `"chacha20-poly1305", "aes-gcm", "aes-cbc", "aes-xts", "aes-gcm-siv"` [default: `aes-gcm`]
 
 `--authentication-data [-a] <AUTHENTICATION_DATA>` Optional additional authentication data as a hex string. This data needs to be provided back for decryption. This data is ignored with XTS
 

@@ -105,7 +105,7 @@ fn write_command(
                     if i > 0 {
                         write!(out, ", ")?;
                     }
-                    write!(out, "{default_value:?}")?;
+                    write!(out, "{}", default_value.display())?;
                 }
                 write!(out, "`]")?;
             }
@@ -174,22 +174,19 @@ fn to_md(out: &mut dyn Write, ss: &StyledStr) -> CosmianResult<()> {
         if in_list {
             if line.trim().starts_with('-') {
                 // still in list
-                writeln!(out, "{line}")?;
             } else {
                 // no more in list
                 in_list = false;
                 writeln!(out)?;
-                writeln!(out, "{line}")?;
             }
         } else if line.trim().starts_with('-') {
             // first line of list
             in_list = true;
             writeln!(out)?;
-            writeln!(out, "{line}")?;
         } else {
             // still not in list
-            writeln!(out, "{line}")?;
         }
+        writeln!(out, "{line}")?;
     }
     Ok(())
 }

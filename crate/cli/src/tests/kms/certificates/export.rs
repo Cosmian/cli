@@ -85,7 +85,7 @@ async fn test_import_export_p12_25519() {
 
     // export the private key
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_owned(),
         key_id: imported_p12_sk.clone(),
         key_file: tmp_exported_sk.to_str().unwrap().to_string(),
