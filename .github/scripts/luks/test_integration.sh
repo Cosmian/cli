@@ -169,10 +169,10 @@ generate_and_import_key() {
 
     # Import to KMS using the CLI
     COSMIAN="cargo run --bin cosmian --"
-    export COSMIAN_CLI_FORMAT=json
+    export COSMIAN_KMS_CLI_FORMAT=json
 
     log "Importing certificate to KMS..."
-    key_id=$($COSMIAN kms certificates import -f pkcs12 -t disk-encryption /tmp/certificate.p12 -p testpass | jq -r '.private_key_unique_identifier')
+    key_id=$($COSMIAN kms certificates import -f pkcs12 -t disk-encryption /tmp/certificate.p12 -p testpass | jq -r .unique_identifier)
 
     if [ -z "$key_id" ] || [ "$key_id" == "null" ]; then
         error "Failed to import certificate to KMS"
