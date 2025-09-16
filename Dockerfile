@@ -1,6 +1,6 @@
 FROM rust:1.79.0-buster AS builder
 
-LABEL version="1.4.0"
+LABEL version="1.4.1"
 LABEL name="Cosmian CLI and PKCS11 container"
 
 ENV OPENSSL_DIR=/usr/local/openssl
@@ -15,8 +15,8 @@ ARG TARGETPLATFORM
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then export ARCHITECTURE=x86_64; elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then export ARCHITECTURE=arm; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then export ARCHITECTURE=arm64; else export ARCHITECTURE=x86_64; fi \
   && bash /root/cli/.github/reusable_scripts/get_openssl_binaries.sh
 
-# Conditional cargo build based on FIPS argument
-RUN cargo build --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --release
+RUN cargo build -p cosmian_cli -p cosmian_pkcs11 --release
+
 #
 # KMS server
 #
