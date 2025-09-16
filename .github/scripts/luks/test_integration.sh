@@ -2,6 +2,8 @@
 
 set -ex
 
+env|sort|uniq
+
 # LUKS Integration Test Script for Cosmian PKCS#11 module
 # This script tests the complete LUKS integration workflow as documented
 # in documentation/docs/pkcs11/luks.md
@@ -110,6 +112,8 @@ EOF
     # Copy the PKCS#11 module
     sudo cp ./libcosmian_pkcs11.so /usr/local/lib/
     sudo chmod 755 /usr/local/lib/libcosmian_pkcs11.so
+    sudo chown -R "$USER": /var/log
+    sudo chmod 755 /var/log/cosmian-pkcs11.log
 
     # Create module configuration
     sudo tee /etc/pkcs11/modules/cosmian_pkcs11.module > /dev/null <<EOF
