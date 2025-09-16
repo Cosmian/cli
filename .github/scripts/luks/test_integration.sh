@@ -206,10 +206,15 @@ enroll_luks_with_kms() {
 
     # Enroll with systemd-cryptenroll using stdin redirection and timeout
     log "Running systemd-cryptenroll with timeout protection..."
-    if timeout 120 sudo PASSWORD="testpassphrase" systemd-cryptenroll --pkcs11-token-uri=pkcs11:token=Cosmian-KMS /tmp/test_luks_file; then
+
+    # Use printf to provide the passphrase to stdin with explicit newline
+    printf "testpassphrase\n" | timeout 120 sudo -E systemd-cryptenroll --pkcs11-token-uri=pkcs11:token=Cosmian-KMS /tmp/test_luks_file
+    enrollment_result=$?
+
+    if [ $enrollment_result -eq 0 ]; then
         log "LUKS partition enrolled with KMS successfully"
     else
-        error "systemd-cryptenroll failed or timed out"
+        error "systemd-cryptenroll failed or timed out (exit code: $enrollment_result)"
         exit 1
     fi
 
@@ -226,7 +231,7 @@ test_luks_unlocking() {
     export COSMIAN_PKCS11_DISK_ENCRYPTION_TAG=disk-encryption
 
     # Unlock using token with timeout protection
-    if timeout 60 sudo cryptsetup open --type luks2 --token-id=0 --token-only /tmp/test_luks_file test_luks; then
+    if timeout 60 sudo -E cryptsetup open --type luks2 --token-id=0 --token-only /tmp/test_luks_file test_luks; then
         log "LUKS partition unlocked successfully with KMS token"
     else
         error "Failed to unlock LUKS partition with KMS token"
