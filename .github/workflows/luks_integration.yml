@@ -2,7 +2,11 @@
 name: LUKS Integration Test
 
 on:
-  push:
+  workflow_call:
+    inputs:
+      log_level:
+        required: false
+        type: string
   workflow_dispatch:
     inputs:
       log_level:
@@ -33,7 +37,7 @@ jobs:
     env:
       RUST_BACKTRACE: 1
       CARGO_TERM_COLOR: always
-      COSMIAN_PKCS11_LOGGING_LEVEL: ${{ github.event.inputs.log_level || 'debug' }}
+      COSMIAN_PKCS11_LOGGING_LEVEL: ${{ inputs.log_level || 'debug' }}
 
     steps:
       - name: Checkout repository
@@ -95,7 +99,7 @@ jobs:
           cargo build --features non-fips -p cosmian_pkcs11 -p cosmian_cli
 
           # Copy the built library to the expected location
-          cp target/debug/libcosmian_pkcs11_provider.so libcosmian_pkcs11.so
+          cp target/debug/libcosmian_pkcs11.so .
 
           # Verify the library exists and is properly linked
           ls -la libcosmian_pkcs11.so
