@@ -205,7 +205,7 @@ enroll_luks_with_kms() {
     export COSMIAN_PKCS11_DISK_ENCRYPTION_TAG=disk-encryption
 
     # Enroll with systemd-cryptenroll
-    echo "testpassphrase" | sudo -E systemd-cryptenroll --pkcs11-token-uri=pkcs11:token=Cosmian-KMS /tmp/test_luks_file
+    echo "testpassphrase" | sudo systemd-cryptenroll --pkcs11-token-uri=pkcs11:token=Cosmian-KMS /tmp/test_luks_file
 
     log "LUKS partition enrolled with KMS successfully"
 }
@@ -219,7 +219,7 @@ test_luks_unlocking() {
     export COSMIAN_PKCS11_DISK_ENCRYPTION_TAG=disk-encryption
 
     # Try to unlock using token
-    sudo -E cryptsetup open --type luks2 --token-id=0 --token-only /tmp/test_luks_file test_luks
+    sudo cryptsetup open --type luks2 --token-id=0 --token-only /tmp/test_luks_file test_luks
 
     if [ ! -e /dev/mapper/test_luks ]; then
         error "Failed to unlock LUKS partition with KMS token"
