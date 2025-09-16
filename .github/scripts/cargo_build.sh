@@ -8,7 +8,6 @@ set -ex
 # export DEBUG_OR_RELEASE=debug
 # export OPENSSL_DIR=/usr/local/openssl
 # export SKIP_SERVICES_TESTS="--skip hsm"
-# export FEATURES="non-fips"
 
 ROOT_FOLDER=$(pwd)
 
@@ -34,15 +33,6 @@ fi
 
 if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   RELEASE="--release"
-fi
-
-if [ -n "$FEATURES" ]; then
-  FEATURES="--features $FEATURES"
-fi
-
-if [ -z "$FEATURES" ]; then
-  echo "Info: FEATURES is not set."
-  unset FEATURES
 fi
 
 if [ -z "$SKIP_SERVICES_TESTS" ]; then
@@ -84,7 +74,7 @@ rm -f /tmp/*.json /tmp/*.toml
 export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kms_client=debug"
 
 # shellcheck disable=SC2086
-cargo test --target $TARGET $RELEASE $FEATURES \
+cargo test --target $TARGET $RELEASE \
   --features non-fips \
   -p cosmian_cli \
   -p cosmian_pkcs11 \

@@ -1,0 +1,7 @@
+[ v3_ca ]
+basicConstraints=critical,CA:TRUE,pathlen:0
+keyUsage=critical,keyCertSign,digitalSignature
+extendedKeyUsage=emailProtection
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer
+crlDistributionPoints=URI:https://acme.com/crl.pem
