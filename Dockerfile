@@ -1,12 +1,9 @@
 FROM rust:1.79.0-buster AS builder
 
-LABEL version="1.3.0"
+LABEL version="1.4.0"
 LABEL name="Cosmian CLI and PKCS11 container"
 
 ENV OPENSSL_DIR=/usr/local/openssl
-
-# Add build argument for FIPS mode
-ARG FIPS=false
 
 WORKDIR /root
 
@@ -19,12 +16,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then export ARCHITECTURE=x86_64; e
   && bash /root/cli/.github/reusable_scripts/get_openssl_binaries.sh
 
 # Conditional cargo build based on FIPS argument
-RUN if [ "$FIPS" = "true" ]; then \
-  cargo build -p cosmian_cli -p cosmian_pkcs11 --release --no-default-features --features="fips"; \
-  else \
-  cargo build -p cosmian_cli -p cosmian_pkcs11 --release --no-default-features; \
-  fi
-
+RUN cargo build --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --release
 #
 # KMS server
 #

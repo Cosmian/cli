@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2025-09-16
+
+### 🚀 Features
+
+- *CLI*: Added support for SHA1 in RSA key wrapping and add Azure functionality to facilitate BYOK (#105)
+
+### 🐛 Bug Fixes
+
+- *PKCS11*: Skip unknown key types in search functions (find_*) and update KMS and FS crates (#104)
+- Deliver CLI with all features - including non-FIPS feature
+
 ## [1.3.0] - 2025-08-22
 
 ### 🚀 Features
