@@ -95,7 +95,7 @@ jobs:
           cargo build --features non-fips -p cosmian_pkcs11 -p cosmian_cli
 
           # Copy the built library to the expected location
-          cp target/release/libcosmian_pkcs11_provider.so libcosmian_pkcs11.so
+          cp target/debug/libcosmian_pkcs11_provider.so libcosmian_pkcs11.so
 
           # Verify the library exists and is properly linked
           ls -la libcosmian_pkcs11.so
