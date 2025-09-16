@@ -17,11 +17,11 @@ doctest = false
 
 [features]
 default = ["non-fips"]
-non-fips = ["cosmian_cli/non-fips", "test_kms_server/non-fips"]
+non-fips = ["cosmian_cli/non-fips"]
 
 [dependencies]
-cosmian_cli = { path = "../../cli", version = "1.4.0" }
-cosmian_pkcs11_module = { path = "../module", version = "1.4.0" }
+cosmian_cli = { path = "../../cli", version = "1.4.1" }
+cosmian_pkcs11_module = { path = "../module", version = "1.4.1" }
 etcetera = "0.8.0"
 hex = "0.4"
 p256 = { version = "0.13.2", default-features = false, features = [
@@ -44,4 +44,4 @@ zeroize = { workspace = true }
 [dev-dependencies]
 cosmian_logger = { workspace = true }
 serial_test = { version = "3.2.0", default-features = true }
-test_kms_server = { workspace = true }
+test_kms_server = { workspace = true, features = ["non-fips"] }

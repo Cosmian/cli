@@ -1,6 +1,6 @@
 [package]
 name = "cosmian_cli"
-version = "1.4.0"
+version = "1.4.1"
 authors.workspace = true
 categories = ["security"]
 edition.workspace = true
@@ -30,7 +30,6 @@ default = ["non-fips"]
 non-fips = [
   "cosmian_findex_cli/non-fips",
   "cosmian_kms_cli/non-fips",
-  "test_kms_server/non-fips",
 ]
 
 [dependencies]
@@ -69,7 +68,7 @@ predicates = "3.1"
 regex = { version = "1.11", default-features = false }
 reqwest.workspace = true
 tempfile = "3.20"
-test_kms_server = { workspace = true }
+test_kms_server = { workspace = true, features = ["non-fips"] }
 x509-parser = { workspace = true, features = ["verify"] }
 
 # ------------------------------------------------------------------------------

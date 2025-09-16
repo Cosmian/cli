@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2025-09-16
+
+### 🐛 Bug Fixes
+
+- Re-publish `cosmian_cli` crate without direct dependency on `test_kms_server` (only dev-dependency)
+
 ## [1.4.0] - 2025-09-16
 
 ### 🚀 Features
