@@ -196,31 +196,6 @@ create_luks_partition() {
     log "LUKS partition created successfully"
 }
 
-# Debug PKCS#11 environment before enrollment
-debug_pkcs11_environment() {
-    log "Debugging PKCS#11 environment before enrollment..."
-
-    # Check p11-kit modules
-    log "Available PKCS#11 modules:"
-    p11-kit list-modules || true
-
-    # Check if KMS is accessible
-    log "Testing KMS connectivity:"
-    curl -s http://localhost:9998/version || { warning "KMS not accessible"; }
-
-    # Check environment variables
-    log "Environment variables:"
-    env | grep -E "(COSMIAN|PKCS11)" || log "No COSMIAN/PKCS11 environment variables set"
-
-    # Check if LUKS file is ready
-    log "LUKS file status:"
-    ls -la /tmp/test_luks_file || { error "LUKS file not found"; exit 1; }
-
-    # Check LUKS header
-    log "LUKS header information:"
-    sudo cryptsetup luksDump /tmp/test_luks_file | head -20
-}
-
 # Enroll LUKS partition with KMS
 enroll_luks_with_kms() {
     log "Enrolling LUKS partition with Cosmian KMS..."
@@ -229,17 +204,12 @@ enroll_luks_with_kms() {
     export COSMIAN_PKCS11_LOGGING_LEVEL=debug
     export COSMIAN_PKCS11_DISK_ENCRYPTION_TAG=disk-encryption
 
-    # Create passphrase file for non-interactive input
-    echo "testpassphrase" > /tmp/passphrase.txt
-    chmod 600 /tmp/passphrase.txt
-
     # Enroll with systemd-cryptenroll using stdin redirection and timeout
     log "Running systemd-cryptenroll with timeout protection..."
-    if timeout 120 sudo -E systemd-cryptenroll --pkcs11-token-uri=pkcs11:token=Cosmian-KMS /tmp/test_luks_file < /tmp/passphrase.txt; then
+    if timeout 120 sudo PASSWORD="testpassphrase" systemd-cryptenroll --pkcs11-token-uri=pkcs11:token=Cosmian-KMS /tmp/test_luks_file; then
         log "LUKS partition enrolled with KMS successfully"
     else
         error "systemd-cryptenroll failed or timed out"
-        rm -f /tmp/passphrase.txt
         exit 1
     fi
 
@@ -256,7 +226,7 @@ test_luks_unlocking() {
     export COSMIAN_PKCS11_DISK_ENCRYPTION_TAG=disk-encryption
 
     # Unlock using token with timeout protection
-    if timeout 60 sudo -E cryptsetup open --type luks2 --token-id=0 --token-only /tmp/test_luks_file test_luks; then
+    if timeout 60 sudo cryptsetup open --type luks2 --token-id=0 --token-only /tmp/test_luks_file test_luks; then
         log "LUKS partition unlocked successfully with KMS token"
     else
         error "Failed to unlock LUKS partition with KMS token"
