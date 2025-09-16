@@ -63,7 +63,7 @@ impl PublicKey for Pkcs11PublicKey {
         _signature: &[u8],
     ) -> ModuleResult<()> {
         error!("verify not implemented for Pkcs11PublicKey");
-        todo!()
+        Err(ModuleError::FunctionNotSupported)
     }
 
     fn delete(self: Arc<Self>) {}

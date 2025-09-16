@@ -1,17 +1,12 @@
 # LUKS
 
-The Cosmian KMS can provision secrets to open
-[Linux LUKS](https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup) encrypted partitions. The
-secret never leaves the KMS and can be used to unlock the partition at boot time.
+The Cosmian KMS can provision secrets to open [Linux LUKS](https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup) encrypted partitions. The secret never leaves the KMS and can be used to unlock the partition at boot time.
 
 ## Installing p11-kit and the Cosmian KMS PKCS#11 module
 
-The Cosmian KMS provides a PKCS#11 module that can be used to access the KMS from applications that
-support PKCS#11, using the `p11-kit` framework.
+The Cosmian KMS provides a PKCS#11 module that can be used to access the KMS from applications that support PKCS#11, using the `p11-kit` framework.
 
-With LUKS, the system provided `systemd-cryptenroll` command
-must have support for `p11-kit` which you can check by running `systemd-cryptenroll --help` and
-checking for the `+P11KIT` flag.
+With LUKS, the system provided `systemd-cryptenroll` command must have support for `p11-kit` which you can check by running `systemd-cryptenroll --help` and checking for the `+P11KIT` flag.
 
 ```bash
 ❯ systemd-cryptenroll --version
@@ -100,16 +95,12 @@ cosmian_pkcs11: /usr/local/lib/libcosmian_pkcs11.so
 
 ## Configuring the access to the KMS
 
-The PKCS#11 module uses the same configuration file as
-the [CLI](../../cosmian_cli/index.md).
-Since it may be run as a system user, the configuration file should be made available
+The PKCS#11 module uses the same configuration file as the [CLI](../../cosmian_cli/index.md). Since it may be run as a system user, the configuration file should be made available
 in `/etc/cosmian/cosmian.toml`.
 
-See [Authenticating users to the KMS](../authentication.md) to learn
-how to configure the KMS to use Open ID connect or certificate authentication.
+See [Authenticating users to the KMS](../authentication.md) to learn how to configure the KMS to use Open ID connect or certificate authentication.
 
-Here is an example configuration file for the PKCS#11 provider library accessing the KMS using a
-PKCS#12 file for authentication.
+Here is an example configuration file for the PKCS#11 provider library accessing the KMS using a PKCS#12 file for authentication.
 
 ```toml
 [kms_config.http_config]
@@ -118,9 +109,7 @@ ssl_client_pkcs12_path = "./certificates/machine123.acme.p12"
 ssl_client_pkcs12_password = "machine123_pkcs12_password"
 ```
 
-To use Open ID connect, install the [Cosmian CLI](../../cosmian_cli/index.md) from
-[Cosmian packages](https://package.cosmian.com/kms/) and
-use the `cosmian kms login` command to authenticate to the KMS first.
+To use Open ID connect, install the [Cosmian CLI](../../cosmian_cli/index.md) from [Cosmian packages](https://package.cosmian.com/kms/) and use the `cosmian kms login` command to authenticate to the KMS first.
 
 ## Creating an RSA key pair using openssl and importing it into the Cosmian KMS
 

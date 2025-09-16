@@ -66,10 +66,7 @@ impl PrivateKey for Pkcs11PrivateKey {
             "sign not implemented for Pkcs11PrivateKey with remote_id: {}",
             self.remote_id
         );
-        todo!(
-            "sign not implemented for Pkcs11PrivateKey with remote_id: {}",
-            self.remote_id
-        )
+        Err(ModuleError::FunctionNotSupported)
     }
 
     fn algorithm(&self) -> KeyAlgorithm {

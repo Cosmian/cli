@@ -14,7 +14,7 @@ use pkcs11_sys::{
     CKR_SESSION_HANDLE_INVALID, CKR_SESSION_PARALLEL_NOT_SUPPORTED, CKR_SLOT_ID_INVALID,
 };
 use serial_test::serial;
-use zeroize::Zeroizing;
+use zeroize::{Zeroize, Zeroizing};
 
 use super::*;
 use crate::{
@@ -33,6 +33,50 @@ use crate::{
         PublicKey, SearchOptions, SymmetricKey, Version, register_backend,
     },
 };
+
+struct DummyDataObject {
+    remote_id: String,
+    value: Zeroizing<Vec<u8>>,
+}
+
+impl DummyDataObject {
+    fn new(label: &str, data: &[u8]) -> Self {
+        Self {
+            remote_id: format!("test-data-{label}"),
+            value: Zeroizing::new(data.to_vec()),
+        }
+    }
+}
+
+impl Zeroize for DummyDataObject {
+    fn zeroize(&mut self) {
+        self.value.zeroize();
+    }
+}
+
+impl DataObject for DummyDataObject {
+    fn remote_id(&self) -> String {
+        self.remote_id.clone()
+    }
+
+    fn value(&self) -> Zeroizing<Vec<u8>> {
+        self.value.clone()
+    }
+
+    fn application(&self) -> Vec<u8> {
+        b"Test PKCS#11 Application".to_vec()
+    }
+
+    fn data_hash(&self) -> Vec<u8> {
+        // Simple test hash - just the first 32 bytes repeated or padded
+        let mut hash = vec![0_u8; 32];
+        let data = self.value.as_slice();
+        for (i, &byte) in data.iter().take(32).enumerate() {
+            hash[i] = byte;
+        }
+        hash
+    }
+}
 
 struct DummySymKey;
 
@@ -138,16 +182,16 @@ impl Backend for TestBackend {
         Ok(Arc::new(DummySymKey {}))
     }
 
-    fn create_object(&self, _label: &str, _data: &[u8]) -> ModuleResult<Arc<dyn DataObject>> {
-        todo!()
+    fn create_object(&self, label: &str, data: &[u8]) -> ModuleResult<Arc<dyn DataObject>> {
+        Ok(Arc::new(DummyDataObject::new(label, data)))
     }
 
     fn revoke_object(&self, _remote_id: &str) -> ModuleResult<()> {
-        todo!()
+        Ok(())
     }
 
     fn destroy_object(&self, _remote_id: &str) -> ModuleResult<()> {
-        todo!()
+        Ok(())
     }
 
     fn encrypt(&self, _encrypt_ctx: &EncryptContext, cleartext: Vec<u8>) -> ModuleResult<Vec<u8>> {

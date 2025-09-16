@@ -31,20 +31,20 @@ ssh okv "sudo rm -f /var/okv/log/hsm/*"
 #
 # Copy CLI config
 #
-scp -O crate/pkcs11/oracle/cosmian_okv.toml okv:cosmian.toml
+scp -O .github/scripts/oracle/cosmian_okv.toml okv:cosmian.toml
 ssh okv "sudo mv ~/cosmian.toml /usr/local/okv/hsm/generic"
 ssh okv "sudo chown oracle:oinstall /usr/local/okv/hsm/generic/cosmian.toml"
 
 #
 # Copy OKV generic HSM variables env. file
 #
-scp -O crate/pkcs11/oracle/okv_hsm_env okv:
+scp -O .github/scripts/oracle/okv_hsm_env okv:
 ssh okv "sudo mv ~/okv_hsm_env /usr/local/okv/hsm/generic/okv_hsm_env"
 ssh okv "sudo chown oracle:oinstall /usr/local/okv/hsm/generic/okv_hsm_env"
 
 #
 # Copy OKV generic HSM config file
 #
-scp -O crate/pkcs11/oracle/okv_hsm_conf okv:
+scp -O .github/scripts/oracle/okv_hsm_conf okv:
 ssh okv "sudo mv ~/okv_hsm_conf /usr/local/okv/hsm/generic/okv_hsm.conf"
 ssh okv "sudo chown oracle:oinstall /usr/local/okv/hsm/generic/okv_hsm.conf"
