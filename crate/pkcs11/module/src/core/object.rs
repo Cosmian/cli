@@ -19,6 +19,7 @@
 
 use std::sync::Arc;
 
+use cosmian_logger::debug;
 use log::error;
 use p256::{elliptic_curve::sec1::ToEncodedPoint, pkcs8::der::Encode};
 use pkcs1::EncodeRsaPrivateKey;
@@ -27,7 +28,6 @@ use pkcs11_sys::{
     CKO_PRIVATE_KEY, CKO_PROFILE, CKO_PUBLIC_KEY,
 };
 use rsa::{RsaPrivateKey, pkcs8::DecodePrivateKey, traits::PublicKeyParts};
-use tracing::debug;
 
 use crate::{
     ModuleError, ModuleResult,

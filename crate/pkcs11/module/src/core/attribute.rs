@@ -20,6 +20,7 @@
 use core::ops::Deref;
 use std::slice;
 
+use cosmian_logger::trace;
 use pkcs11_sys::{
     CK_ATTRIBUTE, CK_ATTRIBUTE_PTR, CK_ATTRIBUTE_TYPE, CK_BBOOL, CK_CERTIFICATE_CATEGORY,
     CK_CERTIFICATE_TYPE, CK_FALSE, CK_KEY_TYPE, CK_OBJECT_CLASS, CK_PROFILE_ID, CK_TRUE, CK_ULONG,
@@ -33,7 +34,6 @@ use pkcs11_sys::{
     CKC_X_509,
 };
 use strum_macros::Display;
-use tracing::trace;
 
 use crate::{ModuleError, ModuleResult, not_null};
 

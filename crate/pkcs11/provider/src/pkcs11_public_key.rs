@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use cosmian_logger::error;
 use cosmian_pkcs11_module::{
     ModuleError, ModuleResult,
     traits::{KeyAlgorithm, PublicKey, SignatureAlgorithm},
@@ -7,7 +8,6 @@ use cosmian_pkcs11_module::{
 use p256::pkcs8::DecodePublicKey;
 use pkcs1::{RsaPublicKey, der::Decode};
 use sha3::Digest;
-use tracing::error;
 use x509_cert::{der::Encode, spki::SubjectPublicKeyInfoOwned};
 use zeroize::Zeroizing;
 

@@ -8,10 +8,10 @@ use cosmian_kms_cli::{
         read_object_from_json_ttlv_file,
     },
 };
+#[cfg(feature = "non-fips")]
+use cosmian_logger::trace;
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
-#[cfg(feature = "non-fips")]
-use tracing::trace;
 
 #[cfg(feature = "non-fips")]
 use crate::tests::kms::cover_crypt::{

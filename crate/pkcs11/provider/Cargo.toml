@@ -35,13 +35,12 @@ serde_json = { workspace = true }
 sha3 = { version = "0.10", default-features = false }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread"] }
-tracing = { workspace = true }
+cosmian_logger = { workspace = true }
 tracing-error = "0.2.1"
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 x509-cert = { version = "0.2", default-features = false }
 zeroize = { workspace = true }
 
 [dev-dependencies]
-cosmian_logger = { workspace = true }
 serial_test = { version = "3.2.0", default-features = true }
 test_kms_server = { workspace = true, features = ["non-fips"] }

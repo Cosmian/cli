@@ -1,10 +1,10 @@
 use std::sync::{Arc, RwLock};
 
+use cosmian_logger::error;
 use cosmian_pkcs11_module::{
     ModuleError, ModuleResult,
     traits::{KeyAlgorithm, SearchOptions, SymmetricKey, backend},
 };
-use tracing::error;
 use zeroize::Zeroizing;
 
 use crate::kms_object::{KmsObject, key_algorithm_from_attributes};

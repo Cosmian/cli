@@ -6,11 +6,10 @@ use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::cosmian_kms_client::read_object_from_json_ttlv_file,
 };
-use cosmian_logger::log_init;
+use cosmian_logger::{info, log_init, trace};
 use tempfile::TempDir;
 use test_kms_server::{AuthenticationOptions, MainDBConfig, start_test_server_with_options};
 use tokio::fs;
-use tracing::{info, trace};
 
 use super::{KMS_SUBCOMMAND, utils::recover_cmd_logs};
 use crate::{
