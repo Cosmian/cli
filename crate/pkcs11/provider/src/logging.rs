@@ -1,6 +1,5 @@
 use std::{fs, fs::OpenOptions, path::PathBuf, sync::Once};
 
-#[cfg(not(target_os = "linux"))]
 use cosmian_logger::reexport::tracing::Level;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{
