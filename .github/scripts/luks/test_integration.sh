@@ -1,8 +1,8 @@
 #!/bin/bash
 
-set -ex
+set -e
 
-env|sort|uniq
+# env|sort|uniq
 
 # LUKS Integration Test Script for Cosmian PKCS#11 module
 # This script tests the complete LUKS integration workflow as documented
@@ -51,15 +51,12 @@ cleanup() {
         sudo rmdir /mnt/test_luks || true
     fi
 
-    # Stop docker containers
-    docker compose down || true
-
     # Remove temporary files
     rm -f /tmp/private_key.pem /tmp/cert.pem /tmp/certificate.p12 || true
 }
 
 # Set trap for cleanup on exit
-trap cleanup EXIT
+# trap cleanup EXIT
 
 # Check if we're running on Ubuntu 24.04
 check_ubuntu_version() {
@@ -191,7 +188,8 @@ create_luks_partition() {
     fallocate -l 100M /tmp/test_luks_file
 
     # Create LUKS partition with a test passphrase
-    echo "testpassphrase" | sudo cryptsetup luksFormat --type luks2 --key-slot 0 /tmp/test_luks_file -
+    sudo cryptsetup luksFormat --type luks2 --key-slot 0 /tmp/test_luks_file -
+    # echo "testpassphrase" | sudo cryptsetup luksFormat --type luks2 --key-slot 0 /tmp/test_luks_file -
 
     log "LUKS partition created successfully"
 }
@@ -200,26 +198,14 @@ create_luks_partition() {
 enroll_luks_with_kms() {
     log "Enrolling LUKS partition with Cosmian KMS..."
 
-    # Set environment variables for PKCS#11 module
-    export COSMIAN_PKCS11_LOGGING_LEVEL=debug
-    export COSMIAN_PKCS11_DISK_ENCRYPTION_TAG=disk-encryption
-
     # Enroll with systemd-cryptenroll using stdin redirection and timeout
     log "Running systemd-cryptenroll with timeout protection..."
-
-    # Use printf to provide the passphrase to stdin with explicit newline
-    printf "testpassphrase\n" | timeout 120 sudo -E systemd-cryptenroll --pkcs11-token-uri=pkcs11:token=Cosmian-KMS /tmp/test_luks_file
-    enrollment_result=$?
-
-    if [ $enrollment_result -eq 0 ]; then
+    if timeout 120 sudo COSMIAN_PKCS11_LOGGING_LEVEL=trace COSMIAN_PKCS11_DISK_ENCRYPTION_TAG=disk-encryption systemd-cryptenroll --pkcs11-token-uri=pkcs11:token=Cosmian-KMS /tmp/test_luks_file; then
         log "LUKS partition enrolled with KMS successfully"
     else
-        error "systemd-cryptenroll failed or timed out (exit code: $enrollment_result)"
+        error "systemd-cryptenroll failed or timed out"
         exit 1
     fi
-
-    # Clean up passphrase file
-    rm -f /tmp/passphrase.txt
 }
 
 # Test LUKS unlocking with KMS
@@ -231,7 +217,8 @@ test_luks_unlocking() {
     export COSMIAN_PKCS11_DISK_ENCRYPTION_TAG=disk-encryption
 
     # Unlock using token with timeout protection
-    if timeout 60 sudo -E cryptsetup open --type luks2 --token-id=0 --token-only /tmp/test_luks_file test_luks; then
+    # if timeout 60 echo "testpassphrase" | sudo cryptsetup open --type luks2 --token-id=0 --token-only /tmp/test_luks_file test_luks; then
+    if timeout 60 sudo cryptsetup open --type luks2 --token-id=0 --token-only /tmp/test_luks_file test_luks; then
         log "LUKS partition unlocked successfully with KMS token"
     else
         error "Failed to unlock LUKS partition with KMS token"
@@ -290,6 +277,7 @@ main() {
     log "Starting LUKS integration test for Cosmian PKCS#11 module"
     log "=================================================="
 
+    cleanup
     check_ubuntu_version
     check_packages
     setup_pkcs11_config
