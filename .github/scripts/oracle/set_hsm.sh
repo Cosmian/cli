@@ -52,7 +52,7 @@ chmod +x setup_cosmian_pkcs11.sh
 # Copy files and run setup script
 #
 docker cp libcosmian_pkcs11.so oracle:/home/oracle/
-docker cp crate/pkcs11/oracle/cosmian.toml oracle:/home/oracle/
+docker cp .github/scripts/oracle/cosmian.toml oracle:/home/oracle/
 docker cp setup_cosmian_pkcs11.sh oracle:/home/oracle/
 docker exec -u root -i oracle bash -c "/home/oracle/setup_cosmian_pkcs11.sh"
 rm setup_cosmian_pkcs11.sh libcosmian_pkcs11.so
