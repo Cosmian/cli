@@ -26,19 +26,19 @@ use crate::{
 
 pub(crate) async fn derive_key(
     kms_client: &KmsClient,
-    base_key_id: &str,
-    options: &DeriveKeyAction,
+    action: &DeriveKeyAction,
 ) -> CosmianResult<String> {
-    // Create a new DeriveKeyAction with the base_key_id
+    // Create a new DeriveKeyAction with the provided options
     let action = DeriveKeyAction {
-        key_id: base_key_id.to_string(),
-        derivation_method: options.derivation_method.clone(),
-        salt: options.salt.clone(),
-        iteration_count: options.iteration_count,
-        initialization_vector: options.initialization_vector.clone(),
-        digest_algorithm: options.digest_algorithm.clone(),
-        cryptographic_length: options.cryptographic_length,
-        derived_key_id: options.derived_key_id.clone(),
+        key_id: action.key_id.clone(),
+        password: action.password.clone(),
+        derivation_method: action.derivation_method.clone(),
+        salt: action.salt.clone(),
+        iteration_count: action.iteration_count,
+        initialization_vector: action.initialization_vector.clone(),
+        digest_algorithm: action.digest_algorithm.clone(),
+        cryptographic_length: action.cryptographic_length,
+        derived_key_id: action.derived_key_id.clone(),
     };
 
     // Run the action
@@ -108,9 +108,9 @@ pub(crate) async fn test_derive_symmetric_key_pbkdf2() -> CosmianResult<()> {
     // Test PBKDF2 derivation
     let derived_key_id = derive_key(
         &kms_client,
-        &base_key_id,
         &DeriveKeyAction {
-            key_id: String::new(), // Will be overridden by derive_key function
+            key_id: Some(base_key_id),
+            password: None,
             derivation_method: "PBKDF2".to_owned(),
             salt: "0123456789abcdef".to_owned(),
             iteration_count: 4096,
@@ -145,9 +145,9 @@ pub(crate) async fn test_derive_symmetric_key_hkdf() -> CosmianResult<()> {
     // Test HKDF derivation
     let derived_key_id = derive_key(
         &kms_client,
-        &base_key_id,
         &DeriveKeyAction {
-            key_id: String::new(), // Will be overridden by derive_key function
+            key_id: Some(base_key_id),
+            password: None,
             derivation_method: "HKDF".to_owned(),
             salt: "fedcba9876543210".to_owned(),
             iteration_count: 4096,
@@ -184,9 +184,9 @@ pub(crate) async fn test_derive_symmetric_key_different_lengths() -> CosmianResu
     for length in lengths {
         let derived_key_id = derive_key(
             &kms_client,
-            &base_key_id,
             &DeriveKeyAction {
-                key_id: String::new(), // Will be overridden by derive_key function
+                key_id: Some(base_key_id.clone()),
+                password: None,
                 derivation_method: "PBKDF2".to_owned(),
                 salt: "0123456789abcdef".to_owned(),
                 iteration_count: 4096,
@@ -224,9 +224,9 @@ pub(crate) async fn test_derive_from_secret_data() -> CosmianResult<()> {
     // Derive a symmetric key from the secret data
     let derived_key_id = derive_key(
         &kms_client,
-        &secret_data_id,
         &DeriveKeyAction {
-            key_id: String::new(), // Will be overridden by derive_key function
+            key_id: Some(secret_data_id),
+            password: None,
             derivation_method: "PBKDF2".to_owned(),
             salt: "0123456789abcdef".to_owned(),
             iteration_count: 4096,
@@ -268,9 +268,9 @@ pub(crate) async fn test_derive_key_different_algorithms() -> CosmianResult<()> 
     for (method, digest) in algorithms {
         let derived_key_id = derive_key(
             &kms_client,
-            &base_key_id,
             &DeriveKeyAction {
-                key_id: String::new(), // Will be overridden by derive_key function
+                key_id: Some(base_key_id.clone()),
+                password: None,
                 derivation_method: method.to_owned(),
                 salt: "0123456789abcdef".to_owned(),
                 iteration_count: 4096,
@@ -286,6 +286,64 @@ pub(crate) async fn test_derive_key_different_algorithms() -> CosmianResult<()> 
         assert!(!derived_key_id.is_empty());
         assert!(derived_key_id.starts_with("derived-"));
     }
+
+    Ok(())
+}
+
+#[tokio::test]
+pub(crate) async fn test_derive_key_from_password() -> CosmianResult<()> {
+    let ctx = start_default_test_kms_server().await;
+    let kms_client = ctx.get_owner_client();
+
+    // Test deriving from a password (UTF-8 string)
+    let derived_key_id = derive_key(
+        &kms_client,
+        &DeriveKeyAction {
+            key_id: None,
+            password: Some("my-secure-password-123".to_owned()),
+            derivation_method: "PBKDF2".to_owned(),
+            salt: "0123456789abcdef".to_owned(),
+            iteration_count: 4096,
+            initialization_vector: None,
+            digest_algorithm: CHashingAlgorithm::SHA256,
+            cryptographic_length: 256,
+            derived_key_id: Some("test-derived-from-password".to_owned()),
+        },
+    )
+    .await?;
+
+    // Check that we got a valid derived key ID
+    assert!(!derived_key_id.is_empty());
+    assert!(derived_key_id.starts_with("derived-"));
+
+    Ok(())
+}
+
+#[tokio::test]
+pub(crate) async fn test_derive_key_from_unicode_password() -> CosmianResult<()> {
+    let ctx = start_default_test_kms_server().await;
+    let kms_client = ctx.get_owner_client();
+
+    // Test deriving from a Unicode password (UTF-8 string with special characters)
+    let derived_key_id = derive_key(
+        &kms_client,
+        &DeriveKeyAction {
+            key_id: None,
+            password: Some("мой-пароль-🔐-密码-123".to_owned()), // my password
+            derivation_method: "HKDF".to_owned(),
+            salt: "fedcba9876543210".to_owned(),
+            iteration_count: 4096,
+            initialization_vector: Some("1122334455667788".to_owned()),
+            digest_algorithm: CHashingAlgorithm::SHA512,
+            cryptographic_length: 384,
+            derived_key_id: Some("test-derived-from-unicode-password".to_owned()),
+        },
+    )
+    .await?;
+
+    // Check that we got a valid derived key ID
+    assert!(!derived_key_id.is_empty());
+    assert!(derived_key_id.starts_with("derived-"));
 
     Ok(())
 }

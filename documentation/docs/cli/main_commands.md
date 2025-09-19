@@ -1220,7 +1220,9 @@ Derive a new key from an existing key
 ### Usage
 `cosmian kms derive-key [options]`
 ### Arguments
-`--key-id [-k] <KEY_ID>` The unique identifier of the base key to derive from
+`--key-id [-k] <KEY_ID>` The unique identifier of the base key to derive from Mutually exclusive with --password
+
+`--password [-p] <PASSWORD>` UTF-8 password to use as base material for key derivation Will create a `SecretData` of type Password internally Mutually exclusive with --key-id
 
 `--derivation-method [-m] <DERIVATION_METHOD>` The derivation method to use (PBKDF2 or HKDF)
 
