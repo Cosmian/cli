@@ -50,6 +50,7 @@ jobs:
 
   docker-image:
     name: Build docker image
+    if: github.repository == 'Cosmian/cli' && !startsWith(github.ref_name, 'dependabot/')
     uses: Cosmian/reusable_workflows/.github/workflows/build_docker_image.yml@develop
     with:
       prefix: ''
@@ -62,6 +63,7 @@ jobs:
   ##############################################################################
   release:
     name: release
+    if: github.repository == 'Cosmian/cli' && !startsWith(github.ref_name, 'dependabot/')
     needs:
       - cargo-lint
       - cargo-deny
@@ -75,6 +77,7 @@ jobs:
       debug_or_release: ${{ inputs.debug_or_release }}
 
   public_documentation:
+    if: github.repository == 'Cosmian/cli' && !startsWith(github.ref_name, 'dependabot/')
     runs-on: ubuntu-latest
 
     steps:
