@@ -10,7 +10,7 @@ use cosmian_cli::reexport::cosmian_kms_cli::reexport::{
     },
     cosmian_kms_client::KmsClient,
 };
-use cosmian_logger::log_init;
+use cosmian_logger::{debug, log_init};
 use cosmian_pkcs11_module::{
     pkcs11::{C_CloseSession, C_Finalize, C_Initialize, C_OpenSession, SLOT_ID},
     test_decrypt, test_encrypt, test_generate_key,
@@ -19,7 +19,6 @@ use cosmian_pkcs11_module::{
 use pkcs11_sys::{CK_FUNCTION_LIST, CK_INVALID_HANDLE, CKF_SERIAL_SESSION, CKR_OK};
 use serial_test::serial;
 use test_kms_server::start_default_test_kms_server;
-use tracing::debug;
 
 use crate::{
     C_GetFunctionList,

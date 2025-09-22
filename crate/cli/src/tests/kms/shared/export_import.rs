@@ -2,10 +2,9 @@ use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::export_utils::WrappingAlgorithm,
 };
-use cosmian_logger::log_init;
+use cosmian_logger::{debug, log_init};
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
-use tracing::debug;
 
 use crate::{
     error::result::CosmianResult,

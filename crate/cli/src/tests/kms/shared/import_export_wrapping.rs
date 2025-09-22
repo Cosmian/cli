@@ -25,9 +25,9 @@ use cosmian_kms_cli::{
         },
     },
 };
+use cosmian_logger::{debug, trace};
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
-use tracing::{debug, trace};
 
 use super::ExportKeyParams;
 use crate::{

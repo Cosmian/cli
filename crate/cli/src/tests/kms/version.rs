@@ -1,9 +1,8 @@
 use std::process::Command;
 
 use assert_cmd::prelude::*;
-use cosmian_logger::log_init;
+use cosmian_logger::{error, info, log_init};
 use test_kms_server::start_default_test_kms_server;
-use tracing::{error, info};
 
 use super::KMS_SUBCOMMAND;
 use crate::{

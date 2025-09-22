@@ -21,6 +21,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
+use cosmian_logger::{debug, error, info, trace};
 use pkcs11_sys::{
     CK_ATTRIBUTE_PTR, CK_BBOOL, CK_BYTE_PTR, CK_C_INITIALIZE_ARGS_PTR, CK_FLAGS, CK_FUNCTION_LIST,
     CK_INFO, CK_INFO_PTR, CK_MECHANISM_INFO, CK_MECHANISM_INFO_PTR, CK_MECHANISM_PTR,
@@ -34,7 +35,6 @@ use pkcs11_sys::{
     CKS_RW_USER_FUNCTIONS, CRYPTOKI_VERSION_MAJOR, CRYPTOKI_VERSION_MINOR,
 };
 use rand::RngCore;
-use tracing::{debug, error, info, trace};
 
 use crate::{
     MResultHelper, ModuleError, ModuleResult,
@@ -61,7 +61,7 @@ where
     match f() {
         Ok(()) => CKR_OK,
         Err(e) => {
-            tracing::error!("{}: {}", name, e);
+            cosmian_logger::error!("{}: {}", name, e);
             e.into()
         }
     }

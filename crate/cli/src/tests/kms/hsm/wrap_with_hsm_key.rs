@@ -7,7 +7,7 @@ use cosmian_logger::log_init;
 #[cfg(feature = "non-fips")]
 use tempfile::TempDir;
 #[cfg(feature = "non-fips")]
-use tracing::info;
+use cosmian_logger::info;
 use uuid::Uuid;
 
 #[cfg(feature = "non-fips")]

@@ -470,7 +470,7 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
     // create a temp dir
 
     use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_2_1::kmip_data_structures::KeyValue;
-    use tracing::trace;
+    use cosmian_logger::trace;
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
     // init the test server

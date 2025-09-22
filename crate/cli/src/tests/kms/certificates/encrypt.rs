@@ -9,9 +9,9 @@ use cosmian_kms_cli::reexport::cosmian_kms_client::{
         rsa_utils::RsaEncryptionAlgorithm,
     },
 };
+use cosmian_logger::{debug, trace};
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
-use tracing::{debug, trace};
 use uuid::Uuid;
 
 use super::SUB_COMMAND;

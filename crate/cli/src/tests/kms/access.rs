@@ -5,11 +5,10 @@ use cosmian_kms_cli::{
     actions::kms::symmetric::keys::create_key::CreateKeyAction,
     reexport::cosmian_kms_client::reexport::cosmian_kms_client_utils::symmetric_utils::DataEncryptionAlgorithm,
 };
-use cosmian_logger::log_init;
+use cosmian_logger::{log_init, trace};
 use test_kms_server::start_default_test_kms_server_with_cert_auth;
 #[cfg(feature = "non-fips")]
 use test_kms_server::start_default_test_kms_server_with_privileged_users;
-use tracing::trace;
 
 #[cfg(feature = "non-fips")]
 use super::rsa::create_key_pair::{RsaKeyPairOptions, create_rsa_key_pair};

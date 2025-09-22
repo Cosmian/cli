@@ -16,9 +16,9 @@ use cosmian_kms_cli::{
         },
     },
 };
+use cosmian_logger::trace;
 use strum::IntoEnumIterator;
 use test_kms_server::start_default_test_kms_server;
-use tracing::trace;
 
 use crate::{
     error::result::CosmianResult,

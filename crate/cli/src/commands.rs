@@ -8,8 +8,7 @@ use cosmian_kms_cli::{
     actions::kms::actions::KmsActions,
     reexport::cosmian_kms_client::{KmsClient, reexport::cosmian_http_client::ProxyParams},
 };
-use cosmian_logger::log_init;
-use tracing::{info, trace};
+use cosmian_logger::{info, log_init, trace};
 use url::Url;
 
 use crate::{
