@@ -33,13 +33,15 @@ When reporting a vulnerability, please include as much of the following informat
 
 The following table lists security advisories that are currently being tracked or have been assessed for this project (as configured in `deny.toml`):
 
-| ID                | Description                                                        | Status  | Reason                                                                                                                           |
-| ----------------- | ------------------------------------------------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| RUSTSEC-2024-0436 | Transitive dependency (`paste`) unmaintained in `agnostic_lite`    | Ignored | Temporary; pending upstream migration to `pastry`. Tracked at <https://github.com/al8n/agnostic/issues/26>.                      |
+| ID                | Description                                                            | Status  | Reason                                                                                                      |
+| ----------------- | ---------------------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| RUSTSEC-2023-0071 | RSA Marvin Attack: potential key recovery through timing side channels | Ignored | Temporary; waiting for upstream fix.                                                                        |
+| RUSTSEC-2024-0436 | Transitive dependency (`paste`) unmaintained in `agnostic_lite`        | Ignored | Temporary; pending upstream migration to `pastry`. Tracked at <https://github.com/al8n/agnostic/issues/26>. |
 
 ### Advisory Details
 
-RUSTSEC-2024-0436: `paste` is no longer maintained. The advisory surfaces via a transitive dependency chain in `agnostic_lite`. Upstream is expected to migrate to `pastry`; we are tracking progress and will update when available.
+- RUSTSEC-2023-0071: The `rsa` crate is affected by a timing side-channel vulnerability known as the Marvin Attack, which could potentially allow key recovery. This advisory is currently ignored in our tracking as we await an upstream fix.
+- RUSTSEC-2024-0436: `paste` is no longer maintained. The advisory surfaces via a transitive dependency chain in `agnostic_lite`. Upstream is expected to migrate to `pastry`; we are tracking progress and will update when available.
 
 Note: `cargo-deny` may report issues from optional or feature-gated dependencies because our configuration collects metadata with all features enabled (see `deny.toml`), even if those dependencies aren't compiled in release builds.
 
