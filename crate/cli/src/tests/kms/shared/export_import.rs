@@ -41,9 +41,9 @@ pub(crate) async fn test_wrap_on_export_unwrap_on_import() -> CosmianResult<()> 
     for wrapping_algorithm in [WrappingAlgorithm::AesGCM, WrappingAlgorithm::NistKeyWrap] {
         debug!("wrapping algorithm: {wrapping_algorithm}",);
         export_key(ExportKeyParams {
-            cli_conf_path: user_client_conf_path.to_string(),
+            cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
-            key_id: dek_id.to_string(),
+            key_id: dek_id.clone(),
             key_file: dek_file.clone(),
             wrap_key_id: Some(kek_id.clone()),
             wrapping_algorithm: Some(wrapping_algorithm.clone()),
@@ -51,7 +51,7 @@ pub(crate) async fn test_wrap_on_export_unwrap_on_import() -> CosmianResult<()> 
         })?;
 
         let imported_key_id = import_key(ImportKeyParams {
-            cli_conf_path: user_client_conf_path.to_string(),
+            cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_string(),
             key_file: dek_file.clone(),
             key_id: Some(dek_id.clone()),

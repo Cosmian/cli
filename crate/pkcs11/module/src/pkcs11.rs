@@ -1099,9 +1099,8 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(pPart, "C_SignUpdate: pPart");
         sessions::session(hSession, |session| -> ModuleResult<()> {
-            let sign_ctx = match session.sign_ctx.as_mut() {
-                None => return Err(ModuleError::OperationNotInitialized(hSession)),
-                Some(sign_ctx) => sign_ctx,
+            let Some(sign_ctx) = session.sign_ctx.as_mut() else {
+                return Err(ModuleError::OperationNotInitialized(hSession))
             };
             sign_ctx
                 .payload

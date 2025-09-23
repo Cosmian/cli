@@ -72,7 +72,7 @@ pub(crate) async fn test_rekey_symmetric_key() -> CosmianResult<()> {
 
     // Export as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: id.clone(),
         key_file: tmp_path.join("aes_sym").to_str().unwrap().to_owned(),
