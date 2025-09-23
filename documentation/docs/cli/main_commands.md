@@ -1236,6 +1236,10 @@ Derive a new key from an existing key
 
 Possible values:  `"sha256", "sha384", "sha512", "sha3-224", "sha3-256", "sha3-384", "sha3-512"` [default: `"SHA256"`]
 
+`--algorithm [-a] <ALGORITHM>` The algorithm
+
+Possible values:  `"chacha20", "aes", "sha3", "shake"` [default: `"aes"`]
+
 `--length [-l] <CRYPTOGRAPHIC_LENGTH>` Length of the derived key in bits
 
 `--derived-key-id <DERIVED_KEY_ID>` Optional unique identifier for the derived key

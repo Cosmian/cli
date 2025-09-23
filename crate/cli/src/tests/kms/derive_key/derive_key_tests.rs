@@ -1,5 +1,6 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, process::Command};
 
+use assert_cmd::prelude::*;
 use cosmian_kms_cli::{
     actions::kms::{derive_key::DeriveKeyAction, mac::CHashingAlgorithm},
     reexport::cosmian_kms_client::{
@@ -11,46 +12,84 @@ use cosmian_kms_cli::{
             kmip_operations::Create,
             kmip_types::{CryptographicAlgorithm, KeyFormatType},
         },
+        reexport::cosmian_kms_client_utils::create_utils::SymmetricAlgorithm,
     },
 };
+use cosmian_logger::log_init;
 use test_kms_server::start_default_test_kms_server;
-use uuid::Uuid;
 
+use super::super::{KMS_SUBCOMMAND, utils::extract_uids::extract_uid};
 use crate::{
+    config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
     tests::{
-        kms::secret_data::create_secret::{SecretDataOptions, create_secret_data},
+        PROG_NAME,
+        kms::{
+            secret_data::create_secret::{SecretDataOptions, create_secret_data},
+            utils::recover_cmd_logs,
+        },
         save_kms_cli_config,
     },
 };
 
-pub(crate) async fn derive_key(
-    kms_client: &KmsClient,
-    action: &DeriveKeyAction,
-) -> CosmianResult<String> {
-    // Create a new DeriveKeyAction with the provided options
-    let action = DeriveKeyAction {
-        key_id: action.key_id.clone(),
-        password: action.password.clone(),
-        derivation_method: action.derivation_method.clone(),
-        salt: action.salt.clone(),
-        iteration_count: action.iteration_count,
-        initialization_vector: action.initialization_vector.clone(),
-        digest_algorithm: action.digest_algorithm.clone(),
-        cryptographic_length: action.cryptographic_length,
-        derived_key_id: action.derived_key_id.clone(),
-    };
+const SUB_COMMAND: &str = "derive-key";
 
-    // Run the action
-    action
-        .run(kms_client)
-        .await
-        .map_err(|e| CosmianError::Default(format!("DeriveKey operation failed: {e}")))?;
+/// Run `cosmian kms derive-key` via the CLI and return the derived key unique identifier
+pub(crate) fn derive_key(cli_conf_path: &str, action: DeriveKeyAction) -> CosmianResult<String> {
+    let mut cmd = Command::cargo_bin(PROG_NAME)?;
+    cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
 
-    // Note: The KMS server generates its own ID regardless of the provided derived_key_id
-    // Since DeriveKeyAction.run() only prints the result and returns (), we need to
-    // generate a realistic ID that matches the server's pattern for testing purposes
-    Ok(format!("derived-{}", Uuid::new_v4()))
+    // Build CLI args from the action
+    let mut args: Vec<String> = vec![
+        // Algorithm and length are explicit to avoid relying on defaults
+        "--algorithm".to_owned(),
+        action.algorithm.to_string(),
+        "--length".to_owned(),
+        action.cryptographic_length.to_string(),
+        "--derivation-method".to_owned(),
+        action.derivation_method.to_string(),
+        "--salt".to_owned(),
+        action.salt,
+        "--iteration-count".to_owned(),
+        action.iteration_count.to_string(),
+        "--digest-algorithm".to_owned(),
+        action.digest_algorithm.to_string(),
+    ];
+
+    if let Some(k) = action.key_id {
+        args.extend(vec!["--key-id".to_owned(), k]);
+    }
+    if let Some(pw) = action.password {
+        args.extend(vec!["--password".to_owned(), pw]);
+    }
+    if let Some(iv) = action.initialization_vector {
+        args.extend(vec!["--initialization-vector".to_owned(), iv]);
+    }
+    if let Some(derived_id) = action.derived_key_id {
+        args.extend(vec!["--derived-key-id".to_owned(), derived_id]);
+    }
+
+    cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
+
+    let output = recover_cmd_logs(&mut cmd);
+    if output.status.success() {
+        let stdout = std::str::from_utf8(&output.stdout)?;
+        // The label may appear mid-line (e.g., "... Derived key ID: <uid>")
+        // Extract the substring starting at the label so extract_uid can match from line start
+        if let Some(pos) = stdout.find("Derived key ID:") {
+            let sliced = &stdout[pos..];
+            if let Some(uid) = extract_uid(sliced, "Derived key ID") {
+                return Ok(uid.to_string());
+            }
+        }
+        return Err(CosmianError::Default(
+            "failed extracting the unique identifier".to_owned(),
+        ));
+    }
+
+    Err(CosmianError::Default(
+        std::str::from_utf8(&output.stderr)?.to_owned(),
+    ))
 }
 /// Create a symmetric key that can be used for derivation using `KmsClient` directly
 pub(crate) async fn create_derivable_symmetric_key_with_client(
@@ -94,8 +133,10 @@ pub(crate) async fn create_derivable_symmetric_key_with_client(
 
 #[tokio::test]
 pub(crate) async fn test_derive_symmetric_key_pbkdf2() -> CosmianResult<()> {
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
     let kms_client = ctx.get_owner_client();
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Create a base symmetric key for derivation
     let base_key_id = create_derivable_symmetric_key_with_client(
@@ -107,8 +148,8 @@ pub(crate) async fn test_derive_symmetric_key_pbkdf2() -> CosmianResult<()> {
 
     // Test PBKDF2 derivation
     let derived_key_id = derive_key(
-        &kms_client,
-        &DeriveKeyAction {
+        &owner_client_conf_path,
+        DeriveKeyAction {
             key_id: Some(base_key_id),
             password: None,
             derivation_method: "PBKDF2".to_owned(),
@@ -116,11 +157,11 @@ pub(crate) async fn test_derive_symmetric_key_pbkdf2() -> CosmianResult<()> {
             iteration_count: 4096,
             initialization_vector: None,
             digest_algorithm: CHashingAlgorithm::SHA256,
+            algorithm: SymmetricAlgorithm::default(),
             cryptographic_length: 256,
             derived_key_id: Some("test-derived-symmetric-pbkdf2".to_owned()),
         },
-    )
-    .await?;
+    )?;
 
     // Note: The KMS server currently generates its own ID regardless of the provided derived_key_id
     // So we just check that we got a valid ID back
@@ -131,8 +172,10 @@ pub(crate) async fn test_derive_symmetric_key_pbkdf2() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_derive_symmetric_key_hkdf() -> CosmianResult<()> {
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
     let kms_client = ctx.get_owner_client();
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Create a base symmetric key for derivation
     let base_key_id = create_derivable_symmetric_key_with_client(
@@ -144,8 +187,8 @@ pub(crate) async fn test_derive_symmetric_key_hkdf() -> CosmianResult<()> {
 
     // Test HKDF derivation
     let derived_key_id = derive_key(
-        &kms_client,
-        &DeriveKeyAction {
+        &owner_client_conf_path,
+        DeriveKeyAction {
             key_id: Some(base_key_id),
             password: None,
             derivation_method: "HKDF".to_owned(),
@@ -153,11 +196,11 @@ pub(crate) async fn test_derive_symmetric_key_hkdf() -> CosmianResult<()> {
             iteration_count: 4096,
             initialization_vector: Some("1122334455667788".to_owned()),
             digest_algorithm: CHashingAlgorithm::SHA256,
+            algorithm: SymmetricAlgorithm::default(),
             cryptographic_length: 512,
             derived_key_id: Some("test-derived-symmetric-hkdf".to_owned()),
         },
-    )
-    .await?;
+    )?;
 
     // Check that we got a valid derived key ID
     assert!(!derived_key_id.is_empty());
@@ -167,8 +210,10 @@ pub(crate) async fn test_derive_symmetric_key_hkdf() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_derive_symmetric_key_different_lengths() -> CosmianResult<()> {
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
     let kms_client = ctx.get_owner_client();
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Create a base symmetric key for derivation
     let base_key_id = create_derivable_symmetric_key_with_client(
@@ -183,8 +228,8 @@ pub(crate) async fn test_derive_symmetric_key_different_lengths() -> CosmianResu
 
     for length in lengths {
         let derived_key_id = derive_key(
-            &kms_client,
-            &DeriveKeyAction {
+            &owner_client_conf_path,
+            DeriveKeyAction {
                 key_id: Some(base_key_id.clone()),
                 password: None,
                 derivation_method: "PBKDF2".to_owned(),
@@ -192,11 +237,11 @@ pub(crate) async fn test_derive_symmetric_key_different_lengths() -> CosmianResu
                 iteration_count: 4096,
                 initialization_vector: None,
                 digest_algorithm: CHashingAlgorithm::SHA256,
+                algorithm: SymmetricAlgorithm::default(),
                 cryptographic_length: length,
                 derived_key_id: Some(format!("test-derived-symmetric-{length}-bits")),
             },
-        )
-        .await?;
+        )?;
 
         // Check that we got a valid derived key ID
         assert!(!derived_key_id.is_empty());
@@ -208,8 +253,9 @@ pub(crate) async fn test_derive_symmetric_key_different_lengths() -> CosmianResu
 
 #[tokio::test]
 pub(crate) async fn test_derive_from_secret_data() -> CosmianResult<()> {
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
-    let kms_client = ctx.get_owner_client();
+    let _kms_client = ctx.get_owner_client();
     let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Create a secret data for derivation
@@ -223,8 +269,8 @@ pub(crate) async fn test_derive_from_secret_data() -> CosmianResult<()> {
 
     // Derive a symmetric key from the secret data
     let derived_key_id = derive_key(
-        &kms_client,
-        &DeriveKeyAction {
+        &owner_client_conf_path,
+        DeriveKeyAction {
             key_id: Some(secret_data_id),
             password: None,
             derivation_method: "PBKDF2".to_owned(),
@@ -232,11 +278,11 @@ pub(crate) async fn test_derive_from_secret_data() -> CosmianResult<()> {
             iteration_count: 4096,
             initialization_vector: None,
             digest_algorithm: CHashingAlgorithm::SHA256,
+            algorithm: SymmetricAlgorithm::default(),
             cryptographic_length: 256,
             derived_key_id: Some("test-derived-from-secret".to_owned()),
         },
-    )
-    .await?;
+    )?;
 
     // Check that we got a valid derived key ID
     assert!(!derived_key_id.is_empty());
@@ -247,8 +293,10 @@ pub(crate) async fn test_derive_from_secret_data() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_derive_key_different_algorithms() -> CosmianResult<()> {
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
     let kms_client = ctx.get_owner_client();
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Create a base symmetric key for derivation
     let base_key_id = create_derivable_symmetric_key_with_client(
@@ -267,8 +315,8 @@ pub(crate) async fn test_derive_key_different_algorithms() -> CosmianResult<()> 
 
     for (method, digest) in algorithms {
         let derived_key_id = derive_key(
-            &kms_client,
-            &DeriveKeyAction {
+            &owner_client_conf_path,
+            DeriveKeyAction {
                 key_id: Some(base_key_id.clone()),
                 password: None,
                 derivation_method: method.to_owned(),
@@ -276,11 +324,11 @@ pub(crate) async fn test_derive_key_different_algorithms() -> CosmianResult<()> 
                 iteration_count: 4096,
                 initialization_vector: None,
                 digest_algorithm: digest.clone(),
+                algorithm: SymmetricAlgorithm::default(),
                 cryptographic_length: 256,
                 derived_key_id: Some(format!("test-derived-{method}-{digest:?}")),
             },
-        )
-        .await?;
+        )?;
 
         // Check that we got a valid derived key ID
         assert!(!derived_key_id.is_empty());
@@ -292,13 +340,15 @@ pub(crate) async fn test_derive_key_different_algorithms() -> CosmianResult<()> 
 
 #[tokio::test]
 pub(crate) async fn test_derive_key_from_password() -> CosmianResult<()> {
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
-    let kms_client = ctx.get_owner_client();
+    let _kms_client = ctx.get_owner_client();
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Test deriving from a password (UTF-8 string)
     let derived_key_id = derive_key(
-        &kms_client,
-        &DeriveKeyAction {
+        &owner_client_conf_path,
+        DeriveKeyAction {
             key_id: None,
             password: Some("my-secure-password-123".to_owned()),
             derivation_method: "PBKDF2".to_owned(),
@@ -306,11 +356,11 @@ pub(crate) async fn test_derive_key_from_password() -> CosmianResult<()> {
             iteration_count: 4096,
             initialization_vector: None,
             digest_algorithm: CHashingAlgorithm::SHA256,
+            algorithm: SymmetricAlgorithm::default(),
             cryptographic_length: 256,
             derived_key_id: Some("test-derived-from-password".to_owned()),
         },
-    )
-    .await?;
+    )?;
 
     // Check that we got a valid derived key ID
     assert!(!derived_key_id.is_empty());
@@ -321,13 +371,15 @@ pub(crate) async fn test_derive_key_from_password() -> CosmianResult<()> {
 
 #[tokio::test]
 pub(crate) async fn test_derive_key_from_unicode_password() -> CosmianResult<()> {
+    log_init(None);
     let ctx = start_default_test_kms_server().await;
-    let kms_client = ctx.get_owner_client();
+    let _kms_client = ctx.get_owner_client();
+    let (owner_client_conf_path, _) = save_kms_cli_config(ctx);
 
     // Test deriving from a Unicode password (UTF-8 string with special characters)
     let derived_key_id = derive_key(
-        &kms_client,
-        &DeriveKeyAction {
+        &owner_client_conf_path,
+        DeriveKeyAction {
             key_id: None,
             password: Some("мой-пароль-🔐-密码-123".to_owned()), // my password
             derivation_method: "HKDF".to_owned(),
@@ -335,11 +387,11 @@ pub(crate) async fn test_derive_key_from_unicode_password() -> CosmianResult<()>
             iteration_count: 4096,
             initialization_vector: Some("1122334455667788".to_owned()),
             digest_algorithm: CHashingAlgorithm::SHA512,
+            algorithm: SymmetricAlgorithm::default(),
             cryptographic_length: 384,
             derived_key_id: Some("test-derived-from-unicode-password".to_owned()),
         },
-    )
-    .await?;
+    )?;
 
     // Check that we got a valid derived key ID
     assert!(!derived_key_id.is_empty());
