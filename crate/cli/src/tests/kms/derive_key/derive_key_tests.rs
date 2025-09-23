@@ -1,8 +1,11 @@
-use std::{collections::HashSet, process::Command};
+use std::process::Command;
 
 use assert_cmd::prelude::*;
 use cosmian_kms_cli::{
-    actions::kms::{derive_key::DeriveKeyAction, mac::CHashingAlgorithm},
+    actions::kms::{
+        derive_key::DeriveKeyAction, mac::CHashingAlgorithm,
+        secret_data::create_secret::CreateSecretDataAction,
+    },
     reexport::cosmian_kms_client::{
         KmsClient,
         kmip_0::kmip_types::CryptographicUsageMask,
@@ -24,10 +27,7 @@ use crate::{
     error::{CosmianError, result::CosmianResult},
     tests::{
         PROG_NAME,
-        kms::{
-            secret_data::create_secret::{SecretDataOptions, create_secret_data},
-            utils::recover_cmd_logs,
-        },
+        kms::{secret_data::create_secret::create_secret_data, utils::recover_cmd_logs},
         save_kms_cli_config,
     },
 };
@@ -47,7 +47,7 @@ pub(crate) fn derive_key(cli_conf_path: &str, action: DeriveKeyAction) -> Cosmia
         "--length".to_owned(),
         action.cryptographic_length.to_string(),
         "--derivation-method".to_owned(),
-        action.derivation_method.to_string(),
+        action.derivation_method.clone(),
         "--salt".to_owned(),
         action.salt,
         "--iteration-count".to_owned(),
@@ -261,8 +261,8 @@ pub(crate) async fn test_derive_from_secret_data() -> CosmianResult<()> {
     // Create a secret data for derivation
     let secret_data_id = create_secret_data(
         &owner_client_conf_path,
-        &SecretDataOptions {
-            tags: HashSet::from_iter(vec!["test-secret".to_owned()]),
+        &CreateSecretDataAction {
+            tags: vec!["test-secret".to_owned()],
             ..Default::default()
         },
     )?;
