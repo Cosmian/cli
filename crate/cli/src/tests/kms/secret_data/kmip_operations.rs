@@ -30,7 +30,7 @@ use crate::{
 ///   If true, asserts that the command succeeds and returns stdout as String
 ///   If false, returns the raw Output for custom handling
 fn run_cosmian_cmd(args: &[&str], expect_success: bool) -> Result<String, std::process::Output> {
-    let mut cmd = Command::cargo_bin("cosmian").unwrap();
+    let mut cmd = Command::cargo_bin(PROG_NAME).unwrap();
     let output = cmd.args(args).output().unwrap();
 
     if expect_success {
@@ -90,7 +90,6 @@ async fn test_secret_data_all_kmip_operations() {
 
     info!("=== Testing KMIP Operations on SecretData ===");
 
-    // 1. CREATE WRAPPING KEY (Symmetric Key for wrapping)
     info!("1. Creating symmetric key to use as wrapping key...");
     let output_str = run_cosmian_cmd(
         &[
@@ -113,7 +112,6 @@ async fn test_secret_data_all_kmip_operations() {
     assert!(output_str.contains("successfully generated"));
     info!("Wrapping key created: {}", wrapping_key_id);
 
-    // 2. CREATE SECRET DATA (without wrapping)
     info!("2. Creating SecretData without wrapping...");
     let secret_data_created_id = create_secret_data(
         &cli_conf_path,
@@ -128,7 +126,6 @@ async fn test_secret_data_all_kmip_operations() {
     assert_eq!(secret_data_created_id, secret_data_id);
     info!("SecretData created: {}", secret_data_id);
 
-    // 3. CREATE SECRET DATA WITH WRAPPING (GitHub issue #549)
     info!("3. Creating SecretData WITH wrapping key (issue #549)...");
     let wrapped_secret_created_id = create_secret_data(
         &cli_conf_path,
@@ -147,7 +144,6 @@ async fn test_secret_data_all_kmip_operations() {
         secret_data_with_wrapping_id
     );
 
-    // 4. EXPORT OPERATIONS
     info!("4. Testing EXPORT operations...");
 
     let tmp_path = tmp_dir.path();
@@ -180,7 +176,6 @@ async fn test_secret_data_all_kmip_operations() {
     assert!(export_file2.exists(), "Wrapped export file was not created");
     info!("EXPORT operation successful for wrapped SecretData");
 
-    // 5. EXPORT TO FILE OPERATIONS
     info!("5. Testing EXPORT to file operations...");
 
     // Export regular secret data to file (additional test with different format)
@@ -200,9 +195,6 @@ async fn test_secret_data_all_kmip_operations() {
 
     assert!(export_file3.exists(), "Export file was not created");
     info!("EXPORT operation successful for SecretData");
-
-    // 6. IMPORT OPERATIONS
-    info!("6. Testing IMPORT operations...");
 
     let import_file = tmp_path.join("temp_secret_for_import.json");
 
@@ -248,7 +240,6 @@ async fn test_secret_data_all_kmip_operations() {
     );
     info!("IMPORT operation successful for SecretData");
 
-    // 7. REVOKE OPERATIONS
     info!("7. Testing REVOKE operations...");
 
     // Revoke the imported secret data
@@ -266,7 +257,6 @@ async fn test_secret_data_all_kmip_operations() {
     assert!(output_str.contains("successfully revoked") || output_str.contains("revoked"));
     info!("REVOKE operation successful for SecretData");
 
-    // 8. DESTROY OPERATIONS
     info!("8. Testing DESTROY operations...");
 
     // Destroy the revoked secret data
@@ -276,7 +266,6 @@ async fn test_secret_data_all_kmip_operations() {
     assert!(output_str.contains("successfully destroyed") || output_str.contains("destroyed"));
     info!("DESTROY operation successful for SecretData");
 
-    // 9. VERIFY DESTROYED OBJECT CANNOT BE ACCESSED
     info!("9. Verifying destroyed SecretData cannot be accessed...");
 
     let destroyed_export_file = tmp_path.join("should_not_work.json");
@@ -297,7 +286,6 @@ async fn test_secret_data_all_kmip_operations() {
     );
     info!("Destroyed SecretData correctly inaccessible");
 
-    // 10. VERIFY WRAPPED SECRET DATA CAN STILL BE USED
     info!("10. Verifying wrapped SecretData is still functional...");
 
     let wrapped_export_file = tmp_path.join("wrapped_secret_export.json");
@@ -331,7 +319,6 @@ async fn test_secret_data_wrapping_edge_cases() {
 
     info!("=== Testing SecretData Wrapping Edge Cases ===");
 
-    // 1. Test with different key sizes
     info!("1. Testing wrapping with different key sizes...");
 
     // Create wrapping key
@@ -368,7 +355,6 @@ async fn test_secret_data_wrapping_edge_cases() {
     assert_eq!(large_wrapped_id, "large_wrapped_secret");
     info!("Large SecretData wrapped with 128-bit key");
 
-    // 2. Test wrapping with different algorithms
     info!("2. Testing wrapping with different algorithms...");
 
     // Create ChaCha20 wrapping key
@@ -407,7 +393,6 @@ async fn test_secret_data_wrapping_edge_cases() {
         info!("ChaCha20 key creation not supported (expected)");
     }
 
-    // 3. Test error cases
     info!("3. Testing error cases...");
 
     // Try to wrap with non-existent key
@@ -538,7 +523,6 @@ async fn test_secret_data_backwards_compatibility() {
 
     info!("=== Testing Backwards Compatibility ===");
 
-    // 1. Test creating secret data without wrapping (original functionality)
     info!("1. Testing original SecretData creation (no wrapping)...");
 
     let original_id = create_secret_data(
@@ -554,7 +538,6 @@ async fn test_secret_data_backwards_compatibility() {
     assert_eq!(original_id, "original_secret_data");
     info!("Original SecretData creation works");
 
-    // 2. Test with secret value (original import functionality)
     info!("2. Testing SecretData with secret value...");
 
     let password_id = create_secret_data(
@@ -571,7 +554,6 @@ async fn test_secret_data_backwards_compatibility() {
     assert_eq!(password_id, "password_based_secret");
     info!("SecretData with secret value works");
 
-    // 3. Test all the original operations still work
     info!("3. Testing original operations still work...");
 
     // Export
