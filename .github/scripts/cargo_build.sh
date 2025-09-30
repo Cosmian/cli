@@ -1,33 +1,11 @@
 #!/bin/bash
 
-set -ex
+set -exo pipefail
 
-# --- Declare the following variables for tests
-# export TARGET=x86_64-unknown-linux-gnu
-# export TARGET=aarch64-apple-darwin
-# export DEBUG_OR_RELEASE=debug
-# export OPENSSL_DIR=/usr/local/openssl
-# export SKIP_SERVICES_TESTS="--skip hsm"
-
-ROOT_FOLDER=$(pwd)
-
-if [ "$DEBUG_OR_RELEASE" = "release" ]; then
-  # First build the Debian and RPM packages. It must come at first since
-  rm -rf target/"$TARGET"/debian
-  rm -rf target/"$TARGET"/generate-rpm
-
-  if [ -f /etc/redhat-release ]; then
-    cargo build --features non-fips --target "$TARGET" --release
-    cargo install --version 0.16.0 cargo-generate-rpm --force
-    cargo generate-rpm --target "$TARGET" -p crate/cli
-  elif [ -f /etc/debian_version ]; then
-    cargo install --version 2.4.0 cargo-deb --force
-    cargo deb --target "$TARGET" -p cosmian_cli
-  fi
-fi
+# export FEATURES="non-fips"
 
 if [ -z "$TARGET" ]; then
-  echo "Error: TARGET is not set."
+  echo "Error: TARGET is not set. Examples of TARGET are x86_64-unknown-linux-gnu, x86_64-apple-darwin, aarch64-apple-darwin."
   exit 1
 fi
 
@@ -35,47 +13,43 @@ if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   RELEASE="--release"
 fi
 
-if [ -z "$SKIP_SERVICES_TESTS" ]; then
-  echo "Info: SKIP_SERVICES_TESTS is not set."
-  unset SKIP_SERVICES_TESTS
+if [ -n "$FEATURES" ]; then
+  FEATURES="--features $FEATURES"
+fi
+
+if [ -z "$FEATURES" ]; then
+  echo "Info: FEATURES is not set."
+  unset FEATURES
+fi
+
+if [ -z "$OPENSSL_DIR" ]; then
+  echo "Error: OPENSSL_DIR is not set. Example OPENSSL_DIR=/usr/local/openssl"
+  exit 1
 fi
 
 rustup target add "$TARGET"
 
-if [ -f /etc/lsb-release ]; then
-  bash .github/reusable_scripts/test_utimaco.sh
-fi
-
-cd "$ROOT_FOLDER"
-
-if [ -z "$OPENSSL_DIR" ]; then
-  echo "Error: OPENSSL_DIR is not set."
-  exit 1
-fi
-
 # shellcheck disable=SC2086
-cargo build --target $TARGET $RELEASE \
-  --features non-fips \
-  -p cosmian_cli \
-  -p cosmian_pkcs11
+cargo build -p cosmian_cli -p cosmian_pkcs11 --target $TARGET $RELEASE $FEATURES
 
-TARGET_FOLDER=./target/"$TARGET/$DEBUG_OR_RELEASE"
-"${TARGET_FOLDER}"/cosmian -h
+COSMIAN_CLI_EXE="target/$TARGET/$DEBUG_OR_RELEASE/cosmian"
 
+# Test binary functionality
+."/$COSMIAN_CLI_EXE" --help
+
+# Check for dynamic OpenSSL linkage
 if [ "$(uname)" = "Linux" ]; then
-  ldd "${TARGET_FOLDER}"/cosmian | grep ssl && exit 1
+  LDD_OUTPUT=$(ldd "$COSMIAN_CLI_EXE")
+  echo "$LDD_OUTPUT"
+  if echo "$LDD_OUTPUT" | grep -qi ssl; then
+    echo "Error: Dynamic OpenSSL linkage detected on Linux (ldd | grep ssl)."
+    exit 1
+  fi
 else
-  otool -L "${TARGET_FOLDER}"/cosmian | grep openssl && exit 1
+  OTOOL_OUTPUT=$(otool -L "$COSMIAN_CLI_EXE")
+  echo "$OTOOL_OUTPUT"
+  if echo "$OTOOL_OUTPUT" | grep -qi ssl; then
+    echo "Error: Dynamic OpenSSL linkage detected on macOS (otool -L | grep openssl)."
+    exit 1
+  fi
 fi
-
-find . -type d -name cosmian-findex-server -exec rm -rf \{\} \; -print || true
-rm -f /tmp/*.json /tmp/*.toml
-
-export RUST_LOG="fatal,cosmian_cli=error,cosmian_findex_client=debug,cosmian_kms_client=debug"
-
-# shellcheck disable=SC2086
-cargo test --target $TARGET $RELEASE \
-  --features non-fips \
-  -p cosmian_cli \
-  -p cosmian_pkcs11 \
-  -- --nocapture $SKIP_SERVICES_TESTS

@@ -787,7 +787,7 @@ pub(crate) async fn test_grant_with_without_object_uid() -> CosmianResult<()> {
 #[tokio::test]
 pub(crate) async fn test_privileged_users() -> CosmianResult<()> {
     let ctx = start_default_test_kms_server_with_privileged_users(vec![
-        "tech@cosmian.com".to_owned(),
+        "owner.client@acme.com".to_owned(),
         "user.privileged@acme.com".to_owned(),
     ])
     .await;
