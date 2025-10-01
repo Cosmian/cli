@@ -1562,6 +1562,7 @@ dependencies = [
  "kmip-derive",
  "leb128",
  "num-bigint-dig",
+ "num-traits",
  "serde",
  "serde_json",
  "strum",
@@ -1796,6 +1797,7 @@ name = "cosmian_pkcs11"
 version = "1.4.1"
 dependencies = [
  "cosmian_cli",
+ "cosmian_config_utils 0.2.0",
  "cosmian_logger",
  "cosmian_pkcs11_module",
  "etcetera",
@@ -4506,10 +4508,6 @@ name = "proteccio_pkcs11_loader"
 version = "5.9.0"
 dependencies = [
  "cosmian_kms_base_hsm",
- "cosmian_kms_interfaces",
- "libloading",
- "pkcs11-sys",
- "uuid",
 ]
 
 [[package]]
@@ -5455,10 +5453,6 @@ name = "smartcardhsm_pkcs11_loader"
 version = "5.9.0"
 dependencies = [
  "cosmian_kms_base_hsm",
- "cosmian_kms_interfaces",
- "libloading",
- "pkcs11-sys",
- "uuid",
 ]
 
 [[package]]
@@ -5513,10 +5507,6 @@ name = "softhsm2_pkcs11_loader"
 version = "5.9.0"
 dependencies = [
  "cosmian_kms_base_hsm",
- "cosmian_kms_interfaces",
- "libloading",
- "pkcs11-sys",
- "uuid",
 ]
 
 [[package]]
@@ -5914,7 +5904,6 @@ dependencies = [
  "cosmian_kms_server",
  "cosmian_logger",
  "serde_json",
- "tempfile",
  "tokio",
 ]
 
@@ -6551,10 +6540,6 @@ name = "utimaco_pkcs11_loader"
 version = "5.9.0"
 dependencies = [
  "cosmian_kms_base_hsm",
- "cosmian_kms_interfaces",
- "libloading",
- "pkcs11-sys",
- "uuid",
 ]
 
 [[package]]

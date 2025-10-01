@@ -7,7 +7,6 @@ use cosmian_kms_cli::reexport::{
     },
 };
 
-use    test_kms_server::start_default_test_kms_server;
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
     error::{CosmianError, result::CosmianResult},
@@ -20,6 +19,7 @@ use crate::{
         save_kms_cli_config,
     },
 };
+use test_kms_server::start_default_test_kms_server;
 
 #[derive(Debug)]
 pub(crate) struct ImportCertificateInput<'a> {
@@ -129,7 +129,7 @@ pub(crate) fn import_certificate(
                 CosmianError::Default("failed extracting the imported key id".to_owned())
             })?
             .to_owned();
-        return Ok(imported_key_id)
+        return Ok(imported_key_id);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

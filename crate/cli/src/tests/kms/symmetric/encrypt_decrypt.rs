@@ -66,7 +66,7 @@ pub(crate) fn encrypt(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -109,7 +109,7 @@ pub(crate) fn decrypt(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -136,7 +136,7 @@ pub(crate) fn run_encrypt_decrypt_test(
         return Err(CosmianError::Default(format!(
             "Output file {} could not be removed",
             output_file.to_str().unwrap()
-        )))
+        )));
     }
 
     encrypt(
@@ -170,7 +170,7 @@ pub(crate) fn run_encrypt_decrypt_test(
         return Err(CosmianError::Default(format!(
             "Recovered file {} does not exist",
             recovered_file.to_str().unwrap()
-        )))
+        )));
     }
 
     let original_content = read_bytes_from_file(&input_file)?;
@@ -180,7 +180,7 @@ pub(crate) fn run_encrypt_decrypt_test(
             "Recovered content in file {} does not match the original file content {}",
             recovered_file.to_str().unwrap(),
             input_file.to_str().unwrap()
-        )))
+        )));
     }
 
     Ok(())
@@ -324,7 +324,7 @@ async fn test_encrypt_decrypt_with_tags() -> CosmianResult<()> {
         return Err(CosmianError::Default(format!(
             "Output file {} could not be removed",
             output_file.to_str().unwrap()
-        )))
+        )));
     }
 
     encrypt(
@@ -351,7 +351,7 @@ async fn test_encrypt_decrypt_with_tags() -> CosmianResult<()> {
         return Err(CosmianError::Default(format!(
             "Recovered file {} does not exist",
             recovered_file.to_str().unwrap()
-        )))
+        )));
     }
 
     let original_content = read_bytes_from_file(&input_file)?;
@@ -361,7 +361,7 @@ async fn test_encrypt_decrypt_with_tags() -> CosmianResult<()> {
             "Recovered content in file {} does not match the original file content {}",
             recovered_file.to_str().unwrap(),
             input_file.to_str().unwrap()
-        )))
+        )));
     }
 
     Ok(())

@@ -62,7 +62,7 @@ pub(crate) fn create_secret_data(
         let secret_data_id = extract_unique_identifier(secret_data_output)
             .ok_or_else(|| CosmianError::Default("failed extracting the private key".to_owned()))?
             .to_owned();
-        return Ok(secret_data_id)
+        return Ok(secret_data_id);
     }
 
     Err(CosmianError::Default(

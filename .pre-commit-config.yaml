@@ -114,7 +114,7 @@ repos:
   - repo: https://github.com/Cosmian/git-hooks.git
     rev: v1.0.40
     hooks:
-      - id: cargo-format
+      - id: nightly-cargo-format
       - id: dprint-toml-fix
         stages: [manual]
       - id: cargo-upgrade
@@ -127,14 +127,10 @@ repos:
       - id: docker-compose-up
       - id: cargo-build
       - id: cargo-test
-        args: [--, --skip, test_wrap_auth, --skip, google_cse, --skip, hsm]
       - id: cargo-build-all
       - id: cargo-test
         alias: cargo-test-all
-        args: [--all-features, --, --skip, test_wrap_auth, --skip, google_cse, --skip, hsm]
-      - id: clippy-autofix-unreachable-pub
-      - id: clippy-autofix-all-targets-all-features
-      - id: clippy-autofix-all-targets
+        args: [--all-features]
       - id: clippy-all-targets-all-features
       - id: clippy-all-targets
       - id: cargo-format # in last du to clippy fixes

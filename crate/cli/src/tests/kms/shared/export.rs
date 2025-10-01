@@ -107,11 +107,13 @@ pub(crate) fn export_key(params: ExportKeyParams) -> CosmianResult<()> {
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, params.cli_conf_path);
+    // Ensure sufficient stack for the child process on Windows
+    cmd.env("RUST_MIN_STACK", "16777216");
 
     cmd.arg(KMS_SUBCOMMAND).arg(params.sub_command).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

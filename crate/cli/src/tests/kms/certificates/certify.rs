@@ -120,7 +120,7 @@ pub(crate) fn certify(cli_conf_path: &str, certify_op: CertifyOp) -> CosmianResu
                 CosmianError::Default("failed extracting the imported key id".to_owned())
             })?
             .to_owned();
-        return Ok(imported_key_id)
+        return Ok(imported_key_id);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

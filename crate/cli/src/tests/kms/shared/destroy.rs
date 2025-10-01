@@ -54,7 +54,7 @@ pub(crate) fn destroy(
     cmd.arg(KMS_SUBCOMMAND).arg(sub_command).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

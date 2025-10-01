@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{env, path::Path};
 
 use cosmian_config_utils::ConfigUtils;
 use test_kms_server::TestsContext;
@@ -10,7 +10,10 @@ pub(crate) mod kms;
 pub(crate) const PROG_NAME: &str = "cosmian";
 
 pub(crate) fn save_kms_cli_config(kms_ctx: &TestsContext) -> (String, String) {
-    let owner_file_path = format!("/tmp/owner_{}.toml", kms_ctx.server_port);
+    let owner_file_path = env::temp_dir()
+        .join(format!("owner_{}.toml", kms_ctx.server_port))
+        .to_string_lossy()
+        .into_owned();
     if !Path::new(&owner_file_path).exists() {
         let conf = ClientConfig {
             kms_config: kms_ctx.owner_client_config.clone(),
@@ -20,7 +23,10 @@ pub(crate) fn save_kms_cli_config(kms_ctx: &TestsContext) -> (String, String) {
             .expect("Failed to save owner test config");
     }
 
-    let user_file_path = format!("/tmp/user_{}.toml", kms_ctx.server_port);
+    let user_file_path = env::temp_dir()
+        .join(format!("user_{}.toml", kms_ctx.server_port))
+        .to_string_lossy()
+        .into_owned();
     if !Path::new(&user_file_path).exists() {
         let conf = ClientConfig {
             kms_config: kms_ctx.user_client_config.clone(),
@@ -34,7 +40,10 @@ pub(crate) fn save_kms_cli_config(kms_ctx: &TestsContext) -> (String, String) {
 }
 
 pub(crate) fn force_save_kms_cli_config(kms_ctx: &TestsContext) -> (String, String) {
-    let owner_file_path = format!("/tmp/owner_{}.toml", kms_ctx.server_port);
+    let owner_file_path = env::temp_dir()
+        .join(format!("owner_{}.toml", kms_ctx.server_port))
+        .to_string_lossy()
+        .into_owned();
     let conf = ClientConfig {
         kms_config: kms_ctx.owner_client_config.clone(),
         findex_config: None,
@@ -42,7 +51,10 @@ pub(crate) fn force_save_kms_cli_config(kms_ctx: &TestsContext) -> (String, Stri
     conf.to_toml(&owner_file_path)
         .expect("Failed to save owner test config");
 
-    let user_file_path = format!("/tmp/user_{}.toml", kms_ctx.server_port);
+    let user_file_path = env::temp_dir()
+        .join(format!("user_{}.toml", kms_ctx.server_port))
+        .to_string_lossy()
+        .into_owned();
     let conf = ClientConfig {
         kms_config: kms_ctx.user_client_config.clone(),
         findex_config: None,

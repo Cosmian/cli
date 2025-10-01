@@ -70,8 +70,17 @@ fn test_pems(
         replace_existing: true,
         ..Default::default()
     })?;
-    // PEM Line Endings are LF in both cases
+    // Read imported bytes and normalize line endings to match platform-specific exports
+    // On Windows, some writers may emit CRLF; align both sides before assert
+    #[cfg(windows)]
+    let mut imported_bytes = read_bytes_from_file(&PathBuf::from(&key_file_path))?;
+    #[cfg(not(windows))]
     let imported_bytes = read_bytes_from_file(&PathBuf::from(&key_file_path))?;
+    #[cfg(windows)]
+    {
+        let as_string = String::from_utf8_lossy(&imported_bytes).replace("\r\n", "\n");
+        imported_bytes = as_string.replace("\n", "\r\n").into_bytes();
+    }
     // export the key
     let export_key_file = tempfile::NamedTempFile::new()?;
 
@@ -85,7 +94,15 @@ fn test_pems(
         ..Default::default()
     })?;
 
+    #[cfg(windows)]
+    let mut export_bytes = read_bytes_from_file(&export_key_file.path())?;
+    #[cfg(not(windows))]
     let export_bytes = read_bytes_from_file(&export_key_file.path())?;
+    #[cfg(windows)]
+    {
+        let as_string = String::from_utf8_lossy(&export_bytes).replace("\r\n", "\n");
+        export_bytes = as_string.replace("\n", "\r\n").into_bytes();
+    }
     assert_eq!(imported_bytes, export_bytes);
     // Get the key
     let get_key_file = tempfile::NamedTempFile::new()?;
@@ -97,7 +114,15 @@ fn test_pems(
         key_format: Some(export_format),
         ..Default::default()
     })?;
+    #[cfg(windows)]
+    let mut get_bytes = read_bytes_from_file(&get_key_file.path())?;
+    #[cfg(not(windows))]
     let get_bytes = read_bytes_from_file(&get_key_file.path())?;
+    #[cfg(windows)]
+    {
+        let as_string = String::from_utf8_lossy(&get_bytes).replace("\r\n", "\n");
+        get_bytes = as_string.replace("\n", "\r\n").into_bytes();
+    }
     assert_eq!(imported_bytes, get_bytes);
 
     Ok(())

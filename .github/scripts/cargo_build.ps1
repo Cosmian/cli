@@ -20,13 +20,13 @@ function BuildProject {
     $env:FINDEX_TEST_DB = "sqlite-findex"
     if ($BuildType -eq "release")
     {
-        cargo build --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --release --target x86_64-pc-windows-msvc
-        cargo test  --features "non-fips" -p cosmian_cli --release --target x86_64-pc-windows-msvc -- --nocapture --skip sql --skip redis --skip google_cse --skip hsm --skip kms
+        cargo build --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc --release
+        cargo test  --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc --release -- --skip auth
     }
     else
     {
         cargo build --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc
-        cargo  test --features "non-fips" -p cosmian_cli --target x86_64-pc-windows-msvc -- --nocapture --skip sql --skip redis --skip google_cse --skip hsm --skip kms
+        cargo test  --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc -- --skip auth
     }
 
     # Check binaries

@@ -72,7 +72,7 @@ pub(crate) fn export_object(
     cmd.arg(KMS_SUBCOMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -133,7 +133,7 @@ pub(crate) fn wrap_secret_data(
         let b64_wrapping_key = extract_wrapping_key(wrap_output)
             .unwrap_or_default()
             .to_owned();
-        return Ok(b64_wrapping_key)
+        return Ok(b64_wrapping_key);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -177,7 +177,7 @@ pub(crate) fn unwrap_secret_data(
     cmd.arg(KMS_SUBCOMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

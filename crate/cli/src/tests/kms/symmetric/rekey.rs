@@ -31,6 +31,8 @@ pub(crate) fn rekey_symmetric_key(
 ) -> CosmianResult<String> {
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, cli_conf_path);
+    // Ensure sufficient stack for the child process on Windows
+    cmd.env("RUST_MIN_STACK", "16777216");
 
     let mut args = vec!["keys", "re-key"];
     args.extend(vec!["--key-id", unique_identifier]);
@@ -42,7 +44,7 @@ pub(crate) fn rekey_symmetric_key(
         let unique_identifier = extract_uid(output, "Unique identifier").ok_or_else(|| {
             CosmianError::Default("failed extracting the unique identifier".to_owned())
         })?;
-        return Ok(unique_identifier.to_string())
+        return Ok(unique_identifier.to_string());
     }
 
     Err(CosmianError::Default(

@@ -58,7 +58,7 @@ pub(crate) fn encrypt(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -93,7 +93,7 @@ pub(crate) fn decrypt(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -101,6 +101,7 @@ pub(crate) fn decrypt(
 }
 
 #[cfg(feature = "non-fips")]
+#[allow(clippy::cognitive_complexity)]
 async fn test_certificate_import_encrypt(
     ca_path: &str,
     subca_path: &str,
@@ -211,6 +212,7 @@ async fn test_certificate_import_ca_and_encrypt_using_x25519() -> CosmianResult<
     .await
 }
 
+#[allow(clippy::cognitive_complexity)]
 async fn import_encrypt_decrypt(
     filename: &str,
     encryption_algorithm: Option<RsaEncryptionAlgorithm>,
@@ -272,7 +274,11 @@ async fn import_encrypt_decrypt(
     )?;
 
     debug!("\n\nExport Private key wrapping with X509 certificate");
-    let private_key_wrapped = format!("/tmp/wrapped_{filename}_private_key_exported.json");
+    // Use a cross-platform temporary path instead of hard-coding /tmp
+    let private_key_wrapped = tmp_path
+        .join(format!("wrapped_{filename}_private_key_exported.json"))
+        .to_string_lossy()
+        .to_string();
 
     export_key(ExportKeyParams {
         cli_conf_path: owner_client_conf_path.clone(),
