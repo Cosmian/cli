@@ -17,9 +17,12 @@ use crate::tests::kms::{
 };
 use crate::{
     error::result::CosmianResult,
-    tests::{kms::symmetric::{
-        create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test,
-    }, save_kms_cli_config},
+    tests::{
+        kms::symmetric::{
+            create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test,
+        },
+        save_kms_cli_config,
+    },
 };
 use test_kms_server::TestsContext;
 

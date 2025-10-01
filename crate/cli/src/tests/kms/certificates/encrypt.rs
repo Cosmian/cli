@@ -58,7 +58,7 @@ pub(crate) fn encrypt(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -93,7 +93,7 @@ pub(crate) fn decrypt(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -101,6 +101,7 @@ pub(crate) fn decrypt(
 }
 
 #[cfg(feature = "non-fips")]
+#[allow(clippy::cognitive_complexity)]
 async fn test_certificate_import_encrypt(
     ca_path: &str,
     subca_path: &str,
@@ -211,6 +212,7 @@ async fn test_certificate_import_ca_and_encrypt_using_x25519() -> CosmianResult<
     .await
 }
 
+#[allow(clippy::cognitive_complexity)]
 async fn import_encrypt_decrypt(
     filename: &str,
     encryption_algorithm: Option<RsaEncryptionAlgorithm>,

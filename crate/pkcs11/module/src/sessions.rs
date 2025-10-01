@@ -241,7 +241,7 @@ impl Session {
                                 return Err(ModuleError::Todo(format!(
                                     "This should not happen, returning: {:?}",
                                     o.object_type()
-                                )))
+                                )));
                             }
                         }
                     }
@@ -288,7 +288,7 @@ impl Session {
         pulSignatureLen: CK_ULONG_PTR,
     ) -> ModuleResult<()> {
         let Some(sign_ctx) = self.sign_ctx.as_mut() else {
-            return Err(ModuleError::OperationNotInitialized(0))
+            return Err(ModuleError::OperationNotInitialized(0));
         };
         let data = data
             .or(sign_ctx.payload.as_deref())

@@ -67,7 +67,7 @@ pub(crate) fn create_rsa_key_pair(
         let public_key_id = extract_public_key(rsa_output)
             .ok_or_else(|| CosmianError::Default("failed extracting the public key".to_owned()))?
             .to_owned();
-        return Ok((private_key_id, public_key_id))
+        return Ok((private_key_id, public_key_id));
     }
 
     Err(CosmianError::Default(

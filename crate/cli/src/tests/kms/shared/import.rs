@@ -105,7 +105,7 @@ pub(crate) fn import_key(params: ImportKeyParams) -> CosmianResult<String> {
                 CosmianError::Default("failed extracting the imported key id".to_owned())
             })?
             .to_owned();
-        return Ok(imported_key_id)
+        return Ok(imported_key_id);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -255,7 +255,7 @@ pub(crate) fn export_import_test(
         x => {
             return Err(CosmianError::Default(format!(
                 "unsupported algorithm for export: {x:?}"
-            )))
+            )));
         }
     };
 
@@ -283,7 +283,7 @@ pub(crate) fn export_import_test(
         x => {
             return Err(CosmianError::Default(format!(
                 "unsupported algorithm for export: {x:?}"
-            )))
+            )));
         }
     };
     assert_eq!(object2_key_bytes, key_bytes);

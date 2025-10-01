@@ -113,7 +113,7 @@ pub(crate) fn export_key(params: ExportKeyParams) -> CosmianResult<()> {
     cmd.arg(KMS_SUBCOMMAND).arg(params.sub_command).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

@@ -460,7 +460,7 @@ async fn test_secret_data_export_with_wrapping() -> CosmianResult<()> {
             return Err(CosmianError::Default(format!(
                 "Failed to create secret data: {}",
                 std::str::from_utf8(&output.stderr)?
-            )))
+            )));
         }
     };
 
@@ -488,7 +488,7 @@ async fn test_secret_data_export_with_wrapping() -> CosmianResult<()> {
             return Err(CosmianError::Default(format!(
                 "Failed to create wrapping key: {}",
                 std::str::from_utf8(&output.stderr)?
-            )))
+            )));
         }
     };
 
@@ -517,7 +517,7 @@ async fn test_secret_data_export_with_wrapping() -> CosmianResult<()> {
         return Err(CosmianError::Default(format!(
             "Failed to export secret data with wrapping: {}",
             std::str::from_utf8(&output.stderr)?
-        )))
+        )));
     }
 
     // Verify the file was created
