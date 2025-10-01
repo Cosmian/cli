@@ -1588,6 +1588,7 @@ dependencies = [
  "async-trait",
  "cosmian_kms_interfaces",
  "cosmian_logger",
+ "futures",
  "libloading",
  "lru",
  "pkcs11-sys",
