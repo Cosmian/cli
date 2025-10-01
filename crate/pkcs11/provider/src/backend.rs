@@ -234,7 +234,7 @@ impl Backend for CliBackend {
             SearchOptions::All => {
                 return Err(ModuleError::Backend(Box::new(pkcs11_error!(
                     "find_private_key: find must be made using an ID"
-                ))))
+                ))));
             }
         };
         let id = String::from_utf8(id)?;
@@ -298,7 +298,7 @@ impl Backend for CliBackend {
             SearchOptions::All => {
                 return Err(ModuleError::Backend(Box::new(pkcs11_error!(
                     "find_symmetric_key: find must be made using an ID"
-                ))))
+                ))));
             }
         };
         let id = String::from_utf8(id)?;

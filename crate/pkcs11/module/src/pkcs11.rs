@@ -785,7 +785,9 @@ cryptoki_fn!(
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
-                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(
+                                mech,
+                            )));
                         }
                     };
                     session.encrypt_ctx = Some(EncryptContext {
@@ -799,7 +801,9 @@ cryptoki_fn!(
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
-                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(
+                                mech,
+                            )));
                         }
                     };
                     session.encrypt_ctx = Some(EncryptContext {
@@ -902,7 +906,9 @@ cryptoki_fn!(
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
-                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(
+                                mech,
+                            )));
                         }
                     };
 
@@ -917,7 +923,9 @@ cryptoki_fn!(
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
-                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(
+                                mech,
+                            )));
                         }
                     };
                     session.decrypt_ctx = Some(DecryptContext {
@@ -1060,7 +1068,7 @@ cryptoki_fn!(
             // .map_err(|_| ModuleError::OperationNotInitialized(hSession))?;
             let object = find_ctx.get_using_handle(hKey);
             let Some(Object::PrivateKey(private_key)) = object.as_deref() else {
-                return Err(ModuleError::KeyHandleInvalid(hKey))
+                return Err(ModuleError::KeyHandleInvalid(hKey));
             };
             let mechanism = unsafe { parse_mechanism(pMechanism.read()) }?;
             session.sign_ctx = Some(SignContext {
@@ -1100,7 +1108,7 @@ cryptoki_fn!(
         not_null!(pPart, "C_SignUpdate: pPart");
         sessions::session(hSession, |session| -> ModuleResult<()> {
             let Some(sign_ctx) = session.sign_ctx.as_mut() else {
-                return Err(ModuleError::OperationNotInitialized(hSession))
+                return Err(ModuleError::OperationNotInitialized(hSession));
             };
             sign_ctx
                 .payload

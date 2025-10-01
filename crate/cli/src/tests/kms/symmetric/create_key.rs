@@ -72,7 +72,7 @@ pub(crate) fn create_symmetric_key(
         let unique_identifier = extract_uid(output, "Unique identifier").ok_or_else(|| {
             CosmianError::Default("failed extracting the unique identifier".to_owned())
         })?;
-        return Ok(unique_identifier.to_string())
+        return Ok(unique_identifier.to_string());
     }
 
     Err(CosmianError::Default(

@@ -35,7 +35,7 @@ pub(crate) fn server_version(cli_conf_path: &str, kms_url: &str) -> CosmianResul
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         let output = std::str::from_utf8(&output.stdout)?;
-        return Ok(output.to_string())
+        return Ok(output.to_string());
     }
 
     Err(CosmianError::Default(

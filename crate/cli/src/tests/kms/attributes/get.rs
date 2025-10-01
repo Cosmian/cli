@@ -57,7 +57,7 @@ pub(crate) fn get_attributes(
     if output.status.success() {
         let output = std::fs::read_to_string(temp_file.path())?;
         let output: HashMap<String, Value> = serde_json::from_str(&output)?;
-        return Ok(output)
+        return Ok(output);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

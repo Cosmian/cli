@@ -10,7 +10,7 @@ description = "HSM PKCS#11 provider for Cosmian KMS"
 
 [lib]
 name = "cosmian_pkcs11"
-crate-type = ["rlib", "dylib"]
+crate-type = ["rlib", "cdylib"]
 # doc test linking as a separate binary is extremely slow
 # and is not needed for internal lib
 doctest = false

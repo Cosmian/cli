@@ -49,7 +49,7 @@ pub(crate) fn create_user_decryption_key(
         let user_key_output = std::str::from_utf8(&output.stdout)?;
         return Ok(extract_user_key(user_key_output)
             .ok_or_else(|| CosmianError::Default("failed extracting the user key".to_owned()))?
-            .to_owned())
+            .to_owned());
     }
 
     Err(CosmianError::Default(

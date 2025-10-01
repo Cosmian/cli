@@ -57,7 +57,7 @@ pub(crate) fn create_cc_master_key_pair(
                 CosmianError::Default("failed extracting the master public key".to_owned())
             })?
             .to_owned();
-        return Ok((master_secret_key_id, master_public_key_id))
+        return Ok((master_secret_key_id, master_public_key_id));
     }
 
     Err(CosmianError::Default(

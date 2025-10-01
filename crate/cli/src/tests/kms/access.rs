@@ -93,7 +93,7 @@ pub(crate) fn grant_access(
 
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -122,7 +122,7 @@ pub(crate) fn revoke_access(
 
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -141,7 +141,7 @@ fn list_access(cli_conf_path: &str, object_id: &str) -> CosmianResult<String> {
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         let out = String::from_utf8(output.stdout)?;
-        return Ok(out)
+        return Ok(out);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -158,7 +158,7 @@ fn list_owned_objects(cli_conf_path: &str) -> CosmianResult<String> {
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         let out = String::from_utf8(output.stdout)?;
-        return Ok(out)
+        return Ok(out);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -177,7 +177,7 @@ fn list_accesses_rights_obtained(cli_conf_path: &str) -> CosmianResult<String> {
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         let out = String::from_utf8(output.stdout)?;
-        return Ok(out)
+        return Ok(out);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

@@ -1,17 +1,7 @@
-# On Windows, MSVC's linker can exceed object/library limits (LNK1189).
-# Mitigations:
-#  - Disable shared generics to reduce object bloat (-Zshare-generics=off)
-#  - Use lld-link (rust-lld.exe) which doesn't suffer the same limits
-#  - Increase stack size for deep test recursion
-# Requires nightly for -Z flags (see rust-toolchain.toml).
-
-[target.aarch64-pc-windows-msvc]
-rustflags = ["-Zshare-generics=off"]
+# Use rust-lld (LLVM's lld-link) instead of MSVC link.exe to avoid
+# LNK1189: library limit of 65535 objects exceeded on large workspaces.
+[target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"
 
-[target.x86_64-pc-windows-msvc]
-rustflags = [
-	"-Zshare-generics=off",
-	"-C", "link-arg=/STACK:67108864",
-]
+[target.aarch64-pc-windows-msvc]
 linker = "rust-lld.exe"

@@ -1562,6 +1562,7 @@ dependencies = [
  "kmip-derive",
  "leb128",
  "num-bigint-dig",
+ "num-traits",
  "serde",
  "serde_json",
  "strum",
