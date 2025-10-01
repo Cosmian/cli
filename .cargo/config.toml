@@ -1,7 +1,17 @@
-# On Windows, the linker may exceed its number of allowed symbols
-# This is likely going to require nightly
-# see https://github.com/rust-lang/rust/issues/53014#issuecomment-646149774
+# On Windows, MSVC's linker can exceed object/library limits (LNK1189).
+# Mitigations:
+#  - Disable shared generics to reduce object bloat (-Zshare-generics=off)
+#  - Use lld-link (rust-lld.exe) which doesn't suffer the same limits
+#  - Increase stack size for deep test recursion
+# Requires nightly for -Z flags (see rust-toolchain.toml).
+
 [target.aarch64-pc-windows-msvc]
-rustflags = "-Zshare-generics=off"
+rustflags = ["-Zshare-generics=off"]
+linker = "rust-lld.exe"
+
 [target.x86_64-pc-windows-msvc]
-rustflags = "-Zshare-generics=off"
+rustflags = [
+	"-Zshare-generics=off",
+	"-C", "link-arg=/STACK:67108864",
+]
+linker = "rust-lld.exe"

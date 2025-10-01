@@ -1,4 +1,8 @@
-use std::process::Command;
+use std::{
+    env,
+    process::Command,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use assert_cmd::prelude::*;
 use cosmian_kms_cli::{
@@ -30,6 +34,18 @@ use crate::{
 
 pub(crate) const SUB_COMMAND: &str = "access-rights";
 
+/// Create a unique path inside the system temp directory
+fn unique_temp_path(file_name: &str) -> String {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    env::temp_dir()
+        .join(format!("{}.{now}", file_name))
+        .to_string_lossy()
+        .into_owned()
+}
+
 /// Generates a symmetric key
 fn gen_key(cli_conf_path: &str) -> CosmianResult<String> {
     create_symmetric_key(cli_conf_path, CreateKeyAction::default())
@@ -38,17 +54,18 @@ fn gen_key(cli_conf_path: &str) -> CosmianResult<String> {
 /// Export and import symmetric key
 #[cfg(feature = "non-fips")]
 fn export_import_sym_key(key_id: &str, cli_conf_path: &str) -> Result<String, CosmianError> {
+    let export_path = unique_temp_path("output.export");
     export_key(ExportKeyParams {
         cli_conf_path: cli_conf_path.to_owned(),
         sub_command: "sym".to_owned(),
         key_id: key_id.to_owned(),
-        key_file: "/tmp/output.export".to_owned(),
+        key_file: export_path.clone(),
         ..Default::default()
     })?;
     let import_params = ImportKeyParams {
         cli_conf_path: cli_conf_path.to_owned(),
         sub_command: "sym".to_owned(),
-        key_file: "/tmp/output.export".to_string(),
+        key_file: export_path,
         ..Default::default()
     };
     import_key(import_params)
@@ -180,7 +197,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
         cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
-        key_file: "/tmp/output.json".to_owned(),
+        key_file: unique_temp_path("output.json"),
         ..Default::default()
     })?;
 
@@ -199,7 +216,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
             cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
             key_id: key_id.clone(),
-            key_file: "/tmp/output.json".to_owned(),
+            key_file: unique_temp_path("output.json"),
             ..Default::default()
         })
         .is_err()
@@ -236,7 +253,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
             cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
             key_id: key_id.clone(),
-            key_file: "/tmp/output.json".to_owned(),
+            key_file: unique_temp_path("output.json"),
             ..Default::default()
         })
         .is_err()
@@ -270,7 +287,7 @@ pub(crate) async fn test_ownership_and_grant() -> CosmianResult<()> {
         cli_conf_path: user_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
-        key_file: "/tmp/output.json".to_owned(),
+        key_file: unique_temp_path("output.json"),
         ..Default::default()
     })?;
     // the user should still not be able to revoke the key
@@ -389,7 +406,7 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
         cli_conf_path: user_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
-        key_file: "/tmp/output.json".to_owned(),
+        key_file: unique_temp_path("output.json"),
         ..Default::default()
     })?;
 
@@ -408,7 +425,7 @@ pub(crate) async fn test_revoke_access() -> CosmianResult<()> {
             cli_conf_path: user_client_conf_path,
             sub_command: "sym".to_owned(),
             key_id: key_id.clone(),
-            key_file: "/tmp/output.json".to_owned(),
+            key_file: unique_temp_path("output.json"),
             ..Default::default()
         })
         .is_err()
@@ -564,7 +581,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
         cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
-        key_file: "/tmp/output.json".to_owned(),
+        key_file: unique_temp_path("output.json"),
         ..Default::default()
     })?;
 
@@ -583,7 +600,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
             cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
             key_id: key_id.clone(),
-            key_file: "/tmp/output.json".to_owned(),
+            key_file: unique_temp_path("output.json"),
             ..Default::default()
         })
         .is_err()
@@ -616,7 +633,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
             cli_conf_path: user_client_conf_path.clone(),
             sub_command: "sym".to_owned(),
             key_id: key_id.clone(),
-            key_file: "/tmp/output.json".to_owned(),
+            key_file: unique_temp_path("output.json"),
             ..Default::default()
         })
         .is_err()
@@ -645,7 +662,7 @@ pub(crate) async fn test_ownership_and_grant_wildcard_user() -> CosmianResult<()
         cli_conf_path: user_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
-        key_file: "/tmp/output.json".to_owned(),
+        key_file: unique_temp_path("output.json"),
         ..Default::default()
     })?;
     // the user should still not be able to revoke the key

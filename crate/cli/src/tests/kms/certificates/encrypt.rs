@@ -272,7 +272,11 @@ async fn import_encrypt_decrypt(
     )?;
 
     debug!("\n\nExport Private key wrapping with X509 certificate");
-    let private_key_wrapped = format!("/tmp/wrapped_{filename}_private_key_exported.json");
+    // Use a cross-platform temporary path instead of hard-coding /tmp
+    let private_key_wrapped = tmp_path
+        .join(format!("wrapped_{filename}_private_key_exported.json"))
+        .to_string_lossy()
+        .to_string();
 
     export_key(ExportKeyParams {
         cli_conf_path: owner_client_conf_path.clone(),

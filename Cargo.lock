@@ -1796,6 +1796,7 @@ name = "cosmian_pkcs11"
 version = "1.4.1"
 dependencies = [
  "cosmian_cli",
+ "cosmian_config_utils 0.2.0",
  "cosmian_logger",
  "cosmian_pkcs11_module",
  "etcetera",

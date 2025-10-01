@@ -42,5 +42,6 @@ x509-cert = { version = "0.2", default-features = false }
 zeroize = { workspace = true }
 
 [dev-dependencies]
+cosmian_config_utils = { workspace = true }
 serial_test = { version = "3.2.0", default-features = true }
 test_kms_server = { workspace = true, features = ["non-fips"] }

@@ -1,15 +1,19 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use cosmian_cli::reexport::cosmian_kms_cli::reexport::{
-    cosmian_kmip::kmip_2_1::{
-        kmip_attributes::Attributes,
-        kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
-        kmip_objects::{Object, PrivateKey},
-        kmip_types::{CryptographicAlgorithm, KeyFormatType},
-        requests::{self, create_symmetric_key_kmip_object, import_object_request},
+use cosmian_cli::{
+    config::{COSMIAN_CLI_CONF_ENV, ClientConfig},
+    reexport::cosmian_kms_cli::reexport::{
+        cosmian_kmip::kmip_2_1::{
+            kmip_attributes::Attributes,
+            kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
+            kmip_objects::{Object, PrivateKey},
+            kmip_types::{CryptographicAlgorithm, KeyFormatType},
+            requests::{self, create_symmetric_key_kmip_object, import_object_request},
+        },
+        cosmian_kms_client::KmsClient,
     },
-    cosmian_kms_client::KmsClient,
 };
+use cosmian_config_utils::ConfigUtils;
 use cosmian_logger::{debug, log_init};
 use cosmian_pkcs11_module::{
     pkcs11::{C_CloseSession, C_Finalize, C_Initialize, C_OpenSession, SLOT_ID},
@@ -26,6 +30,27 @@ use crate::{
     error::{Pkcs11Error, result::Pkcs11Result},
     kms_object::get_kms_objects_async,
 };
+
+fn save_pkcs11_client_config() -> String {
+    // Start or get the shared test KMS server context
+    let rt = tokio::runtime::Runtime::new().expect("failed to create tokio runtime");
+    let ctx = rt.block_on(async { start_default_test_kms_server().await });
+
+    // Persist a client config that points explicitly to loopback to avoid 0.0.0.0 on Windows
+    let owner_file_path = std::env::temp_dir()
+        .join(format!("owner_{}.toml", ctx.server_port))
+        .to_string_lossy()
+        .into_owned();
+    if !std::path::Path::new(&owner_file_path).exists() {
+        let conf = ClientConfig {
+            kms_config: ctx.owner_client_config.clone(),
+            findex_config: None,
+        };
+        conf.to_toml(&owner_file_path)
+            .expect("Failed to save owner test config");
+    }
+    owner_file_path
+}
 
 fn initialize_backend() -> Result<CliBackend, Pkcs11Error> {
     log_init(None);
@@ -214,9 +239,11 @@ fn test_init() {
 #[serial]
 #[expect(unsafe_code)]
 fn test_generate_key_encrypt_decrypt() -> Pkcs11Result<()> {
-    tokio::runtime::Runtime::new()?.block_on(async {
-        start_default_test_kms_server().await;
-    });
+    // Ensure the PKCS#11 provider (which loads config via C_GetFunctionList) targets loopback
+    let conf_path = save_pkcs11_client_config();
+    unsafe {
+        std::env::set_var(COSMIAN_CLI_CONF_ENV, &conf_path);
+    }
 
     test_init();
     assert_eq!(C_Initialize(std::ptr::null_mut()), CKR_OK);

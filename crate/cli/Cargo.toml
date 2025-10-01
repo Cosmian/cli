@@ -18,7 +18,6 @@ or contact the Cosmian support team on Discord https://discord.com/invite/7kPMNt
 [[bin]]
 name = "cosmian"
 path = "src/main.rs"
-test = false
 
 [lib]
 # doc test linking as a separate binary is extremely slow

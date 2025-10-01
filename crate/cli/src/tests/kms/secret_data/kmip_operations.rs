@@ -29,8 +29,15 @@ use crate::{
 /// * `expect_success`
 ///   If true, asserts that the command succeeds and returns stdout as String
 ///   If false, returns the raw Output for custom handling
-fn run_cosmian_cmd(args: &[&str], expect_success: bool) -> Result<String, std::process::Output> {
+fn run_cosmian_cmd(
+    args: &[&str],
+    expect_success: bool,
+    cli_conf: Option<&str>,
+) -> Result<String, std::process::Output> {
     let mut cmd = Command::cargo_bin(PROG_NAME).unwrap();
+    if let Some(conf) = cli_conf {
+        cmd.env(COSMIAN_CLI_CONF_ENV, conf);
+    }
     let output = cmd.args(args).output().unwrap();
 
     if expect_success {
@@ -48,8 +55,6 @@ fn run_cosmian_cmd(args: &[&str], expect_success: bool) -> Result<String, std::p
 
 /// Specialized helper function for secret-data operations
 /// Automatically prepends "kms", "secret-data" to reduce boilerplate
-///
-/// # Arguments
 /// * `operation` - The secret-data operation (e.g., "create", "export", "import")
 /// * `args` - Additional arguments for the operation
 /// * `expect_success`
@@ -59,10 +64,11 @@ fn run_secret_data_cmd(
     operation: &str,
     args: &[&str],
     expect_success: bool,
+    cli_conf: Option<&str>,
 ) -> Result<String, std::process::Output> {
     let mut full_args = vec!["kms", "secret-data", operation];
     full_args.extend_from_slice(args);
-    run_cosmian_cmd(&full_args, expect_success)
+    run_cosmian_cmd(&full_args, expect_success, cli_conf)
 }
 
 /// Comprehensive test for all KMIP operations on `SecretData` objects
@@ -106,6 +112,7 @@ async fn test_secret_data_all_kmip_operations() {
             &wrapping_key_id,
         ],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
@@ -155,6 +162,7 @@ async fn test_secret_data_all_kmip_operations() {
         "export",
         &["--key-id", &secret_data_id, export_file1.to_str().unwrap()],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
@@ -170,6 +178,7 @@ async fn test_secret_data_all_kmip_operations() {
             export_file2.to_str().unwrap(),
         ],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
@@ -190,6 +199,7 @@ async fn test_secret_data_all_kmip_operations() {
             export_file3.to_str().unwrap(),
         ],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
@@ -217,6 +227,7 @@ async fn test_secret_data_all_kmip_operations() {
         "export",
         &["--key-id", temp_secret_id, import_file.to_str().unwrap()],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
@@ -230,6 +241,7 @@ async fn test_secret_data_all_kmip_operations() {
             "imported_secret",
         ],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
     info!("Import output: {}", output_str);
@@ -251,6 +263,7 @@ async fn test_secret_data_all_kmip_operations() {
             "cessation-of-operation",
         ],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
@@ -260,8 +273,13 @@ async fn test_secret_data_all_kmip_operations() {
     info!("8. Testing DESTROY operations...");
 
     // Destroy the revoked secret data
-    let output_str =
-        run_secret_data_cmd("destroy", &["--key-id", &imported_secret_data_id], true).unwrap();
+    let output_str = run_secret_data_cmd(
+        "destroy",
+        &["--key-id", &imported_secret_data_id],
+        true,
+        Some(&cli_conf_path),
+    )
+    .unwrap();
 
     assert!(output_str.contains("successfully destroyed") || output_str.contains("destroyed"));
     info!("DESTROY operation successful for SecretData");
@@ -277,6 +295,7 @@ async fn test_secret_data_all_kmip_operations() {
             destroyed_export_file.to_str().unwrap(),
         ],
         false,
+        Some(&cli_conf_path),
     )
     .unwrap_err();
 
@@ -284,8 +303,6 @@ async fn test_secret_data_all_kmip_operations() {
         !output.status.success(),
         "Should not be able to export destroyed secret data"
     );
-    info!("Destroyed SecretData correctly inaccessible");
-
     info!("10. Verifying wrapped SecretData is still functional...");
 
     let wrapped_export_file = tmp_path.join("wrapped_secret_export.json");
@@ -297,6 +314,7 @@ async fn test_secret_data_all_kmip_operations() {
             wrapped_export_file.to_str().unwrap(),
         ],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
@@ -335,6 +353,7 @@ async fn test_secret_data_wrapping_edge_cases() {
             "wrapping_key_128",
         ],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
@@ -371,6 +390,7 @@ async fn test_secret_data_wrapping_edge_cases() {
             "chacha_wrapping_key",
         ],
         false,
+        Some(&cli_conf_path),
     );
 
     // Note: This might fail if ChaCha20 is not supported for wrapping, which is expected
@@ -431,6 +451,7 @@ async fn test_secret_data_export_with_wrapping() -> CosmianResult<()> {
             "export-test",
         ],
         true,
+        Some(&owner_client_conf_path),
     ) {
         Ok(output) => extract_unique_identifier(&output)
             .ok_or_else(|| CosmianError::Default("Failed to extract secret data ID".to_owned()))?
@@ -458,6 +479,7 @@ async fn test_secret_data_export_with_wrapping() -> CosmianResult<()> {
             "wrapping-key",
         ],
         true,
+        Some(&owner_client_conf_path),
     ) {
         Ok(output) => extract_unique_identifier(&output)
             .ok_or_else(|| CosmianError::Default("Failed to extract wrapping key ID".to_owned()))?
@@ -490,7 +512,6 @@ async fn test_secret_data_export_with_wrapping() -> CosmianResult<()> {
         "aes-gcm",
         export_file_str,
     ]);
-
     let output = recover_cmd_logs(&mut cmd);
     if !output.status.success() {
         return Err(CosmianError::Default(format!(
@@ -567,6 +588,7 @@ async fn test_secret_data_backwards_compatibility() {
             export_file.to_str().unwrap(),
         ],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
@@ -580,6 +602,7 @@ async fn test_secret_data_backwards_compatibility() {
             export_file2.to_str().unwrap(),
         ],
         true,
+        Some(&cli_conf_path),
     )
     .unwrap();
 
