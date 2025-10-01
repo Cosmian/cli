@@ -41,7 +41,7 @@ fn unique_temp_path(file_name: &str) -> String {
         .unwrap_or_default()
         .as_nanos();
     env::temp_dir()
-        .join(format!("{}.{now}", file_name))
+        .join(format!("{file_name}.{now}"))
         .to_string_lossy()
         .into_owned()
 }
