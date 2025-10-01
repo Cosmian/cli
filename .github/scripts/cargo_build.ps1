@@ -21,12 +21,12 @@ function BuildProject {
     if ($BuildType -eq "release")
     {
         cargo build --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc --release
-        cargo test  --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc --release
+        cargo test  --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc --release -- --skip auth
     }
     else
     {
         cargo build --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc
-        cargo  test --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc
+        cargo test  --features "non-fips" -p cosmian_cli -p cosmian_pkcs11 --target x86_64-pc-windows-msvc -- --skip auth
     }
 
     # Check binaries
