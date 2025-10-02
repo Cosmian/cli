@@ -2,20 +2,9 @@
 
 set -exo pipefail
 
-# export FEATURES="non-fips"
-
 if [ -z "$TARGET" ]; then
   echo "Error: TARGET is not set. Examples of TARGET are x86_64-unknown-linux-gnu, x86_64-apple-darwin, aarch64-apple-darwin."
   exit 1
-fi
-
-if [ -n "$FEATURES" ]; then
-  FEATURES="--features $FEATURES"
-fi
-
-if [ -z "$FEATURES" ]; then
-  echo "Info: FEATURES is not set."
-  unset FEATURES
 fi
 
 if [ -z "$OPENSSL_DIR" ]; then
@@ -30,17 +19,13 @@ if [ "$DEBUG_OR_RELEASE" = "release" ]; then
   # after this step `cosmian` is built with custom features flags (non-fips for example).
   rm -rf target/"$TARGET"/debian
   rm -rf target/"$TARGET"/generate-rpm
+  cargo build --features non-fips --release --target "$TARGET"
   if [ -f /etc/redhat-release ]; then
-    cd crate/cli && cargo build --features non-fips --release --target "$TARGET" && cd -
     cargo install --version 0.16.0 cargo-generate-rpm --force
     cd "$ROOT_FOLDER"
     cargo generate-rpm --target "$TARGET" -p crate/cli
   elif [ -f /etc/debian_version ]; then
     cargo install --version 2.4.0 cargo-deb --force
-    if [ -n "$FEATURES" ]; then
-      cargo deb --target "$TARGET" -p cosmian_cli
-    else
-      cargo deb --target "$TARGET" -p cosmian_cli --variant fips
-    fi
+    cargo deb --target "$TARGET" -p cosmian_cli
   fi
 fi
