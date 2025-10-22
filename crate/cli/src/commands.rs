@@ -1,20 +1,20 @@
 use std::path::PathBuf;
 
 use clap::{CommandFactory, Parser, Subcommand};
+use cosmian_config_utils::ConfigUtils;
 use cosmian_findex_cli::{
     actions::findex_server::actions::FindexActions, reexport::cosmian_findex_client::RestClient,
 };
 use cosmian_kms_cli::{
     actions::kms::actions::KmsActions,
     reexport::cosmian_kms_client::{
-        GmailApiConf, KmsClient, reexport::cosmian_http_client::ProxyParams,
+        GmailApiConf, KmsClient,
+        reexport::cosmian_http_client::{HttpClientConfig, ProxyParams},
     },
 };
 use cosmian_logger::{info, log_init, trace};
 use dialoguer::{Confirm, Input, Password, Select};
 use url::Url;
-use cosmian_config_utils::ConfigUtils;
-use cosmian_kms_cli::reexport::cosmian_kms_client::reexport::cosmian_http_client::HttpClientConfig;
 
 use crate::{
     actions::markdown::MarkdownAction, cli_error, config::ClientConfig,
@@ -193,7 +193,7 @@ pub async fn cosmian_main() -> CosmianResult<()> {
 
 #[allow(clippy::print_stdout)]
 fn configure_http(label: &str, http: &mut HttpClientConfig) -> CosmianResult<()> {
-    println!("-- {} HTTP settings --", label);
+    println!("-- {label} HTTP settings --");
 
     let server_url: String = Input::new()
         .with_prompt("Server URL")
@@ -254,12 +254,7 @@ fn configure_http(label: &str, http: &mut HttpClientConfig) -> CosmianResult<()>
             let pkcs12_path: String = Input::new()
                 .with_prompt("Client PKCS#12 path (.p12)")
                 .allow_empty(true)
-                .with_initial_text(
-                    http
-                        .ssl_client_pkcs12_path
-                        .clone()
-                        .unwrap_or_default(),
-                )
+                .with_initial_text(http.ssl_client_pkcs12_path.clone().unwrap_or_default())
                 .interact_text()
                 .map_err(|e| cli_error!("Prompt failed: {e}"))?;
             if !pkcs12_path.is_empty() {
@@ -286,12 +281,7 @@ fn configure_http(label: &str, http: &mut HttpClientConfig) -> CosmianResult<()>
             let pkcs12_path: String = Input::new()
                 .with_prompt("Client PKCS#12 path (.p12)")
                 .allow_empty(false)
-                .with_initial_text(
-                    http
-                        .ssl_client_pkcs12_path
-                        .clone()
-                        .unwrap_or_default(),
-                )
+                .with_initial_text(http.ssl_client_pkcs12_path.clone().unwrap_or_default())
                 .interact_text()
                 .map_err(|e| cli_error!("Prompt failed: {e}"))?;
             http.ssl_client_pkcs12_path = Some(pkcs12_path);
@@ -528,7 +518,8 @@ fn run_configure_wizard(mut config: ClientConfig) -> CosmianResult<()> {
             configure_http("Findex", &mut findex_cfg.http_config)?;
         } else {
             // Create default then configure
-            let mut default = cosmian_findex_cli::reexport::cosmian_findex_client::RestClientConfig::default();
+            let mut default =
+                cosmian_findex_cli::reexport::cosmian_findex_client::RestClientConfig::default();
             configure_http("Findex", &mut default.http_config)?;
             config.findex_config = Some(default);
         }

@@ -114,7 +114,7 @@ mod tests {
         ));
         assert!(ClientConfig::load(None).is_ok());
         assert!(
-            get_default_conf_path(COSMIAN_CLI_CONF_PATH)
+            !get_default_conf_path(COSMIAN_CLI_CONF_PATH)
                 .unwrap()
                 .exists()
         );

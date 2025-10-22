@@ -46,6 +46,8 @@ Possible values:  `"true", "false"`
 
 **`markdown`** [[3]](#3-cosmian-markdown)  Action to auto-generate doc in Markdown format Run `cargo run --bin cosmian -- markdown documentation/docs/cli/main_commands.md`
 
+**`configure`** [[4]](#4-cosmian-configure)  Configure the Cosmian CLI (creates/updates cosmian.toml)
+
 ---
 
 ## 1 cosmian kms
@@ -3262,6 +3264,16 @@ Action to auto-generate doc in Markdown format Run `cargo run --bin cosmian -- m
 ### Arguments
 ` <MARKDOWN_FILE>` The file to export the markdown to
 
+
+
+---
+
+## 4 cosmian configure
+
+Configure the Cosmian CLI (creates/updates cosmian.toml)
+
+### Usage
+`cosmian configure`
 
 
 
