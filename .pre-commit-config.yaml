@@ -112,7 +112,7 @@ repos:
         args: [--skip-string-normalization]
 
   - repo: https://github.com/Cosmian/git-hooks.git
-    rev: v1.0.40
+    rev: v1.0.42
     hooks:
       - id: nightly-cargo-format
       - id: dprint-toml-fix
@@ -131,6 +131,9 @@ repos:
       - id: cargo-test
         alias: cargo-test-all
         args: [--all-features]
+      - id: nightly-clippy-autofix-unreachable-pub
+      - id: nightly-clippy-autofix-all-targets-all-features
+      - id: nightly-clippy-autofix-all-targets
       - id: clippy-all-targets-all-features
       - id: clippy-all-targets
       - id: cargo-format # in last du to clippy fixes
