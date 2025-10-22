@@ -107,11 +107,13 @@ pub(crate) fn export_key(params: ExportKeyParams) -> CosmianResult<()> {
 
     let mut cmd = Command::cargo_bin(PROG_NAME)?;
     cmd.env(COSMIAN_CLI_CONF_ENV, params.cli_conf_path);
+    // Ensure sufficient stack for the child process on Windows
+    cmd.env("RUST_MIN_STACK", "16777216");
 
     cmd.arg(KMS_SUBCOMMAND).arg(params.sub_command).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -132,7 +134,7 @@ pub(crate) async fn test_export_sym() -> CosmianResult<()> {
 
     // Export as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -147,7 +149,7 @@ pub(crate) async fn test_export_sym() -> CosmianResult<()> {
 
     // Export the bytes only
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "sym".to_owned(),
         key_id: key_id.clone(),
         key_file: tmp_path
@@ -226,7 +228,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
 
     // Export wrapped key with a symmetric key as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "rsa".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -251,7 +253,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
 
     // Wrapping with symmetric key should be by default with rfc5649
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "rsa".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path
@@ -281,7 +283,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
     assert_eq!(key_bytes, key_bytes_2);
 
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "rsa".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -292,7 +294,7 @@ pub(crate) async fn test_export_wrapped() -> CosmianResult<()> {
 
     // Export wrapped key with a symmetric key using AESGCM as default (JsonTTLV with Raw Key Format Type)
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "rsa".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -432,7 +434,7 @@ pub(crate) async fn test_export_error_cover_crypt() -> CosmianResult<()> {
 
     // key does not exist
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "cc".to_owned(),
         key_id: "does_not_exist".to_owned(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -470,7 +472,7 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
     // create a temp dir
 
     use cosmian_kms_cli::reexport::cosmian_kms_client::kmip_2_1::kmip_data_structures::KeyValue;
-    use tracing::trace;
+    use cosmian_logger::trace;
     let tmp_dir = TempDir::new()?;
     let tmp_path = tmp_dir.path();
     // init the test server
@@ -485,7 +487,7 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
     // Private Key
     //
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_owned(),
         key_id: private_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -522,7 +524,7 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
 
     // Export the bytes only
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_owned(),
         key_id: private_key_id,
         key_file: tmp_path
@@ -545,7 +547,7 @@ pub(crate) async fn test_export_x25519() -> CosmianResult<()> {
     // Public Key
     //
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_owned(),
         key_id: public_key_id.clone(),
         key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -650,7 +652,7 @@ pub(crate) async fn test_sensitive_ec_key() -> CosmianResult<()> {
     // the private key should not be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: owner_client_conf_path.to_string(),
+            cli_conf_path: owner_client_conf_path.clone(),
             sub_command: "ec".to_owned(),
             key_id: private_key_id,
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -696,7 +698,7 @@ pub(crate) async fn test_sensitive_rsa_key() -> CosmianResult<()> {
     // the private key should not be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: owner_client_conf_path.to_string(),
+            cli_conf_path: owner_client_conf_path.clone(),
             sub_command: "rsa".to_owned(),
             key_id: private_key_id,
             key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -742,7 +744,7 @@ pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
     // master secret key should not be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: owner_client_conf_path.to_string(),
+            cli_conf_path: owner_client_conf_path.clone(),
             sub_command: "cc".to_owned(),
             key_id: master_private_key_id.clone(),
             key_file: tmp_path
@@ -758,7 +760,7 @@ pub(crate) async fn test_sensitive_covercrypt_key() -> CosmianResult<()> {
     // Master public key should be exportable
     assert!(
         export_key(ExportKeyParams {
-            cli_conf_path: owner_client_conf_path.to_string(),
+            cli_conf_path: owner_client_conf_path.clone(),
             sub_command: "cc".to_owned(),
             key_id: master_public_key_id,
             key_file: tmp_path

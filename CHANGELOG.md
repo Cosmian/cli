@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2025-10-22
+
+### 🚀 Features
+
+- Support wrapping SecretData object (#109)
+- Add derive key subcommand (#111)
+- Create a configuration wizard - add configure subcommand (#116)
+
+### 🐛 Bug Fixes
+
+- Build errors
+
+### 🧪 Testing
+
+- Add luks integration script (#108)
+
+### ⚙️ Miscellaneous Tasks
+
+- Configure Dependabot for GitHub Actions updates
+- Add SECURITY.md file (#113)
+- Use cosmian_logger (#110)
+- Split cargo_build.sh into multiple files (#114)
+
+### Build
+
+- *(deps)* Bump actions/checkout from 4 to 5 (#112)
+
 ## [1.4.1] - 2025-09-16
 
 ### 🐛 Bug Fixes

@@ -25,9 +25,9 @@ use cosmian_kms_cli::{
         },
     },
 };
+use cosmian_logger::{debug, trace};
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
-use tracing::{debug, trace};
 
 use super::ExportKeyParams;
 use crate::{
@@ -70,7 +70,7 @@ pub(crate) async fn test_import_export_wrap_rfc_5649() -> CosmianResult<()> {
     // import the wrapping key
     trace!("importing wrapping key");
     let wrap_key_uid = import_key(ImportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "sym".to_string(),
         key_file: wrap_key_path.to_str().unwrap().to_string(),
         ..Default::default()
@@ -161,7 +161,7 @@ pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
     let wrap_private_key_path = tmp_path.join("wrap.private.key");
     write_kmip_object_to_file(wrap_key_pair.private_key(), &wrap_private_key_path)?;
     import_key(ImportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_string(),
         key_file: wrap_private_key_path.to_str().unwrap().to_string(),
         key_id: Some(wrap_private_key_uid.to_string()),
@@ -172,7 +172,7 @@ pub(crate) async fn test_import_export_wrap_ecies() -> CosmianResult<()> {
     let wrap_public_key_path = tmp_path.join("wrap.public.key");
     write_kmip_object_to_file(wrap_key_pair.public_key(), &wrap_public_key_path)?;
     import_key(ImportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_string(),
         key_file: wrap_public_key_path.to_str().unwrap().to_string(),
         key_id: Some(wrap_public_key_uid.to_string()),

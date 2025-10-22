@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -exo pipefail
+
+if [ -z "$TARGET" ]; then
+  echo "Error: TARGET is not set. Examples of TARGET are x86_64-unknown-linux-gnu, x86_64-apple-darwin, aarch64-apple-darwin."
+  exit 1
+fi
+
+if [ -z "$OPENSSL_DIR" ]; then
+  echo "Error: OPENSSL_DIR is not set. Example OPENSSL_DIR=/usr/local/openssl"
+  exit 1
+fi
+
+ROOT_FOLDER=$(pwd)
+
+if [ "$DEBUG_OR_RELEASE" = "release" ]; then
+  # First build the Debian and RPM packages. It must come at first since
+  # after this step `cosmian` is built with custom features flags (non-fips for example).
+  rm -rf target/"$TARGET"/debian
+  rm -rf target/"$TARGET"/generate-rpm
+  cargo build --features non-fips --release --target "$TARGET"
+  if [ -f /etc/redhat-release ]; then
+    cargo install --version 0.16.0 cargo-generate-rpm --force
+    cd "$ROOT_FOLDER"
+    cargo generate-rpm --target "$TARGET" -p crate/cli
+  elif [ -f /etc/debian_version ]; then
+    cargo install --version 2.4.0 cargo-deb --force
+    cargo deb --target "$TARGET" -p cosmian_cli
+  fi
+fi

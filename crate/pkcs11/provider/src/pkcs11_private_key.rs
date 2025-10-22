@@ -1,11 +1,11 @@
 use std::sync::{Arc, RwLock};
 
+use cosmian_logger::error;
 use cosmian_pkcs11_module::{
     ModuleError, ModuleResult,
     traits::{KeyAlgorithm, PrivateKey, SearchOptions, SignatureAlgorithm, backend},
 };
 use pkcs1::{RsaPrivateKey, der::Decode};
-use tracing::error;
 use zeroize::Zeroizing;
 
 use crate::kms_object::{KmsObject, key_algorithm_from_attributes};
@@ -66,10 +66,7 @@ impl PrivateKey for Pkcs11PrivateKey {
             "sign not implemented for Pkcs11PrivateKey with remote_id: {}",
             self.remote_id
         );
-        todo!(
-            "sign not implemented for Pkcs11PrivateKey with remote_id: {}",
-            self.remote_id
-        )
+        Err(ModuleError::FunctionNotSupported)
     }
 
     fn algorithm(&self) -> KeyAlgorithm {

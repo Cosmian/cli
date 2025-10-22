@@ -1,7 +1,7 @@
-# On Windows, the linker may exceed its number of allowed symbols
-# This is likely going to require nightly
-# see https://github.com/rust-lang/rust/issues/53014#issuecomment-646149774
-[target.aarch64-pc-windows-msvc]
-rustflags = "-Zshare-generics=off"
+# Use rust-lld (LLVM's lld-link) instead of MSVC link.exe to avoid
+# LNK1189: library limit of 65535 objects exceeded on large workspaces.
 [target.x86_64-pc-windows-msvc]
-rustflags = "-Zshare-generics=off"
+linker = "rust-lld.exe"
+
+[target.aarch64-pc-windows-msvc]
+linker = "rust-lld.exe"

@@ -9,9 +9,9 @@ use cosmian_kms_cli::reexport::cosmian_kms_client::{
         rsa_utils::RsaEncryptionAlgorithm,
     },
 };
+use cosmian_logger::{debug, trace};
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
-use tracing::{debug, trace};
 use uuid::Uuid;
 
 use super::SUB_COMMAND;
@@ -58,7 +58,7 @@ pub(crate) fn encrypt(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -93,7 +93,7 @@ pub(crate) fn decrypt(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -101,6 +101,7 @@ pub(crate) fn decrypt(
 }
 
 #[cfg(feature = "non-fips")]
+#[allow(clippy::cognitive_complexity)]
 async fn test_certificate_import_encrypt(
     ca_path: &str,
     subca_path: &str,
@@ -127,7 +128,7 @@ async fn test_certificate_import_encrypt(
 
     debug!("\n\nImport Key");
     let private_key_id = import_key(ImportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_string(),
         key_file: format!("../../test_data/certificates/{key_path}"),
         key_format: Some(ImportKeyFormat::Pem),
@@ -211,6 +212,7 @@ async fn test_certificate_import_ca_and_encrypt_using_x25519() -> CosmianResult<
     .await
 }
 
+#[allow(clippy::cognitive_complexity)]
 async fn import_encrypt_decrypt(
     filename: &str,
     encryption_algorithm: Option<RsaEncryptionAlgorithm>,
@@ -234,7 +236,7 @@ async fn import_encrypt_decrypt(
 
     debug!("\n\nImport Private key");
     let private_key_id = import_key(ImportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_string(),
         key_file: format!("../../test_data/certificates/openssl/{filename}-private-key.pem"),
         key_format: Some(ImportKeyFormat::Pem),
@@ -272,10 +274,14 @@ async fn import_encrypt_decrypt(
     )?;
 
     debug!("\n\nExport Private key wrapping with X509 certificate");
-    let private_key_wrapped = format!("/tmp/wrapped_{filename}_private_key_exported.json");
+    // Use a cross-platform temporary path instead of hard-coding /tmp
+    let private_key_wrapped = tmp_path
+        .join(format!("wrapped_{filename}_private_key_exported.json"))
+        .to_string_lossy()
+        .to_string();
 
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_owned(),
         key_id: private_key_id.clone(),
         key_file: private_key_wrapped.clone(),
@@ -288,7 +294,7 @@ async fn import_encrypt_decrypt(
     trace!("import private key with unwrap");
     debug!("\n\nImport a wrapped Private key but unwrap it into server");
     import_key(ImportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_string(),
         key_file: private_key_wrapped.clone(),
         key_format: Some(ImportKeyFormat::JsonTtlv),
@@ -302,7 +308,7 @@ async fn import_encrypt_decrypt(
     trace!("import private key with unwrap OK");
     debug!("\n\nImport a wrapped Private key but let is save it `as registered` into server");
     let wrapped_private_key_uid = import_key(ImportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_string(),
         key_file: private_key_wrapped,
         key_format: Some(ImportKeyFormat::JsonTtlv),
@@ -319,7 +325,7 @@ async fn import_encrypt_decrypt(
         .unwrap()
         .to_owned();
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "ec".to_owned(),
         key_id: wrapped_private_key_uid,
         key_file: private_key_wrapped_as_is,

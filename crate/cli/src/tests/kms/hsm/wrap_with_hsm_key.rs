@@ -7,7 +7,7 @@ use cosmian_logger::log_init;
 #[cfg(feature = "non-fips")]
 use tempfile::TempDir;
 #[cfg(feature = "non-fips")]
-use tracing::info;
+use cosmian_logger::info;
 use uuid::Uuid;
 
 #[cfg(feature = "non-fips")]
@@ -17,9 +17,12 @@ use crate::tests::kms::{
 };
 use crate::{
     error::result::CosmianResult,
-    tests::{kms::symmetric::{
-        create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test,
-    }, save_kms_cli_config},
+    tests::{
+        kms::symmetric::{
+            create_key::create_symmetric_key, encrypt_decrypt::run_encrypt_decrypt_test,
+        },
+        save_kms_cli_config,
+    },
 };
 use test_kms_server::TestsContext;
 

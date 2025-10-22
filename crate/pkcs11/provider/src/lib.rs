@@ -29,7 +29,7 @@
     clippy::renamed_function_params,
     clippy::verbose_file_reads,
     clippy::str_to_string,
-    clippy::string_to_string,
+    clippy::implicit_clone,
     clippy::unreachable,
     clippy::as_conversions,
     clippy::print_stdout,
@@ -48,9 +48,9 @@
 
 use std::{ptr::addr_of_mut, str::FromStr};
 
+use cosmian_logger::reexport::tracing::Level;
 use cosmian_pkcs11_module::{pkcs11::FUNC_LIST, traits::register_backend};
 use pkcs11_sys::{CK_FUNCTION_LIST_PTR_PTR, CK_RV, CKR_OK};
-use tracing::Level;
 
 use crate::{kms_object::get_kms_client, logging::initialize_logging};
 

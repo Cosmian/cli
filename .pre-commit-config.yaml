@@ -41,7 +41,7 @@ repos:
     rev: v1.31.1
     hooks:
       - id: typos
-        exclude: documentation/docs/images|crate/pkcs11/oracle/README_HSM.md|crate/pkcs11/documentation/veracrypt_ckms.svg|documentation/docs/pkcs11/images
+        exclude: documentation/docs/images|.github/scripts/oracle/README_HSM.md|crate/pkcs11/documentation/veracrypt_ckms.svg|documentation/docs/pkcs11/images
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
@@ -112,9 +112,9 @@ repos:
         args: [--skip-string-normalization]
 
   - repo: https://github.com/Cosmian/git-hooks.git
-    rev: v1.0.40
+    rev: v1.0.42
     hooks:
-      - id: cargo-format
+      - id: nightly-cargo-format
       - id: dprint-toml-fix
         stages: [manual]
       - id: cargo-upgrade
@@ -127,21 +127,20 @@ repos:
       - id: docker-compose-up
       - id: cargo-build
       - id: cargo-test
-        args: [--, --skip, test_wrap_auth, --skip, google_cse, --skip, hsm]
       - id: cargo-build-all
       - id: cargo-test
         alias: cargo-test-all
-        args: [--all-features, --, --skip, test_wrap_auth, --skip, google_cse, --skip, hsm]
-      - id: clippy-autofix-unreachable-pub
-      - id: clippy-autofix-all-targets-all-features
-      - id: clippy-autofix-all-targets
+        args: [--all-features]
+      - id: nightly-clippy-autofix-unreachable-pub
+      - id: nightly-clippy-autofix-all-targets-all-features
+      - id: nightly-clippy-autofix-all-targets
       - id: clippy-all-targets-all-features
       - id: clippy-all-targets
       - id: cargo-format # in last du to clippy fixes
       - id: docker-compose-down
 
   - repo: https://github.com/EmbarkStudios/cargo-deny
-    rev: 0.18.2 # choose your preferred tag
+    rev: 0.18.2
     hooks:
       - id: cargo-deny
         args: [--all-features, check]

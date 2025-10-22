@@ -40,7 +40,7 @@ pub(crate) fn delete_attributes(
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         let set_attribute_output = std::str::from_utf8(&output.stdout)?;
-        return Ok(set_attribute_output.to_string())
+        return Ok(set_attribute_output.to_string());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

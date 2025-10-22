@@ -6,7 +6,7 @@ set -ex
 docker compose up -d
 sleep 5
 
-export COSMIAN_CLI_FORMAT=json
+export COSMIAN_KMS_CLI_FORMAT=json
 COSMIAN="cargo run --bin cosmian -- -c test_data/configs/cosmian_for_bash.toml"
 
 # Create the seed key

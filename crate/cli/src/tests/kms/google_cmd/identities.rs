@@ -7,7 +7,7 @@ use cosmian_kms_cli::reexport::{
 };
 use serde::Deserialize;
 use tempfile::TempDir;
-use tracing::trace;
+use cosmian_logger::trace;
 
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,

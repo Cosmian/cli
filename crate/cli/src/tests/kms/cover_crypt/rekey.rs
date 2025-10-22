@@ -60,7 +60,7 @@ pub(crate) fn rekey(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() && std::str::from_utf8(&output.stdout)?.contains("were rekeyed") {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -85,7 +85,7 @@ pub(crate) fn prune(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() && std::str::from_utf8(&output.stdout)?.contains("were pruned") {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -144,7 +144,7 @@ async fn test_rekey_error() -> CosmianResult<()> {
     // export a wrapped key
     let exported_wrapped_key_file = tmp_path.join("exported_wrapped_master_private.key");
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: SUB_COMMAND.to_owned(),
         key_id: master_secret_key_id,
         key_file: exported_wrapped_key_file.to_str().unwrap().to_string(),
@@ -154,7 +154,7 @@ async fn test_rekey_error() -> CosmianResult<()> {
 
     // import it wrapped
     let wrapped_key_id = import_key(ImportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: SUB_COMMAND.to_string(),
         key_file: exported_wrapped_key_file.to_string_lossy().to_string(),
         replace_existing: true,
@@ -268,7 +268,7 @@ async fn test_enc_dec_rekey() -> CosmianResult<()> {
     // export the user_decryption_key
     let exported_user_decryption_key_file = tmp_path.join("exported_user_decryption.key");
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: SUB_COMMAND.to_owned(),
         key_id: user_decryption_key_id,
         key_file: exported_user_decryption_key_file
@@ -338,9 +338,9 @@ async fn test_rekey_prune() -> CosmianResult<()> {
     // export the user_decryption_key
     let exported_user_decryption_key_file = tmp_path.join("exported_user_decryption.key");
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: SUB_COMMAND.to_owned(),
-        key_id: user_decryption_key_id.to_string(),
+        key_id: user_decryption_key_id.clone(),
         key_file: exported_user_decryption_key_file
             .to_str()
             .unwrap()
@@ -384,7 +384,7 @@ async fn test_rekey_prune() -> CosmianResult<()> {
 
     // import the non rotated user_decryption_key
     let old_user_decryption_key_id = import_key(ImportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: SUB_COMMAND.to_owned(),
         key_file: exported_user_decryption_key_file
             .to_string_lossy()

@@ -13,11 +13,10 @@ use cosmian_kms_cli::reexport::cosmian_kms_client::{
         import_utils::CertificateInputFormat,
     },
 };
-use cosmian_logger::log_init;
+use cosmian_logger::{debug, info, log_init};
 use openssl::{nid::Nid, x509::X509};
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
-use tracing::{debug, info};
 use uuid::Uuid;
 use x509_parser::{der_parser::oid, prelude::*};
 
@@ -121,7 +120,7 @@ pub(crate) fn certify(cli_conf_path: &str, certify_op: CertifyOp) -> CosmianResu
                 CosmianError::Default("failed extracting the imported key id".to_owned())
             })?
             .to_owned();
-        return Ok(imported_key_id)
+        return Ok(imported_key_id);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

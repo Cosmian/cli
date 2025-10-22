@@ -29,10 +29,10 @@ use cosmian_cli::{
         },
     },
 };
+use cosmian_logger::{debug, error, trace};
 use cosmian_pkcs11_module::traits::{
     DecryptContext, EncryptContext, EncryptionAlgorithm, KeyAlgorithm,
 };
-use tracing::{debug, error, trace};
 use zeroize::Zeroizing;
 
 use crate::error::{Pkcs11Error, result::Pkcs11Result};

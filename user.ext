@@ -1,7 +1,0 @@
-[ v3_ca ]
-keyUsage=critical,nonRepudiation,digitalSignature,dataEncipherment,keyEncipherment
-extendedKeyUsage=emailProtection
-subjectKeyIdentifier=hash
-authorityKeyIdentifier=keyid:always,issuer
-crlDistributionPoints=URI:http://url.crl
-subjectAltName=email:new@cosmian.com

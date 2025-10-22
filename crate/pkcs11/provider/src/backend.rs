@@ -6,6 +6,7 @@ use cosmian_cli::reexport::cosmian_kms_cli::reexport::{
     },
     cosmian_kms_client::KmsClient,
 };
+use cosmian_logger::{debug, trace, warn};
 use cosmian_pkcs11_module::{
     ModuleError, ModuleResult,
     core::object::Object,
@@ -14,7 +15,6 @@ use cosmian_pkcs11_module::{
         PublicKey, SearchOptions, SymmetricKey, Version,
     },
 };
-use tracing::{debug, trace, warn};
 use zeroize::Zeroizing;
 
 use crate::{
@@ -234,7 +234,7 @@ impl Backend for CliBackend {
             SearchOptions::All => {
                 return Err(ModuleError::Backend(Box::new(pkcs11_error!(
                     "find_private_key: find must be made using an ID"
-                ))))
+                ))));
             }
         };
         let id = String::from_utf8(id)?;
@@ -298,7 +298,7 @@ impl Backend for CliBackend {
             SearchOptions::All => {
                 return Err(ModuleError::Backend(Box::new(pkcs11_error!(
                     "find_symmetric_key: find must be made using an ID"
-                ))))
+                ))));
             }
         };
         let id = String::from_utf8(id)?;

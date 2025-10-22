@@ -1,0 +1,163 @@
+---
+name: LUKS integration test
+
+on:
+  workflow_call:
+    inputs:
+      log_level:
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      log_level:
+        description: PKCS#11 logging level
+        required: false
+        default: debug
+        type: choice
+        options:
+          - trace
+          - debug
+          - info
+          - warn
+          - error
+
+env:
+  OPENSSL_DIR: /usr/local/openssl
+
+jobs:
+  luks-integration-test:
+    name: LUKS integration test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    # Required for LUKS operations
+    permissions:
+      contents: read
+
+    env:
+      RUST_BACKTRACE: 1
+      CARGO_TERM_COLOR: always
+      COSMIAN_PKCS11_LOGGING_LEVEL: ${{ inputs.log_level || 'debug' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.90.0
+          components: rustfmt, clippy
+
+      - name: Start Docker services for testing
+        run: |
+          # Start the required services
+          docker compose -f .github/scripts/luks/docker-compose.yml up -d --wait
+
+          # Wait for services to be ready
+          echo "Waiting for KMS service to be ready..."
+          timeout=60
+          counter=0
+          while [ $counter -lt $timeout ]; do
+            if curl -s http://localhost:9998/version >/dev/null 2>&1; then
+              echo "✓ KMS service is ready"
+              break
+            fi
+            sleep 2
+            counter=$((counter + 2))
+          done
+
+          if [ $counter -ge $timeout ]; then
+            echo "ERROR: KMS service failed to start"
+            docker compose -f .github/scripts/luks/docker-compose.yml logs
+            exit 1
+          fi
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -qq \
+            pkg-config \
+            p11-kit \
+            cryptsetup \
+            jq
+
+      - name: Local OpenSSL Install
+        run: |
+          sudo mkdir -p ${{ env.OPENSSL_DIR }}/ssl
+          sudo mkdir -p ${{ env.OPENSSL_DIR }}/lib64/ossl-modules
+          sudo chown -R $USER ${{ env.OPENSSL_DIR }}
+          bash .github/reusable_scripts/get_openssl_binaries.sh
+        env:
+          OS_NAME: ubuntu_24_04
+
+      - name: Build PKCS#11 module and CLI
+        run: |
+          # Build the PKCS#11 module
+          cargo build --features non-fips -p cosmian_pkcs11 -p cosmian_cli
+
+          # Copy the built library to the expected location
+          cp target/debug/libcosmian_pkcs11.so .
+
+          # Verify the library exists and is properly linked
+          ls -la libcosmian_pkcs11.so
+          ldd libcosmian_pkcs11.so || true
+
+      - name: Verify systemd-cryptenroll p11-kit support
+        run: |
+          systemd-cryptenroll --version
+          if ! systemd-cryptenroll --version | grep -q "+P11KIT"; then
+            echo "ERROR: systemd-cryptenroll does not have p11-kit support"
+            exit 1
+          fi
+          echo "✓ systemd-cryptenroll has p11-kit support"
+
+      - name: Run LUKS integration test
+        run: |
+          bash .github/scripts/luks/test_integration.sh
+
+      - name: Collect test artifacts on failure
+        if: failure()
+        run: |
+          echo "=== Docker service logs ==="
+          docker compose logs || true
+
+          echo "=== PKCS#11 logs ==="
+          sudo cat /var/log/cosmian-pkcs11.log 2>/dev/null || echo "No PKCS#11 log file found"
+
+          echo "=== System logs (last 50 lines) ==="
+          sudo journalctl --no-pager -n 50 || true
+
+          echo "=== LUKS dump ==="
+          sudo cat /tmp/luks_dump.txt 2>/dev/null || echo "No LUKS dump found"
+
+          echo "=== Test file status ==="
+          ls -la /tmp/test_luks_file 2>/dev/null || echo "No test LUKS file found"
+
+          echo "=== Mapper devices ==="
+          ls -la /dev/mapper/ || true
+
+          echo "=== Mount points ==="
+          mount | grep luks || echo "No LUKS mount points found"
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: luks-test-logs
+          path: |
+            /var/log/cosmian-pkcs11.log
+            /tmp/luks_dump.txt
+          if-no-files-found: ignore
+
+      - name: Clean up test resources
+        if: always()
+        run: |
+          # Clean up is handled by the test script's trap, but ensure cleanup
+          sudo umount /mnt/test_luks 2>/dev/null || true
+          sudo cryptsetup close test_luks 2>/dev/null || true
+          sudo rm -f /tmp/test_luks_file 2>/dev/null || true
+          sudo rmdir /mnt/test_luks 2>/dev/null || true
+          docker compose down || true

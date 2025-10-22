@@ -22,11 +22,11 @@ use std::{
     sync::{self, Arc, atomic::Ordering},
 };
 
+use cosmian_logger::{debug, trace, warn};
 use pkcs11_sys::{
     CK_BYTE_PTR, CK_FLAGS, CK_OBJECT_CLASS, CK_OBJECT_HANDLE, CK_SESSION_HANDLE, CK_ULONG,
     CK_ULONG_PTR,
 };
-use tracing::{debug, trace, warn};
 
 use crate::{
     MResultHelper, ModuleError, ModuleResult,
@@ -126,7 +126,7 @@ impl Session {
             self.load_find_context_by_class(attributes, search_class)
         } else {
             let label = attributes.get_label()?;
-            let label = Session::map_oracle_tde_security_to_mk(&label)?;
+            let label = Self::map_oracle_tde_security_to_mk(&label)?;
             let find_ctx = OBJECTS_STORE.read()?;
             debug!(
                 "load_find_context: loading for label: {label:?} and attributes: {attributes:?}"
@@ -241,7 +241,7 @@ impl Session {
                                 return Err(ModuleError::Todo(format!(
                                     "This should not happen, returning: {:?}",
                                     o.object_type()
-                                )))
+                                )));
                             }
                         }
                     }
@@ -288,7 +288,7 @@ impl Session {
         pulSignatureLen: CK_ULONG_PTR,
     ) -> ModuleResult<()> {
         let Some(sign_ctx) = self.sign_ctx.as_mut() else {
-            return Err(ModuleError::OperationNotInitialized(0))
+            return Err(ModuleError::OperationNotInitialized(0));
         };
         let data = data
             .or(sign_ctx.payload.as_deref())

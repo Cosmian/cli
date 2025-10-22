@@ -105,7 +105,7 @@ pub(crate) fn import_key(params: ImportKeyParams) -> CosmianResult<String> {
                 CosmianError::Default("failed extracting the imported key id".to_owned())
             })?
             .to_owned();
-        return Ok(imported_key_id)
+        return Ok(imported_key_id);
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -137,7 +137,7 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
     let public_key_path = format!("{}", tmp_path.join("public_key.json").display());
 
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "cc".to_owned(),
         key_id: master_public_key_id.clone(),
         key_file: public_key_path.clone(),
@@ -147,7 +147,7 @@ pub(crate) async fn test_import_cover_crypt() -> CosmianResult<()> {
     // reimporting the same key  with the same id should fail
     assert!(
         import_key(ImportKeyParams {
-            cli_conf_path: owner_client_conf_path.to_string(),
+            cli_conf_path: owner_client_conf_path.clone(),
             sub_command: "cc".to_string(),
             key_file: public_key_path.clone(),
             key_id: Some(master_public_key_id.clone()),
@@ -231,16 +231,23 @@ pub(crate) fn export_import_test(
     algorithm: CryptographicAlgorithm,
 ) -> CosmianResult<()> {
     // Export
-
+    let export1 = std::env::temp_dir()
+        .join("output.export")
+        .to_string_lossy()
+        .into_owned();
+    let export2 = std::env::temp_dir()
+        .join("output2.export")
+        .to_string_lossy()
+        .into_owned();
     export_key(ExportKeyParams {
         cli_conf_path: cli_conf_path.to_string(),
         sub_command: sub_command.to_owned(),
         key_id: private_key_id.to_string(),
-        key_file: "/tmp/output.export".to_owned(),
+        key_file: export1.clone(),
         ..Default::default()
     })?;
 
-    let object = read_object_from_json_ttlv_file(&PathBuf::from("/tmp/output.export"))?;
+    let object = read_object_from_json_ttlv_file(&PathBuf::from(&export1))?;
     let key_bytes = match algorithm {
         CryptographicAlgorithm::AES => object.key_block()?.key_bytes()?,
         CryptographicAlgorithm::ECDH => object.key_block()?.ec_raw_bytes()?,
@@ -248,7 +255,7 @@ pub(crate) fn export_import_test(
         x => {
             return Err(CosmianError::Default(format!(
                 "unsupported algorithm for export: {x:?}"
-            )))
+            )));
         }
     };
 
@@ -256,7 +263,7 @@ pub(crate) fn export_import_test(
     let import_params = ImportKeyParams {
         cli_conf_path: cli_conf_path.to_string(),
         sub_command: sub_command.to_string(),
-        key_file: "/tmp/output.export".to_string(),
+        key_file: export1,
         ..Default::default()
     };
 
@@ -265,10 +272,10 @@ pub(crate) fn export_import_test(
         cli_conf_path: cli_conf_path.to_string(),
         sub_command: sub_command.to_owned(),
         key_id: uid,
-        key_file: "/tmp/output2.export".to_owned(),
+        key_file: export2.clone(),
         ..Default::default()
     })?;
-    let object2 = read_object_from_json_ttlv_file(&PathBuf::from("/tmp/output2.export"))?;
+    let object2 = read_object_from_json_ttlv_file(&PathBuf::from(&export2))?;
     let object2_key_bytes = match algorithm {
         CryptographicAlgorithm::AES => object2.key_block()?.key_bytes()?,
         CryptographicAlgorithm::ECDH => object2.key_block()?.ec_raw_bytes()?,
@@ -276,7 +283,7 @@ pub(crate) fn export_import_test(
         x => {
             return Err(CosmianError::Default(format!(
                 "unsupported algorithm for export: {x:?}"
-            )))
+            )));
         }
     };
     assert_eq!(object2_key_bytes, key_bytes);

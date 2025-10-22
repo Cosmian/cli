@@ -19,6 +19,7 @@
 
 use std::slice;
 
+use cosmian_logger::{debug, error};
 use pkcs11_sys::{
     CK_MECHANISM, CK_MECHANISM_TYPE, CK_RSA_PKCS_PSS_PARAMS, CKG_MGF1_SHA1, CKG_MGF1_SHA224,
     CKG_MGF1_SHA256, CKG_MGF1_SHA384, CKG_MGF1_SHA512, CKM_AES_CBC, CKM_AES_CBC_PAD,
@@ -26,7 +27,6 @@ use pkcs11_sys::{
     CKM_SHA224, CKM_SHA256, CKM_SHA256_RSA_PKCS, CKM_SHA384, CKM_SHA384_RSA_PKCS, CKM_SHA512,
     CKM_SHA512_RSA_PKCS,
 };
-use tracing::{debug, error};
 
 use crate::{
     ModuleError, ModuleResult, not_null,

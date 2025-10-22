@@ -11,18 +11,18 @@ jobs:
   cargo-publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly-2025-03-31
+          toolchain: 1.90.0
           components: rustfmt, clippy
 
       - name: Publishing - dry run
         run: |
-          cargo +nightly-2025-03-31 publish --dry-run --workspace -Z package-workspace \
+          cargo +1.90.0 publish --dry-run --workspace \
             --exclude cosmian_findex_cli \
             --exclude cosmian_findex_client \
             --exclude cosmian_findex_structs \
@@ -47,7 +47,7 @@ jobs:
       - name: Publishing
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          cargo +nightly-2025-03-31 publish --workspace -Z package-workspace --token ${{ secrets.token }} \
+          cargo +1.90.0 publish --workspace --token ${{ secrets.token }} \
             --exclude cosmian_findex_cli \
             --exclude cosmian_findex_client \
             --exclude cosmian_findex_structs \

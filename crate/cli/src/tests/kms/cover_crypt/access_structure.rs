@@ -45,7 +45,7 @@ async fn test_view_access_structure() -> CosmianResult<()> {
     let public_key_path = tmp_path.join("public_key.json");
 
     export_key(ExportKeyParams {
-        cli_conf_path: owner_client_conf_path.to_string(),
+        cli_conf_path: owner_client_conf_path.clone(),
         sub_command: "cc".to_owned(),
         key_id: master_public_key_id,
         key_file: format!("{}", public_key_path.display()),
@@ -114,7 +114,7 @@ pub(crate) async fn rename(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() && std::str::from_utf8(&output.stdout)?.contains("successfully") {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -141,7 +141,7 @@ pub(crate) async fn add(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() && std::str::from_utf8(&output.stdout)?.contains("successfully") {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -168,7 +168,7 @@ pub(crate) async fn disable(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() && std::str::from_utf8(&output.stdout)?.contains("successfully") {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -195,7 +195,7 @@ pub(crate) async fn remove(
     cmd.arg(KMS_SUBCOMMAND).arg(SUB_COMMAND).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() && std::str::from_utf8(&output.stdout)?.contains("successfully") {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

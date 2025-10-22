@@ -6,7 +6,7 @@ use cosmian_kms_cli::reexport::{
 };
 use    test_kms_server::start_default_test_kms_server;
 use tempfile::TempDir;
-use tracing::{debug, info};
+use cosmian_logger::{debug, info};
 
 use crate::{
     config::COSMIAN_CLI_CONF_ENV,
@@ -83,7 +83,7 @@ async fn import_revoked_certificate_encrypt(curve_name: &str) -> CosmianResult<(
 }
 
 #[tokio::test]
-#[ignore]
+#[ignore = "To be fixed"]
 async fn test_import_revoked_certificate_encrypt_prime256() -> CosmianResult<()> {
     import_revoked_certificate_encrypt("prime256v1").await
 }
@@ -109,7 +109,7 @@ pub(crate) fn validate_certificate(
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
         let validate_output = std::str::from_utf8(&output.stdout)?;
-        return Ok(validate_output.to_string())
+        return Ok(validate_output.to_string());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),

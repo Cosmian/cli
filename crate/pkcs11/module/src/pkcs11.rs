@@ -21,6 +21,7 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
+use cosmian_logger::{debug, error, info, trace};
 use pkcs11_sys::{
     CK_ATTRIBUTE_PTR, CK_BBOOL, CK_BYTE_PTR, CK_C_INITIALIZE_ARGS_PTR, CK_FLAGS, CK_FUNCTION_LIST,
     CK_INFO, CK_INFO_PTR, CK_MECHANISM_INFO, CK_MECHANISM_INFO_PTR, CK_MECHANISM_PTR,
@@ -34,7 +35,6 @@ use pkcs11_sys::{
     CKS_RW_USER_FUNCTIONS, CRYPTOKI_VERSION_MAJOR, CRYPTOKI_VERSION_MINOR,
 };
 use rand::RngCore;
-use tracing::{debug, error, info, trace};
 
 use crate::{
     MResultHelper, ModuleError, ModuleResult,
@@ -61,7 +61,7 @@ where
     match f() {
         Ok(()) => CKR_OK,
         Err(e) => {
-            tracing::error!("{}: {}", name, e);
+            cosmian_logger::error!("{}: {}", name, e);
             e.into()
         }
     }
@@ -785,7 +785,9 @@ cryptoki_fn!(
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
-                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(
+                                mech,
+                            )));
                         }
                     };
                     session.encrypt_ctx = Some(EncryptContext {
@@ -799,7 +801,9 @@ cryptoki_fn!(
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
-                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(
+                                mech,
+                            )));
                         }
                     };
                     session.encrypt_ctx = Some(EncryptContext {
@@ -902,7 +906,9 @@ cryptoki_fn!(
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
-                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(
+                                mech,
+                            )));
                         }
                     };
 
@@ -917,7 +923,9 @@ cryptoki_fn!(
                     let iv = match &mechanism {
                         Mechanism::AesCbcPad { iv } | Mechanism::AesCbc { iv } => Some(iv.to_vec()),
                         mech => {
-                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(mech)))
+                            return Err(ModuleError::MechanismInvalid(CK_MECHANISM_TYPE::from(
+                                mech,
+                            )));
                         }
                     };
                     session.decrypt_ctx = Some(DecryptContext {
@@ -1060,7 +1068,7 @@ cryptoki_fn!(
             // .map_err(|_| ModuleError::OperationNotInitialized(hSession))?;
             let object = find_ctx.get_using_handle(hKey);
             let Some(Object::PrivateKey(private_key)) = object.as_deref() else {
-                return Err(ModuleError::KeyHandleInvalid(hKey))
+                return Err(ModuleError::KeyHandleInvalid(hKey));
             };
             let mechanism = unsafe { parse_mechanism(pMechanism.read()) }?;
             session.sign_ctx = Some(SignContext {
@@ -1099,9 +1107,8 @@ cryptoki_fn!(
         valid_session!(hSession);
         not_null!(pPart, "C_SignUpdate: pPart");
         sessions::session(hSession, |session| -> ModuleResult<()> {
-            let sign_ctx = match session.sign_ctx.as_mut() {
-                None => return Err(ModuleError::OperationNotInitialized(hSession)),
-                Some(sign_ctx) => sign_ctx,
+            let Some(sign_ctx) = session.sign_ctx.as_mut() else {
+                return Err(ModuleError::OperationNotInitialized(hSession));
             };
             sign_ctx
                 .payload

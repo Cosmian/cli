@@ -8,10 +8,10 @@ use cosmian_kms_cli::{
         read_object_from_json_ttlv_file,
     },
 };
+#[cfg(feature = "non-fips")]
+use cosmian_logger::trace;
 use tempfile::TempDir;
 use test_kms_server::start_default_test_kms_server;
-#[cfg(feature = "non-fips")]
-use tracing::trace;
 
 #[cfg(feature = "non-fips")]
 use crate::tests::kms::cover_crypt::{
@@ -54,7 +54,7 @@ pub(crate) fn destroy(
     cmd.arg(KMS_SUBCOMMAND).arg(sub_command).args(args);
     let output = recover_cmd_logs(&mut cmd);
     if output.status.success() {
-        return Ok(())
+        return Ok(());
     }
     Err(CosmianError::Default(
         std::str::from_utf8(&output.stderr)?.to_owned(),
@@ -417,7 +417,7 @@ async fn test_destroy_cover_crypt() -> CosmianResult<()> {
         // should able to Get the Master Keys and user key 2
         assert!(
             export_key(ExportKeyParams {
-                cli_conf_path: owner_client_conf_path.to_string(),
+                cli_conf_path: owner_client_conf_path.clone(),
                 sub_command: "cc".to_owned(),
                 key_id: master_private_key_id,
                 key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
@@ -427,7 +427,7 @@ async fn test_destroy_cover_crypt() -> CosmianResult<()> {
         );
         assert!(
             export_key(ExportKeyParams {
-                cli_conf_path: owner_client_conf_path.to_string(),
+                cli_conf_path: owner_client_conf_path.clone(),
                 sub_command: "cc".to_owned(),
                 key_id: master_public_key_id,
                 key_file: tmp_path.join("output.export").to_str().unwrap().to_owned(),
