@@ -36,6 +36,7 @@ jobs:
       - name: Prerequisites
         run: |
           set -ex
+          sudo apt update
           sudo apt install squid
           sudo cp .github/scripts/squid/passwd /etc/squid/
           sudo cp .github/scripts/squid/squid.conf /etc/squid/
