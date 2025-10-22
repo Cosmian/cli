@@ -10,7 +10,7 @@ exclude = ["kms"]
 resolver = "2"
 
 [workspace.package]
-version = "1.4.1"
+version = "1.5.0"
 edition = "2024"
 rust-version = "1.87.0"
 authors = [
