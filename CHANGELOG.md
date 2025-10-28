@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.1] - 2025-10-28
+
+### 🐛 Bug Fixes
+
+- *(google_cse)* Load RSA private as PKCS8 or PKCS1 format (#592)
+
+### ⚠️ WARNING
+
+**Gmail CSE users:** Versions 1.3/1.4 and 1.5.0 contain a blocking issue with Gmail Client-Side Encryption support (issue loading PKCS#8 RSA private key). Please upgrade to version 1.5.1 or later to ensure proper Gmail CSE functionality.
+
 ## [1.5.0] - 2025-10-22
 
 ### 🚀 Features
